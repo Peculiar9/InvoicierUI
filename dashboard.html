@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/dashboard.css">
+        <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+
+        <script src="JS/app.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+        <title>Invoicier-Dashboard</title>
+    </head>
+
+    <body>
+
+        <header>
+            <nav>
+                <div class="toggle-btn" onclick="toggleNav()">
+
+                </div>
+                <a href="#" class="logo"><img src="./images/logo.png" alt=""></a>
+                <ul class="navigation">
+                    <li><a href="#">Company Name</a></li>
+                    <li><a href="#" class="signup"> + Create Invoice</a></li>
+                </ul>
+            </nav>
+        </header>
+        <div class="sidebar">
+            <div class="nav-toggle" onclick="toggleBtn()"></div>
+            <ul class="nav-items">
+                <li class="nav-item home">
+                    <a href="#"><i class='bx bx-home'></i>
+                        <h4>Home</h4>
+                    </a>
+                </li>
+                <li class="nav-item invoices">
+                    <a href="#"><i class='bx bx-receipt'></i>
+                        <h4>Invoices</h4>
+                    </a>
+                </li>
+                <li class="nav-item clients">
+                    <a href="#"><i class='bx bx-user'></i>
+                        <h4>Clients</h4>
+                    </a>
+                </li>
+                <li class="nav-item services">
+                    <a href="#"><i class='bx bx-grid-alt'></i>
+                        <h4>Services</h4>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="container">
+                <div class="header-stats">
+                    <div>
+                        <div class="info-text">
+                            <i class='bx bx-grid-alt'></i>
+                            <h5>Total Recieved</h5>
+                        </div>
+                        <h3>$13,009</h3>
+                        <div class="rating-badge">
+                            <i class='bx bx-up-arrow-alt'></i>
+                            <sub>23%</sub>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-text">
+                            <i class='bx bx-receipt'></i>
+                            <h5>Invoices</h5>
+                        </div>
+                        <h3>3,093</h3>
+                        <div class="rating-badge">
+                            <i class='bx bx-up-arrow-alt'></i>
+                            <sub>23%</sub>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-text">
+                            <i class='bx bx-user'></i>
+                            <h5>Clients</h5>
+                        </div>
+                        <h3>345</h3>
+                        <div class="rating-badge">
+                            <i class='bx bx-up-arrow-alt'></i>
+                            <sub>23%</sub>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-text">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <h5>Total Invoice</h5>
+                        </div>
+                        <h3>23</h3>
+                        <div class="rating-badge">
+                            <i class='bx bx-up-arrow-alt'></i>
+                            <sub>23%</sub>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="chart-body" style="position: relative">
+                    <canvas id="myChart" style=" width:fit-content;"></canvas>
+                    <canvas id="mChart" style=" width:fit-content;"></canvas>
+                </div>
+                <div class="activities">
+                    <h5>Activities</h5>
+                    <ul>
+                        <li>
+                            <img src="" alt="" class="user-img" />
+                            <p><span>UserName</span> just added an invoice</p>
+                            <br>
+                            <br>
+                            <br>
+                            <sub>#IV12N3E</sub>
+
+                        </li>
+                        <li>
+                            <img src="" alt="" class="user-img" />
+                            <p><span>UserName</span> just added an invoice</p>
+                            <br>
+                            <br>
+                            <br>
+                            <sub>#IV12N3E</sub>
+
+                        </li>
+                        <li>
+                            <img src="" alt="" class="user-img" />
+                            <p><span>UserName</span> just added an invoice</p>
+                            <br>
+                            <br>
+                            <br>
+                            <sub>#IV12N3E</sub>
+
+                        </li>
+                        <li>
+                            <img src="" alt="" class="user-img" />
+                            <p><span>UserName</span> just added an invoice</p>
+                            <br>
+                            <br>
+                            <br>
+                            <sub>#IV12N3E</sub>
+
+                        </li>
+
+                    </ul>
+
+                </div>
+                <div class="info">
+
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <h3>Recent Invoices</h3>
+                        <thead>
+                            <tr>
+                                <th scope="col">Invoice</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Amount Due</th>
+                                <th scope="col">Status</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                                <td>@mdo</td>
+                                <td>@mdo</td>
+                                <td>
+                                    <div class="rating-badge">
+                                        <sub>PAID</sub>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Jacob</td>
+                                <td>Thornton</td>
+                                <td>@fat</td>
+                                <td>@fat</td>
+                                <td>@fat</td>
+                                <td>
+                                    <div class="rating-badge">
+                                        <sub>PAID</sub>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">Larry the Bird</td>
+                                <td>@twitter</td>
+                                <td>@twitter</td>
+                                <td>@twitter</td>
+                                <td>
+                                    <div class="rating-badge">
+                                        <sub>PAID</sub>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="rightSideBtn">
+            <ul>
+                <li><a href="#" class="btnSide send"><span>Send</span> <img src="images/send.png" alt=""></a></li>
+                <li><a href="#" class="btnSide copy"><span>Copy Link</span><img src="images/copy.png" alt=""></a></li>
+                <li><a href="#" class="btnSide download"><span>Download</span> <img src="images/download.png"
+                            alt=""></a></li>
+                <li><a href="#" class="btnSide save"><span>Save</span> <img src="images/save.png" alt=""></a></li>
+                <li><a href="#" class="btnSide preview"><span>Preview</span> <img src="images/preview.png" alt=""></a>
+                </li>
+            </ul>
+        </div>
+        <script>
+
+            var ctx = document.getElementById("myChart").getContext("2d");
+            var myChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                    datasets: [
+                        {
+                            label: "# of Votes",
+                            data: [12, 19, 3, 5, 2, 3],
+                            backgroundColor: [
+                                "#914ee973",
+                                "rgba(54, 162, 235, 0.2)",
+                                "rgba(255, 206, 86, 0.2)",
+                                "rgba(75, 192, 192, 0.2)",
+                                "rgba(153, 102, 255, 0.2)",
+                                "rgba(255, 159, 64, 0.2)",
+                            ],
+
+                            borderColor: [
+                                "#924ee9",
+                                "rgba(54, 162, 235, 1)",
+                                "rgba(255, 206, 86, 1)",
+                                "rgba(75, 192, 192, 1)",
+                                "rgba(153, 102, 255, 1)",
+                                "rgba(255, 159, 64, 1)",
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        },
+                    ],
+                },
+                options: {
+                    FontFace: "Poppins",
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+
+
+            var ct = document.getElementById("mChart").getContext("2d");
+            var mChart = new Chart(ct, {
+                type: "line",
+                data: {
+                    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                    datasets: [
+                        {
+                            label: "# of Votes",
+                            data: [12, 19, 3, 5, 2, 3],
+                            backgroundColor: [
+                                "#914ee973",
+                                "rgba(54, 162, 235, 0.2)",
+                                "rgba(255, 206, 86, 0.2)",
+                                "rgba(75, 192, 192, 0.2)",
+                                "rgba(153, 102, 255, 0.2)",
+                                "rgba(255, 159, 64, 0.2)",
+                            ],
+
+                            borderColor: [
+                                "#924ee9",
+                                "rgba(54, 162, 235, 1)",
+                                "rgba(255, 206, 86, 1)",
+                                "rgba(75, 192, 192, 1)",
+                                "rgba(153, 102, 255, 1)",
+                                "rgba(255, 159, 64, 1)",
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        },
+                    ],
+                },
+                options: {
+                    FontFace: "Poppins",
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        </script>
+    </body>
+
+</html>

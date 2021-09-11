@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/create.css">
+        <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+
+        <script src="JS/app.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+        <title>Invoicier-Dashboard</title>
+    </head>
+
+    <body>
+
+        <header>
+            <nav>
+                <a href="#" class="logo"><img src="./images/logo.png" alt=""></a>
+                <ul class="navigation">
+                    <li><a href="#">Company Name</a></li>
+                    <li><a href="#" class="signup"> + Create Invoice</a></li>
+                </ul>
+            </nav>
+        </header>
+        <div class="sidebar">
+            <div class="toggle-btn" onclick="toggleBtn()"></div>
+            <ul class="nav-items">
+                <li class="nav-item home">
+                    <a href="#"><i class='bx bx-home'></i>
+                        <h4>Home</h4>
+                    </a>
+                </li>
+                <li class="nav-item invoices">
+                    <a href="#"><i class='bx bx-receipt'></i>
+                        <h4>Invoices</h4>
+                    </a>
+                </li>
+                <li class="nav-item clients">
+                    <a href="#"><i class='bx bx-user'></i>
+                        <h4>Clients</h4>
+                    </a>
+                </li>
+                <li class="nav-item services">
+                    <a href="#"><i class='bx bx-grid-alt'></i>
+                        <h4>Services</h4>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="container">
+                <div class="invoice-header">
+                    <img src="images/headerImg.png" alt="" class="header-icon">
+                    <h3>Create Invoice</h3>
+
+                </div>
+                <div class="invoice-container">
+                    <h2>#IV12E34</h2>
+                    <div class="container-header">
+                        <div class="header-form-group">
+                            <form action="post" class="form">
+                                <div class="form-group">
+                                    <label for="" class="form-text">Terms</label>
+                                    <select class="form-control custom-select" type="text" id="validationCustom01"
+                                        placeholder="Terms" value="Nigeria" required>
+                                        <option value="">None</option>
+                                        <option value="">Other</option>
+                                        <option value="Dallas">Another</option>
+
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="form-text">Currency</label>
+                                    <select class="form-control custom-select" type="text" id="validationCustom01"
+                                        placeholder="Currency" value="Nigeria" required="">
+                                        <option value="">USD</option>
+                                        <option value="">EUR</option>
+                                        <option value="Dallas">Naira</option>
+
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="form-text">Due Date</label>
+                                    <input type="password" class="form-input" value=thisisthepass />
+                                </div>
+                            </form>
+                        </div>
+                        <div class="header-address">
+                            <div>
+                                <a href="#" class="header-icon">
+                                    <i class='bx bxs-edit'></i>
+                                </a>
+                                <h3>Bill From</h3>
+                                <ul>
+                                    <li>Shoes Company Resolve</li>
+                                    <li>08120822334</li>
+                                    <li>No 1 This is the actual address</li>
+                                </ul>
+                            </div>
+                            <div>
+
+                                <a href="#" class="header-icon">
+                                    <i class='bx bxs-edit'></i>
+                                </a>
+                                <h3>Bill To</h3>
+                                <ul>
+                                    <li>Shoes Company Resolve</li>
+                                    <li>08120822334</li>
+                                    <li>No 1 This is the actual address</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="container-body">
+                        <div class="body-form">
+                            <form action="post" class="form">
+                                <div class="form-group">
+                                    <label for="" class="form-text">Sender's Info</label>
+                                    <input type="text" placeholder="johndoe@gmail.com" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="form-text">Recipient Email</label>
+                                    <input type="text" placeholder="johndoe@gmail.com">
+                                </div>
+
+                            </form>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Item Description</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Action</th>
+
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="form-group">
+                                                <label for="" class="form-text">Product Name</label>
+                                                <input type="text" placeholder="Product Name" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <label for="" class="form-text">Price of Product</label>
+                                                <input type="number" placeholder="00,000" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <label for="" class="form-text">Quantity</label>
+                                                <input type="number" placeholder="0" width="" />
+                                            </div>
+                                        </td>
+                                        <td class="action-button">
+                                            <br>
+                                            <button>
+                                                <p>More</p><i><img src="images/menu.png" alt=""></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <!-- <tr>
+                                        <td>Jacob</td>
+                                        <td>Thornton</td>
+                                        <td>@fat</td>
+                                        <td>@fat</td>
+                                    </tr> -->
+                                </tbody>
+                            </table>
+                            <div class="buttom">
+                                <a href="#" class="add"> <i class='bx bx-plus'></i> Add Items</a>
+                                <div>
+                                    <sub>Total</sub>
+                                    <h2>$129,456</h2>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="rightSideBtn">
+            <ul>
+                <li><a href="#" class="btnSide send"><span>Send</span> <img src="images/send.png" alt=""></a></li>
+                <li><a href="#" class="btnSide copy"><span>Copy Link</span><img src="images/copy.png" alt=""></a></li>
+                <li><a href="#" class="btnSide download"><span>Download</span> <img src="images/download.png"
+                            alt=""></a></li>
+                <li><a href="#" class="btnSide save"><span>Save</span> <img src="images/save.png" alt=""></a></li>
+                <li><a href="#" class="btnSide preview" onclick="ClickMe()"><span>Preview</span> <img
+                            src="images/preview.png" alt=""></a>
+                </li>
+            </ul>
+        </div>
+
+    </body>
+
+</html>
