@@ -1,13 +1,210 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+:root {
+  --purple-color: #924ee9;
+  --text-color: #121212;
+  --light-grey: #464545;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+body {
+  font-size: 14px;
+}
+#container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+}
+header nav {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100px;
+  background: #ffffff;
+  box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 62px;
+}
+
+nav ul li {
+  display: inline-block;
+
+  padding-left: 1rem;
+}
+nav ul li a {
+  text-decoration: none;
+  transition: 0.4s;
+  color: var(--text-color);
+}
+nav ul li .signup {
+  position: relative;
+  top: 0;
+  right: 0;
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  font-size: 14px;
+  color: white;
+  margin: 0 20px;
+  background: var(--purple-color);
+  box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+}
+nav ul li a:hover {
+  opacity: 0.7;
+}
+
+.content {
+  width: 100%;
+  min-height: 70vh;
+  height: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 129px;
+}
+.content .text-box {
+  font-size: 3.2rem;
+  line-height: 94px;
+  width: 40%;
+}
+.content .text-box h2 {
+  font-weight: 200;
+}
+.content .text-box h2 span {
+  font-weight: 700;
+}
+.content .img-box {
+  position: absolute;
+  height: 400px;
+  right: 0;
+  height: 100%;
+  top: 60px;
+}
+/* AUTH STYLING */
+.auth-container {
+  width: 100%;
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 4.0625rem auto;
+}
+.form-content {
+  background: #ffffff;
+  box-shadow: 0px 4px 75px rgba(0, 0, 0, 0.05);
+  border-radius: 24px;
+  min-height: 100px;
+  min-width: 475px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.form-content h2 {
+  font-weight: 600;
+  font-size: 34px;
+  color: #464545;
+}
+.form-content .form-check {
+  display: inline-block;
+  padding-left: 40px;
+  color: #464545;
+}
+.form-content .form-check a {
+  color: var(--purple-color);
+}
+
+.form-content a {
+  text-decoration: none;
+}
+.form-content .form-group,
+h2 {
+  display: grid;
+  grid-template-rows: 1fr;
+  padding: 24px 38px;
+  row-gap: 1rem;
+  color: var(--text-color);
+}
+.form-content .form-group label {
+  font-weight: 400;
+  color: #464545;
+}
+.form-content h2 {
+  width: 100%;
+  max-width: 390px;
+}
+.form-content h2 span {
+  font-size: 1.5rem;
+}
+
+.form-group input {
+  padding: 12px 30px;
+  background: #eeeeee;
+  border: 0.6px solid #51204a;
+  box-sizing: border-box;
+  border-radius: 0.625rem;
+}
+.form-content form .signupbtn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2.5rem auto;
+}
+
+.form-content form .signupbtn a {
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  font-size: 14px;
+  color: white;
+  width: 80%;
+  background: var(--purple-color);
+  box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* END OF AUTH STYLING */
+
+@media screen and (max-width: 1000px) {
+  .navigation {
+    display: none;
+  }
+
+  .navigation.active {
+    align-items: center;
+    margin-left: -20px;
+    box-shadow: 0px 2px 25px rgba(0, 0, 0, 0.03);
+    padding: 40px;
+    background: #fff;
+    width: 80%;
+    top: 120px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+  }
+  .navigation > * {
+    padding: 12px 0px;
+  }
+  nav ul li .signup {
+    top: 12px;
+  }
+
+  .auth-content {
+    margin: 0px 20px;
+  }
+  .auth-content h2 {
+    font-size: 30px;
+  }
+  .auth-content h2 span {
+    font-size: 0.5rem;
+  }
 }
