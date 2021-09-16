@@ -11,15 +11,17 @@ import SignUp from "./pages/MainPages/SignUp";
 function App() {
   return (
     <>
-      <Router>
-        <MainNavigation />
-        <Switch exact>
-          <Route path='/pricing' component={Pricing} />
-          <Route path='/signin' component={SignIn} />
-          <Route path='/signup' component={SignUp} />
-          <Route path='/' exact component={Home} />
-        </Switch>
-      </Router>
+      <section>
+        <Router>
+          <Switch>
+            <MainNavigation />
+            <Route path='/' exact component={Home} />
+            <Route path='/pricing' component={Pricing} />
+            <Route path='/signup' component={SignUp} />
+            <Route path='/signin' component={SignIn} />
+          </Switch>
+        </Router>
+      </section>
     </>
   );
 }

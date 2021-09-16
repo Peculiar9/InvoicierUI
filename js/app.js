@@ -27,3 +27,15 @@ function toggleNav() {
   toggleBtn.classList.toggle("active");
   navBar.classList.toggle("active");
 }
+
+// Sweet Alert.js
+
+// Create store alert
+const swalWithBootstrapButtons = Swal.mixin({
+  customClass: {
+    confirmButton: "signup",
+    cancelButton: "btn btn-danger",
+  },
+  buttonsStyling: false,
+});
+const clickFunction = () => alert("This button is clicked")

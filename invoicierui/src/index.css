@@ -60,7 +60,7 @@ nav ul li .signup {
 nav ul li a:hover {
   opacity: 0.7;
 }
-
+/* 
 .content {
   width: 100%;
   min-height: 70vh;
@@ -87,7 +87,7 @@ nav ul li a:hover {
   right: 0;
   height: 100%;
   top: 60px;
-}
+} */
 /* AUTH STYLING */
 .auth-container {
   width: 100%;
