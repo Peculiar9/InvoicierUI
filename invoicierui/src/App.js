@@ -17,8 +17,8 @@ function App() {
             <MainNavigation />
             <Route path='/' exact component={Home} />
             <Route path='/pricing' component={Pricing} />
-            <Route path='/signup' component={SignUp} />
-            <Route path='/signin' component={SignIn} />
+            <Route path='/sign-up' component={SignUp} />
+            <Route path='/sign-in' component={SignIn} />
           </Switch>
         </Router>
       </section>
