@@ -1,11 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 :root {
+  /* For Colors  */
   --purple-color: #924ee9;
   --text-color: #393939;
   --light-grey: #464545;
   --header-text-color: #2c2c2c;
   --header-text-color-small: #6d6d6d;
+
+  /* For sizes */
+  --nav-height: 15vh;
 }
 
 * {
@@ -27,13 +31,13 @@ header nav {
   top: 0;
   left: 0;
   width: 100%;
-  min-height: 100px;
+  min-height: var(--nav-height);
   background: #ffffff;
   box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 122px;
+  padding: 0 125px;
 }
 
 nav ul li {
@@ -70,19 +74,19 @@ nav ul li a:hover {
   opacity: 0.7;
 }
 .hero-container {
-  height: 100%;
+  height: calc(100% - var(--nav-height));
   display: flex;
   position: relative;
   justify-content: center;
   align-items: center;
-  min-width: 83%;
-  width: auto;
+  /* min-width: 83%; */
+  min-width: 100%;
 }
 .hero-container .hero-content {
   display: flex;
-  flex-basis: 45% 55%;
+  flex-basis: 100%;
   justify-content: space-between;
-  margin: 140px 120px;
+  margin: 120px 140px;
 }
 
 .hero-content > .header-img {
@@ -96,14 +100,26 @@ nav ul li a:hover {
   font-size: 50px;
   font-weight: 600;
   line-height: 60px;
+  position: relative;
   width: 466px;
   color: var(--header-text-color);
   margin-bottom: 12px;
+}
+
+.header-text-large span div {
+  position: absolute;
+  transform: translateY(-50%);
+  height: 13px;
+  width: 195px;
+  left: 237px;
+  background: #924ee99e;
+  top: 48.5px;
 }
 .header-text p {
   font-size: 18px;
   font-weight: 400;
   line-height: 28px;
+  max-width: 442px;
   color: var(--header-text-color-small);
   margin-bottom: 24px;
 }
@@ -128,38 +144,54 @@ nav ul li a:hover {
   /* border: 1px solid black; */
   min-width: 50%;
   width: 676px;
+  transition: ease 0.4s;
+  margin-left: 60px;
 }
-/* 
-.content {
-  width: 100%;
-  min-height: 70vh;
-  height: auto;
+.header-img img:hover {
+  transform: scale(1.06);
+}
+
+/* ABOUT PART STYLING */
+.about-container {
+  margin-top: none;
   position: relative;
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 0 129px;
+  font-size: 18px;
+  height: 70vh;
+  margin-bottom: 120px;
+  /* #################REMEMBER THE MARGIN############## */
 }
-.content .text-box {
-  font-size: 3.2rem;
-  line-height: 94px;
-  width: 40%;
-}
-.content .text-box h2 {
-  font-weight: 200;
-}
-.content .text-box h2 span {
-  font-weight: 700;
-}
-.content .img-box {
-  position: absolute;
-  height: 400px;
-  right: 0;
-  height: 100%;
-  top: 60px;
-} */
-/* AUTH STYLING */
 
-/* END OF AUTH STYLING */
+.about-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  column-gap: 112px;
+}
+
+.about-card {
+  max-width: 305px;
+  text-align: center;
+}
+.abt-text {
+  margin-top: 48px;
+}
+.abt-header-text {
+  color: var(--header-text-color);
+  font-weight: 700;
+  line-height: 27px;
+}
+.abt-info-text {
+  margin-top: 12px;
+  font-weight: 400;
+  line-height: 28px;
+  width: 280px;
+  color: var(--header-text-color-small);
+}
+
+/* END OF ABOUT PART STYLING */
 
 @media screen and (max-width: 1000px) {
   .navigation {
