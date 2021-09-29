@@ -550,6 +550,11 @@ nav ul li a:hover {
   height: 90px;
   font-size: 16px;
 }
+.subscribe-form input:focus {
+  outline: none;
+  color: var(--header-text-color);
+}
+
 .subscribe-form a {
   color: white;
   padding: 24px 18px;
@@ -578,7 +583,15 @@ nav ul li a:hover {
   height: auto;
   min-height: 64vh;
   background: #ffffff;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+.user-review-container img {
+  position: absolute;
+}
+
 /* END OF USER REVIEW STYLING */
 
 /* BEGINNING OF USER FOOTER STYLING */
