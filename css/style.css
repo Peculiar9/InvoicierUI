@@ -193,9 +193,6 @@ nav ul li a:hover {
   align-items: center;
   flex-direction: column;
 }
-.about-card:hover {
-}
-
 .abt-text {
   margin-top: 48px;
 }
@@ -358,8 +355,7 @@ nav ul li a:hover {
   align-items: center;
   position: relative;
 }
-.pricing-content {
-}
+
 .pricing-header {
   text-align: center;
   margin: 100px auto;
@@ -453,6 +449,30 @@ nav ul li a:hover {
   justify-content: space-between;
   /* border: 1px solid orange; */
   margin: 72px 120px;
+}
+.social-icons {
+  display: flex;
+  column-gap: 24px;
+}
+
+/* .social-icons .social-icon:hover {
+  background: #ffff;
+  color: var(--purple-color);
+} */
+.link {
+  /* /* padding: 10px auto; */
+  padding: 10px;
+  font-size: 20px;
+  transition: ease 0.3s;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+.link:hover {
+  background: #ffffff;
+  height: 100%;
+  color: #5a3b81;
 }
 .register-text {
   max-width: 460px;
@@ -737,7 +757,8 @@ nav ul li a:hover {
 }
 .footer-img {
   position: absolute;
-  /* max-height: 100px; */
+  max-height: 40%;
+  width: 75%;
   bottom: 0;
   height: calc(100% - var(--footer-content-height));
 }
@@ -753,6 +774,7 @@ nav ul li a:hover {
     background-repeat: no-repeat;
     cursor: pointer;
   }
+
   nav ul {
     transition: 0.4s;
   }
@@ -1014,6 +1036,7 @@ nav ul li a:hover {
   .hero-content {
     justify-content: center;
     flex-direction: column;
+    margin: 60px 120px;
   }
   .header-img img {
     /* border: 1px solid black; */
@@ -1120,8 +1143,10 @@ nav ul li a:hover {
     height: 100%;
   }
   .cta-first-img img {
-    width: ;
     height: inherit;
+  }
+  .pricing-btn {
+    font-size: 14px;
   }
   .cta-second-other h3 {
     font-size: 20px;
@@ -1136,8 +1161,7 @@ nav ul li a:hover {
   .pricing-header h1 {
     font-size: 40px;
   }
-  .cta-second-img {
-  }
+
   .pricing-container {
     justify-content: center;
     align-items: center;
@@ -1227,7 +1251,7 @@ nav ul li a:hover {
   }
   .footer-img {
     width: 80%;
-    height: 36%;
+    height: 14%;
   }
 
   .polygon1 {
@@ -1239,6 +1263,9 @@ nav ul li a:hover {
   .polygon2 {
     top: 10%;
     height: 100px;
+  }
+  .social-icons {
+    margin: 40px auto;
   }
   .elipse {
     top: 70%;
