@@ -549,7 +549,7 @@ h2 {
   padding: 10px;
   font-size: 20px;
   transition: ease 0.3s;
-  border: 1px solid #ffffff;
+  /* border: 1px solid #ffffff; */
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -1312,7 +1312,7 @@ h2 {
   }
 
   .subscribe-form {
-    max-width: 270px;
+    max-width: 306px;
     height: 70px;
   }
   .user-review-content {
@@ -1355,5 +1355,158 @@ h2 {
   .elipse {
     top: 70%;
     left: 0;
+  }
+  .user-review-container {
+    flex-direction: column;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  /* header {
+    max-height: 72px !important;
+  } */
+  .logo {
+  }
+  .toggle-btn {
+    display: none;
+  }
+  .hero-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-text {
+    max-width: 286px;
+  }
+  .header-text a {
+    max-width: 175px;
+    padding: 16px 22px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .abt-img {
+    transition: ease-in 0.4s;
+    height: 150px;
+  }
+  .about-container {
+    font-size: 14px;
+    line-height: auto;
+  }
+  .about-container .abt-info-text {
+    font-size: 12px;
+    line-height: 18px;
+    width: 206px;
+  }
+  .about-content {
+    flex-direction: column;
+    row-gap: 28px;
+  }
+  .about-card {
+    /* margin: 28px 0; */
+    padding: 28px !important;
+    box-shadow: none;
+    max-width: 80%;
+  }
+
+  .cta-first-container {
+    justify-content: center;
+  }
+  .cta-first-text,
+  .cta-second-text {
+    max-width: 269px;
+  }
+  .cta-first-text .cta-first-header,
+  .cta-second-text .cta-second-header {
+    font-size: 34px;
+    line-height: 40px;
+    margin-bottom: 40px;
+  }
+  .cta-first-other h3,
+  .cta-second-other h3 {
+    font-size: 18px;
+    line-height: 28px;
+    max-width: 258px;
+  }
+  .cta-first-other .cta-text-small,
+  .cta-second-other .cta-text-small {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    max-width: 198px;
+    margin-bottom: 24px;
+  }
+  .cta-second-container {
+    position: relative;
+    margin: 50px auto;
+  }
+
+  .pricing-card {
+    padding: 80px 40px;
+    font-size: 12px;
+    line-height: 18px;
+    position: relative;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    transition: ease 0.3s;
+    margin: 30px auto;
+    max-width: 280px;
+  }
+  .pricing-btn {
+    font-size: 12px;
+    padding: 18px auto;
+  }
+  .register-header-text {
+    font-size: 38px;
+    line-height: 40px;
+    margin-bottom: 12px;
+  }
+  .register-text .register-text-small {
+    max-width: 230px;
+  }
+  .register-text .register-text-small {
+    max-width: 230px;
+  }
+  .subscribe-container {
+    font-size: 12px;
+    position: relative;
+    height: auto;
+  }
+  .subscribe-header-text,
+  .usr-rev-text h1 {
+    font-size: 34px;
+    line-height: 42px;
+    margin-bottom: 20px;
+  }
+  .subscribe-form {
+    max-width: 306px;
+    height: 70px;
+    position: relative;
+  }
+  .subscribe-form input {
+    font-size: 12px;
+  }
+  /* .subscribe-form a {
+    margin-right: 300px;
+  } */
+  .elipse {
+    left: 14px;
+    top: 317px;
+  }
+  .polygon2 {
+    right: 12px;
+    top: 287px;
+  }
+  .user-review {
+    flex-direction: column;
+    row-gap: 24px;
+  }
+  .user-review-container {
+    position: relative;
+  }
+  .user-review-content {
+    padding: 30px auto;
+  }
+  .usr-rev-text h1 {
+    margin-top: 30px;
   }
 }
