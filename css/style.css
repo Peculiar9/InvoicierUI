@@ -35,7 +35,7 @@ header nav {
   position: sticky;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw;
   min-height: var(--nav-height);
   background: #ffffff;
   box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.12);
@@ -1375,7 +1375,7 @@ h2 {
   }
 }
 
-@media screen and (max-width: 360px) {
+@media screen and (max-width: 375px) {
   /* header {
     max-height: 72px !important;
   } */
