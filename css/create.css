@@ -570,3 +570,14 @@ td > button > i > img {
     min-width: 20px;
   }
 }
+@media screen and (max-width: 360px) {
+  .container .table-container {
+    /* margin-top: 20px; */
+    margin: 20px auto;
+    padding: 24px 30px;
+    overflow-x: scroll;
+  }
+  .container {
+    padding: 140px auto;
+  }
+}
