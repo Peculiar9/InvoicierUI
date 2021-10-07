@@ -3,12 +3,20 @@ const Nav = () => {
   return (
     <>
       <nav>
-        <Link to='/' classNameName='logo'>
+        <Link to='/' className='logo'>
           <h2>Invoicier</h2>
         </Link>
         <ul className='navigation'>
           <li>
+            <Link to='/' className='active'>
+              Home
+            </Link>
+          </li>
+          <li>
             <Link to='/pricing'>Pricing</Link>
+          </li>
+          <li>
+            <Link to='/pricing'>Blog</Link>
           </li>
           <li>
             <Link to='/sign-in'>Sign In</Link>
