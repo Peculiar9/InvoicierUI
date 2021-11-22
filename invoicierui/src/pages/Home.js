@@ -21,16 +21,24 @@ import ReviewCard from "../components/ReviewCard";
 // Props
 
 const userReview1 = {
-  quote: {quote},
-  img: "/images/Peculiar.png",
+  quote: quote,
+  img: peculiar,
   name: "John Doe",
   occupation: "CEO Batallion",
   review:
     "I have been using invoicier for some while and it has been worthwhile",
 };
 const userReview2 = {
-  quote: "",
-  img: {peculiar},
+  quote: quote,
+  img: peculiar,
+  name: "John Doe",
+  occupation: "CEO Batallion",
+  review:
+    "I have been using invoicier for some while and it has been worthwhile",
+};
+const Hero = {
+  quote: quote,
+  img: peculiar,
   name: "John Doe",
   occupation: "CEO Batallion",
   review:
@@ -237,42 +245,20 @@ const Home = () => {
             <h1>When 2 million users say it, it can only be true</h1>
           </div>
           <div className='user-review'>
-            <div className='user-review-card'>
-              <img src={quote} alt='' className='quote-img' />
-              <div className='user-review-card-content'>
-                <div className='user-review-card-header'>
-                  <img src={peculiar} alt='' className='user-review-img' />
-                  <h4 className='user-review-name'>John Doe</h4>
-                  <sub className='user-review-occupation'>CEO Batallion</sub>
-                </div>
-                <p className='user-review-card-text'>
-                  I have been using invoicier for some while and it has been
-                  worthwhile
-                </p>
-              </div>
-            </div>
-            <div className='user-review-card'>
-              <img src={quote} alt='' className='quote-img' />
-              <div className='user-review-card-content'>
-                <div className='user-review-card-header'>
-                  <img src={peculiar} alt='' className='user-review-img' />
-                  <h4 className='user-review-name'>John Doe</h4>
-                  <sub className='user-review-occupation'>CEO Batallion</sub>
-                </div>
-                <p className='user-review-card-text'>
-                  I have been using invoicier for some while and it has been
-                  worthwhile
-                </p>
-              </div>
-            </div>
-            {/* 
+            <ReviewCard
+              quote={userReview1.quote}
+              img={userReview1.img}
+              occupation={userReview1.occupation}
+              name={userReview1.name}
+              review={userReview1.review}
+            />
             <ReviewCard
               quote={userReview2.quote}
               img={userReview2.img}
               occupation={userReview2.occupation}
               name={userReview2.name}
               review={userReview2.review}
-            /> */}
+            />
           </div>
         </div>
       </div>
@@ -284,17 +270,17 @@ const Home = () => {
             <ul className='social-icons'>
               <li className='social-icon'>
                 <a href='#' className='link'>
-                  <i className='bx bxl-twitter'></i>
+                  <i className='bx bx-border-circle bxl-twitter'></i>
                 </a>
               </li>
               <li className='social-icon'>
                 <a href='#' className='link'>
-                  <i className='bx bxl-linkedin'></i>
+                  <i className='bx bx-border-circle bxl-linkedin'></i>
                 </a>
               </li>
               <li className='social-icon'>
                 <a href='#' className='link'>
-                  <i className='bx bxl-instagram'></i>
+                  <i className='bx bx-border-circle bxl-instagram'></i>
                 </a>
               </li>
             </ul>
