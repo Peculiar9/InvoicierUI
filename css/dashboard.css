@@ -398,9 +398,9 @@ td {
 /* RESPONSIVE */
 
 @media screen and (max-width: 991px) {
-  body {
+  /* body {
     /* background: red; */
-  }
+
   .content {
     /* top: 500px; */
     min-width: 80vw;
@@ -489,6 +489,7 @@ td {
   .table-container {
     min-width: 300px;
     width: 80vw;
+    margin: 20px auto;
     overflow-x: scroll;
   }
   .rightSideBtn {
