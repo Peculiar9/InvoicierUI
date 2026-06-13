@@ -32,13 +32,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Mock API (MSW). Enabled in dev by default; opt out with VITE_USE_MOCKS=false
-// to point the app at a real backend via VITE_API_URL.
+// Mock API (MSW). This is the demo's backend, so it runs in BOTH dev and
+// production builds (Vercel/Netlify) — opt out with VITE_USE_MOCKS=false to
+// point the app at a real backend via VITE_API_URL.
 async function enableMocking() {
-  if (!import.meta.env.DEV) return;
   if (import.meta.env.VITE_USE_MOCKS === 'false') return;
   const { worker } = await import('./mocks/browser');
-  await worker.start({ onUnhandledRequest: 'bypass' });
+  await worker.start({
+    onUnhandledRequest: 'bypass',
+    // resolve the worker relative to the deploy root (works under any domain)
+    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+  });
 }
 
 enableMocking().then(() => {
