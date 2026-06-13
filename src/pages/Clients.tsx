@@ -1,212 +1,250 @@
 import { useState } from 'react';
-import { DashboardLayout } from '@/components/layout';
-import {
-  Card,
-  CardContent,
-  Button,
-  Input,
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  Modal,
-} from '@/components/ui';
-import { useClients, useCreateClient } from '@/hooks/useClients';
+import { LegacyWorkspace } from '@/components/static';
+import type { WsAction } from '@/components/static/LegacyWorkspace';
+import { Modal } from '@/components/Modal';
+import { Skeleton } from '@/components/Skeleton';
+import { EmptyState } from '@/components/EmptyState';
+import { useClients, useCreateClient } from '@/hooks';
+import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatDate } from '@/utils/format';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-const clientSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email'),
-  phone: z.string().optional(),
-});
-
-type ClientFormData = z.infer<typeof clientSchema>;
-
-const mockClients = [
-  { id: '1', name: 'Acme Corp', email: 'billing@acme.com', phone: '+1 234 567 890', createdAt: '2024-01-15' },
-  { id: '2', name: 'TechStart Inc', email: 'finance@techstart.io', phone: '+1 234 567 891', createdAt: '2024-02-20' },
-  { id: '3', name: 'Design Studio', email: 'accounts@designstudio.com', phone: '+1 234 567 892', createdAt: '2024-03-10' },
-  { id: '4', name: 'Marketing Pro', email: 'billing@marketingpro.net', phone: '+1 234 567 893', createdAt: '2024-04-05' },
-];
+import { isEmail } from '@/lib/validate';
+import { toast } from '@/lib/toast';
 
 export const Clients = () => {
-  const [search, setSearch] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { data, isLoading } = useClients();
-  const { mutate: createClient, isPending } = useCreateClient();
+  const createClient = useCreateClient();
+  const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const clients = data?.data ?? [];
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ClientFormData>({
-    resolver: zodResolver(clientSchema),
+  const [query, setQuery] = useState('');
+  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', phone: '' });
+  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+
+  const filtered = clients.filter((c) => {
+    const q = query.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
   });
+  const selectedClient = clients.find((c) => c.id === selected) ?? null;
 
-  const clients = data?.data || mockClients;
+  const toggleSelect = (id: string) => setSelected((cur) => (cur === id ? null : id));
 
-  const onSubmit = (formData: ClientFormData) => {
-    createClient(formData, {
+  const submit = () => {
+    const next: { name?: string; email?: string } = {};
+    if (!form.name.trim()) next.name = 'Name is required';
+    if (!isEmail(form.email)) next.email = 'Enter a valid email';
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+
+    createClient.mutate(form, {
       onSuccess: () => {
-        setIsModalOpen(false);
-        reset();
+        toast.success('Client added');
+        setOpen(false);
+        setForm({ name: '', email: '', phone: '' });
+        setErrors({});
       },
     });
   };
 
+  const actions: WsAction[] = [
+    {
+      label: selectedClient ? `Invoice ${selectedClient.name}` : 'New invoice',
+      bx: 'bx-plus',
+      className: selectedClient ? 'is-highlight' : '',
+      onClick: () => openCreate(selected ?? undefined),
+    },
+    { label: 'New client', bx: 'bx-user-plus', onClick: () => setOpen(true) },
+  ];
+
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-            <p className="text-gray-500 mt-1">Manage your client information</p>
+    <LegacyWorkspace active="clients" title="Clients" actions={actions}>
+      <div className="view">
+        <div className="view-toolbar">
+          <label className="view-search">
+            <i className="bx bx-search" />
+            <input
+              type="search"
+              placeholder="Search clients"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <div className="view-switch" role="group" aria-label="View mode">
+            <button
+              type="button"
+              className={view === 'grid' ? 'active' : ''}
+              onClick={() => setView('grid')}
+              aria-label="Grid view"
+            >
+              <i className="bx bx-grid-alt" />
+            </button>
+            <button
+              type="button"
+              className={view === 'list' ? 'active' : ''}
+              onClick={() => setView('list')}
+              aria-label="List view"
+            >
+              <i className="bx bx-list-ul" />
+            </button>
           </div>
-          <Button onClick={() => setIsModalOpen(true)}>
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Client
-          </Button>
+          <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+            <i className="bx bx-plus" /> Add client
+          </button>
         </div>
 
-        <Card variant="bordered">
-          <CardContent className="p-4">
-            <Input
-              placeholder="Search clients..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </CardContent>
-        </Card>
+        {selectedClient && (
+          <div className="view-hint">
+            <i className="bx bx-info-circle" />
+            <span>
+              <strong>{selectedClient.name}</strong> selected — tap the glowing{' '}
+              <i className="bx bx-plus" /> to invoice them.
+            </span>
+            <button type="button" onClick={() => setSelected(null)}>
+              Clear
+            </button>
+          </div>
+        )}
 
-        <Card variant="bordered">
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto" />
-                <p className="mt-4 text-gray-500">Loading clients...</p>
+        {isLoading ? (
+          <div className="client-grid">
+            {[0, 1, 2, 3].map((i) => (
+              <div className="client-card client-card--skel" key={i}>
+                <Skeleton width={46} height={46} radius={14} />
+                <div className="client-info" style={{ display: 'grid', gap: 8 }}>
+                  <Skeleton width="70%" height={12} />
+                  <Skeleton width="50%" height={10} />
+                </div>
               </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clients.length > 0 ? (
-                    clients
-                      .filter(
-                        (client) =>
-                          client.name.toLowerCase().includes(search.toLowerCase()) ||
-                          client.email.toLowerCase().includes(search.toLowerCase())
-                      )
-                      .map((client) => (
-                        <TableRow key={client.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                <span className="text-primary-600 font-medium">
-                                  {client.name.charAt(0)}
-                                </span>
-                              </div>
-                              <span className="font-medium text-gray-900">{client.name}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-gray-600">{client.email}</TableCell>
-                          <TableCell className="text-gray-600">{client.phone || '-'}</TableCell>
-                          <TableCell className="text-gray-600">
-                            {formatDate(client.createdAt)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12">
-                        <div className="text-gray-500">
-                          <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                          </svg>
-                          <p className="text-lg font-medium">No clients found</p>
-                          <p className="mt-1">Add your first client to get started</p>
-                          <Button className="mt-4" onClick={() => setIsModalOpen(true)}>
-                            Add Client
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          clients.length === 0 ? (
+            <EmptyState
+              icon="bx-user-plus"
+              title="No clients yet"
+              message="Add your first client and you'll be able to invoice them in a couple of taps."
+              action={{ label: 'Add client', icon: 'bx-plus', onClick: () => setOpen(true) }}
+            />
+          ) : (
+            <EmptyState
+              icon="bx-search-alt"
+              title="No matching clients"
+              message="No clients match your search. Try a different name or email."
+            />
+          )
+        ) : view === 'grid' ? (
+          <div className="client-grid">
+            {filtered.map((c) => (
+              <button
+                type="button"
+                className={`client-card${selected === c.id ? ' selected' : ''}`}
+                key={c.id}
+                onClick={() => toggleSelect(c.id)}
+              >
+                <span className="client-avatar">{c.name.charAt(0).toUpperCase()}</span>
+                <div className="client-info">
+                  <h3>{c.name}</h3>
+                  <p>{c.email}</p>
+                  {c.phone && <p className="dash-muted">{c.phone}</p>}
+                </div>
+                {selected === c.id && <i className="bx bx-check client-check" />}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="dash-card">
+            <div className="dash-table-wrap">
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Since</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((c) => (
+                    <tr
+                      key={c.id}
+                      className={`dash-row-click${selected === c.id ? ' selected' : ''}`}
+                      onClick={() => toggleSelect(c.id)}
+                    >
+                      <td className="client-cell">
+                        <span className="client-avatar client-avatar--sm">
+                          {c.name.charAt(0).toUpperCase()}
+                        </span>
+                        {c.name}
+                      </td>
+                      <td className="dash-muted">{c.email}</td>
+                      <td className="dash-muted">{c.phone ?? '—'}</td>
+                      <td className="dash-muted">
+                        {formatDate(c.createdAt, { month: 'short', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Client"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input
-            label="Client Name"
-            placeholder="Enter client name"
-            error={errors.name?.message}
-            {...register('name')}
-          />
-          <Input
-            label="Email"
-            type="email"
-            placeholder="client@example.com"
-            error={errors.email?.message}
-            {...register('email')}
-          />
-          <Input
-            label="Phone (Optional)"
-            placeholder="+1 234 567 890"
-            error={errors.phone?.message}
-            {...register('phone')}
-          />
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setIsModalOpen(false)}
-            >
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Add client"
+        footer={
+          <>
+            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
               Cancel
-            </Button>
-            <Button type="submit" isLoading={isPending}>
-              Add Client
-            </Button>
-          </div>
-        </form>
+            </button>
+            <button type="button" className="btn btn-primary" onClick={submit}>
+              Add client
+            </button>
+          </>
+        }
+      >
+        <div className="cinv-fields cinv-fields--stack">
+          <label className="cinv-field">
+            <span>Name</span>
+            <input
+              value={form.name}
+              className={errors.name ? 'is-invalid' : ''}
+              onChange={(e) => {
+                setForm({ ...form, name: e.target.value });
+                setErrors((er) => ({ ...er, name: undefined }));
+              }}
+              placeholder="Acme Inc"
+            />
+            {errors.name && <small className="field-error">{errors.name}</small>}
+          </label>
+          <label className="cinv-field">
+            <span>Email</span>
+            <input
+              type="email"
+              value={form.email}
+              className={errors.email ? 'is-invalid' : ''}
+              onChange={(e) => {
+                setForm({ ...form, email: e.target.value });
+                setErrors((er) => ({ ...er, email: undefined }));
+              }}
+              placeholder="billing@acme.com"
+            />
+            {errors.email && <small className="field-error">{errors.email}</small>}
+          </label>
+          <label className="cinv-field">
+            <span>Phone</span>
+            <input
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              placeholder="Optional"
+            />
+          </label>
+        </div>
       </Modal>
-    </DashboardLayout>
+    </LegacyWorkspace>
   );
 };

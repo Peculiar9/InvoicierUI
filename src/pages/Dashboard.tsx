@@ -1,96 +1,308 @@
-import { DashboardLayout } from '@/components/layout';
 import {
-  StatCard,
-  RevenueChart,
-  InvoiceStatusChart,
-  RecentInvoices,
-  RecentActivity,
-} from '@/components/dashboard';
-import { useDashboardStats } from '@/hooks/useDashboard';
-import { formatCurrency, formatNumber } from '@/utils/format';
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
+import type { ChartOptions } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { LegacyWorkspace } from '@/components/static';
+import { Skeleton } from '@/components/Skeleton';
+import { useDashboardData } from '@/hooks';
+import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { usePayoutStore } from '@/stores/payoutStore';
+import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
+import type { Activity, Invoice, InvoiceStatus } from '@/types';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+);
+
+// TEMPORARY: dashboard font test — match the workspace --ws-font
+ChartJS.defaults.font.family = "'DM Sans', sans-serif";
+ChartJS.defaults.color = '#8a8a99';
+
+const activityIcon: Record<Activity['type'], string> = {
+  invoice_created: 'bx-plus-circle',
+  invoice_sent: 'bx-send',
+  invoice_paid: 'bx-check-circle',
+  client_added: 'bx-user-plus',
+};
+
+const statusLabel: Record<InvoiceStatus, string> = {
+  draft: 'Draft',
+  pending: 'Pending',
+  sent: 'Sent',
+  paid: 'Paid',
+  overdue: 'Overdue',
+  cancelled: 'Cancelled',
+};
 
 export const Dashboard = () => {
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data, isLoading } = useDashboardData();
+  const openView = useInvoicePanelStore((s) => s.openView);
+  const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const withdrawn = usePayoutStore((s) => s.withdrawals).reduce((sum, w) => sum + w.amount, 0);
 
-  const displayStats = stats || {
-    totalReceived: 13009,
-    totalInvoices: 3093,
-    totalClients: 345,
-    pendingInvoices: 23,
+  if (isLoading || !data) {
+    return (
+      <LegacyWorkspace active="dashboard" title="Dashboard">
+        <div className="dash">
+          <section className="dash-kpis">
+            {[0, 1, 2, 3].map((i) => (
+              <article className="dash-kpi" key={i}>
+                <Skeleton width={48} height={48} radius={14} />
+                <div className="dash-kpi-body" style={{ gap: 8, flex: 1 }}>
+                  <Skeleton width="55%" height={10} />
+                  <Skeleton width="80%" height={22} />
+                  <Skeleton width="40%" height={10} />
+                </div>
+              </article>
+            ))}
+          </section>
+          <section className="dash-charts">
+            <article className="dash-card">
+              <Skeleton width="35%" height={16} />
+              <Skeleton width="100%" height={260} radius={12} className="skel-mt" />
+            </article>
+            <article className="dash-card">
+              <Skeleton width="50%" height={16} />
+              <Skeleton width="100%" height={200} radius={12} className="skel-mt" />
+            </article>
+          </section>
+        </div>
+      </LegacyWorkspace>
+    );
+  }
+
+  const { stats, revenueChart, invoiceStatusChart, recentInvoices, recentActivities } = data;
+
+  const outstanding = recentInvoices
+    .filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
+    .reduce((sum, inv) => sum + inv.total, 0);
+  const available = Math.max(0, stats.totalReceived - withdrawn);
+
+  const kpis = [
+    {
+      label: 'Available balance',
+      value: formatCurrency(available),
+      sub: `${formatCurrency(stats.totalReceived)} collected`,
+      icon: 'bx-wallet',
+      tone: 'green',
+    },
+    {
+      label: 'Outstanding',
+      value: formatCurrency(outstanding),
+      sub: `${stats.overdueInvoices} overdue`,
+      icon: 'bx-time-five',
+      tone: 'amber',
+    },
+    {
+      label: 'Invoices',
+      value: formatNumber(stats.totalInvoices),
+      sub: `${stats.pendingInvoices} pending`,
+      icon: 'bx-receipt',
+      tone: 'purple',
+    },
+    {
+      label: 'Clients',
+      value: formatNumber(stats.totalClients),
+      sub: 'active',
+      icon: 'bx-group',
+      tone: 'blue',
+    },
+  ];
+
+  const revenueData = {
+    labels: revenueChart.labels,
+    datasets: [
+      {
+        label: 'Revenue',
+        data: revenueChart.datasets[0].data,
+        borderColor: '#924ee9',
+        backgroundColor: 'rgba(146, 78, 233, 0.12)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#924ee9',
+      },
+    ],
   };
 
+  const revenueOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, border: { display: false } },
+      y: {
+        beginAtZero: true,
+        border: { display: false },
+        grid: { color: 'rgba(29,27,46,0.06)' },
+        ticks: { callback: (value) => `$${formatNumber(Number(value))}` },
+      },
+    },
+  };
+
+  const statusColors = ['#0c8d6f', '#e0a008', '#357fff', '#ef5d54', '#9b99ab'];
+  const statusValues = invoiceStatusChart.datasets[0].data;
+  const statusTotal = statusValues.reduce((a, b) => a + b, 0) || 1;
+
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back! Here's your business overview.</p>
-        </div>
+    <LegacyWorkspace
+      active="dashboard"
+      title="Dashboard"
+      actions={[
+        { label: 'New invoice', bx: 'bx-plus', onClick: openCreate },
+        { label: 'Clients', bx: 'bx-user', to: '/clients' },
+      ]}
+    >
+      <div className="dash">
+        {/* KPI cards */}
+        <section className="dash-kpis">
+          {kpis.map((kpi) => (
+            <article className={`dash-kpi dash-kpi--${kpi.tone}`} key={kpi.label}>
+              <span className="dash-kpi-icon">
+                <i className={`bx ${kpi.icon}`} />
+              </span>
+              <div className="dash-kpi-body">
+                <span className="dash-kpi-label">{kpi.label}</span>
+                <span className="dash-kpi-value">{kpi.value}</span>
+                <span className="dash-kpi-sub">{kpi.sub}</span>
+              </div>
+            </article>
+          ))}
+        </section>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Received"
-            value={formatCurrency(displayStats.totalReceived)}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-            trend={{ value: 12.5, isPositive: true }}
-          />
-          <StatCard
-            title="Total Invoices"
-            value={formatNumber(displayStats.totalInvoices)}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            }
-            trend={{ value: 8.2, isPositive: true }}
-          />
-          <StatCard
-            title="Total Clients"
-            value={formatNumber(displayStats.totalClients)}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            }
-            trend={{ value: 5.1, isPositive: true }}
-          />
-          <StatCard
-            title="Pending Invoices"
-            value={formatNumber(displayStats.pendingInvoices)}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-            trend={{ value: 2.3, isPositive: false }}
-          />
-        </div>
+        {/* Charts row */}
+        <section className="dash-charts">
+          <article className="dash-card dash-revenue">
+            <header className="dash-card-head">
+              <div>
+                <h2>Revenue</h2>
+                <p>Last 6 months</p>
+              </div>
+              <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
+            </header>
+            <div className="dash-chart">
+              <Line data={revenueData} options={revenueOptions} />
+            </div>
+          </article>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RevenueChart isLoading={isLoading} />
-          </div>
-          <div>
-            <InvoiceStatusChart isLoading={isLoading} />
-          </div>
-        </div>
+          <article className="dash-card dash-status">
+            <header className="dash-card-head">
+              <div>
+                <h2>Invoice status</h2>
+                <p>{statusValues.reduce((a, b) => a + b, 0)} invoices</p>
+              </div>
+            </header>
+            <div className="dash-status-bar">
+              {invoiceStatusChart.labels.map((label, i) =>
+                statusValues[i] > 0 ? (
+                  <span
+                    key={label}
+                    className="dash-status-seg"
+                    style={{ flexGrow: statusValues[i], background: statusColors[i] }}
+                    title={`${label}: ${statusValues[i]}`}
+                  />
+                ) : null
+              )}
+            </div>
+            <ul className="dash-status-list">
+              {invoiceStatusChart.labels.map((label, i) => (
+                <li key={label}>
+                  <span className="dash-status-dot" style={{ background: statusColors[i] }} />
+                  <span className="dash-status-name">{label}</span>
+                  <span className="dash-status-count">{statusValues[i]}</span>
+                  <span className="dash-status-pct">
+                    {Math.round((statusValues[i] / statusTotal) * 100)}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
 
-        {/* Tables Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RecentInvoices isLoading={isLoading} />
-          </div>
-          <div>
-            <RecentActivity isLoading={isLoading} />
-          </div>
-        </div>
+        {/* Lower row: recent invoices + activity */}
+        <section className="dash-lower">
+          <article className="dash-card dash-invoices">
+            <header className="dash-card-head">
+              <div>
+                <h2>Recent invoices</h2>
+                <p>{recentInvoices.length} latest</p>
+              </div>
+            </header>
+            <div className="dash-table-wrap">
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentInvoices.map((inv: Invoice) => (
+                    <tr
+                      key={inv.id}
+                      className="dash-row-click"
+                      onClick={() => openView(inv.id)}
+                    >
+                      <td className="dash-mono">#{inv.invoiceNumber}</td>
+                      <td>{inv.client.name}</td>
+                      <td className="dash-muted">
+                        {formatDate(inv.issueDate, { month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
+                      <td>
+                        <span className={`dash-badge is-${inv.status}`}>
+                          {statusLabel[inv.status]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article className="dash-card dash-activity">
+            <header className="dash-card-head">
+              <div>
+                <h2>Activity</h2>
+                <p>Recent</p>
+              </div>
+            </header>
+            <ul className="dash-feed">
+              {recentActivities.map((act) => (
+                <li key={act.id}>
+                  <span className={`dash-feed-icon is-${act.type}`}>
+                    <i className={`bx ${activityIcon[act.type]}`} />
+                  </span>
+                  <div className="dash-feed-body">
+                    <p>{act.description}</p>
+                    <time>{formatDate(act.timestamp, { month: 'short', day: 'numeric' })}</time>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
       </div>
-    </DashboardLayout>
+    </LegacyWorkspace>
   );
 };

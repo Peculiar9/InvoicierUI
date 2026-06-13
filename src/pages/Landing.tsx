@@ -1,231 +1,394 @@
+import { useRef } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Button } from '@/components/ui';
+import { LegacyMarketingNav, Typewriter } from '@/components/static';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 export const Landing = () => {
+  const rootRef = useRef<HTMLElement>(null);
+  useScrollReveal(rootRef);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-50">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">I</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Invoicier</span>
-            </div>
+    <section className="legacy-page legacy-marketing-page" ref={rootRef}>
+      <LegacyMarketingNav variant="landing" active="home" />
 
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Features
-              </a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Pricing
-              </a>
-              <a href="#about" className="text-gray-600 hover:text-gray-900 transition-colors">
-                About
-              </a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Link to="/login">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link to="/signup">
-                <Button>Get Started</Button>
-              </Link>
-            </div>
-          </div>
+      {/* ---------------------------------------------------------------- HERO */}
+      <div className="hero-container">
+        <div className="hero-bg" aria-hidden="true">
+          <span className="hero-blob hero-blob--1" />
+          <span className="hero-blob hero-blob--2" />
+          <span className="hero-grid" />
         </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium mb-6">
-                <span className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-                Now with AI-powered insights
-              </div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Invoice smarter,{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-700">
-                  get paid faster
-                </span>
+        <div className="hero-content">
+          <div className="hero-main">
+            <div className="header-text">
+              <h1 className="header-text-large" data-reveal data-delay="1">
+                Invoices that
+                <br />
+                get paid from{' '}
+                <Typewriter
+                  words={['anywhere', 'your phone', 'a link', 'an email', 'WhatsApp', 'any bank']}
+                />
               </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Create professional invoices in seconds, track payments effortlessly,
-                and manage your clients all in one beautiful platform.
+              <p className="header-text-small" data-reveal data-delay="2">
+                Invoicier creates and sends your invoices for you, so you collect
+                payments faster, from any device.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/signup">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Start Free Trial
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Button>
+              <div className="hero-actions" data-reveal data-delay="3">
+                <Link to="/signup" className="cta-btn">
+                  Get Started for free <i className="bx bx-right-arrow-alt" />
                 </Link>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Watch Demo
-                </Button>
+                <a href="#pricing" className="ghost-btn">
+                  See pricing <i className="bx bx-chevron-down" />
+                </a>
               </div>
-              <p className="mt-6 text-sm text-gray-500">
-                No credit card required. 14-day free trial.
-              </p>
             </div>
 
-            <div className="relative">
-              <div className="absolute -inset-4 bg-gradient-to-r from-primary-500/20 to-purple-500/20 rounded-3xl blur-3xl" />
-              <div className="relative bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <p className="text-sm text-gray-500">Invoice #INV-2024-001</p>
-                    <p className="text-2xl font-bold text-gray-900">$4,250.00</p>
-                  </div>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                    Paid
-                  </span>
+            <div className="header-img" data-reveal="right" data-delay="2">
+              <span className="hero-img-glow" aria-hidden="true" />
+              <img src="/images/HeaderVector.png" alt="Invoicier dashboard preview" />
+              <div className="hero-float hero-float--paid" aria-hidden="true">
+                <span className="hero-float-dot" />
+                <div>
+                  <strong>$13,009</strong>
+                  <small>Paid · just now</small>
                 </div>
-                <div className="space-y-4">
-                  {[
-                    { desc: 'Web Design Services', amount: '$2,500.00' },
-                    { desc: 'Development Hours (20h)', amount: '$1,500.00' },
-                    { desc: 'Hosting Setup', amount: '$250.00' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-600">{item.desc}</span>
-                      <span className="font-medium text-gray-900">{item.amount}</span>
-                    </div>
-                  ))}
+              </div>
+              <div className="hero-float hero-float--sent" aria-hidden="true">
+                <i className="bx bx-send" />
+                <div>
+                  <strong>Invoice sent</strong>
+                  <small>to Otto Holdings</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="hero-trust" data-reveal data-delay="4">
+            Trusted by <strong>2M+</strong> businesses worldwide
+          </p>
+        </div>
+      </div>
+
+      {/* --------------------------------------------------------------- ABOUT */}
+      <div className="about-container">
+        <div className="about-content">
+          {[
+            { img: 'abt-img1.png', title: 'Easy to use', delay: '1' },
+            { img: 'abt-img2.png', title: 'Access anywhere', delay: '2' },
+            { img: 'abt-img3.png', title: 'Customize easily', delay: '3' },
+          ].map((card) => (
+            <div className="about-card" key={card.title} data-reveal data-delay={card.delay}>
+              <img src={`/images/${card.img}`} alt="" className="abt-img" />
+              <div className="abt-text">
+                <h3 className="abt-header-text">{card.title}</h3>
+                <p className="abt-info-text">
+                  Manage your business from any device, send invoices and collect
+                  payments easily.
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ----------------------------------------------------------- CTA FIRST */}
+      <div className="cta-first-container">
+        <div className="cta-first-content">
+          <div className="cta-first-text" data-reveal="left">
+            <h1 className="cta-first-header">Get paid easily, connect with your customers</h1>
+            <div className="cta-first-other">
+              <div className="cta-text1">
+                <h3>
+                  <i className="bx bx-mobile-alt" />
+                  Set it up in 5 minutes
+                </h3>
+                <div className="cta-text-small">
+                  Spin up your account, add your branding and send your first
+                  invoice before your coffee gets cold.
+                </div>
+              </div>
+              <div className="cta-text2">
+                <h3>
+                  <i className="bx bxs-dashboard" />
+                  One clear dashboard
+                </h3>
+                <div className="cta-text-small">
+                  Track what's paid, pending and overdue at a glance, no
+                  spreadsheets required.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="cta-first-img" data-reveal="right">
+            <img src="/images/cta-img1.png" alt="" />
+          </div>
+        </div>
+      </div>
+
+      {/* ---------------------------------------------------------- CTA SECOND */}
+      <div className="cta-second-container">
+        <div className="cta-second-content">
+          <div className="cta-second-img" data-reveal="left">
+            <img src="/images/cta-img2.png" alt="" />
+          </div>
+          <div className="cta-second-text" data-reveal="right">
+            <h1 className="cta-second-header">More than just an invoice</h1>
+            <div className="cta-second-other">
+              <div className="cta-text1">
+                <h3>
+                  <i className="bx bx-mobile-alt" />
+                  Reminders on autopilot
+                </h3>
+                <div className="cta-text-small">
+                  Polite nudges go out automatically until the invoice is paid,
+                  so you never have to chase.
+                </div>
+              </div>
+              <div className="cta-text2">
+                <h3>
+                  <i className="bx bxs-dashboard" />
+                  A friendly interface
+                </h3>
+                <div className="cta-text-small">
+                  Everything is where you expect it. If you can use a phone, you
+                  can run your billing.
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Everything you need to manage invoices
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Powerful features designed to save you time and help you get paid faster.
+      {/* ------------------------------------------------------------ FEATURES */}
+      <div className="features-container">
+        <div className="features-content">
+          <div className="features-head" data-reveal>
+            <h1>Why Invoicier</h1>
+            <p>A beautiful, simple way to handle invoices.</p>
+          </div>
+          <div className="features-grid">
+            <article className="feature-card feature-card--1" data-reveal data-delay="1">
+              <span className="feature-num">01</span>
+              <span className="feature-icon">
+                <i className="bx bx-code-alt" />
+              </span>
+              <h3>Built to integrate</h3>
+              <p>
+                Developers can drop invoicing straight into their own product with a
+                clean REST API and SDKs.
+              </p>
+            </article>
+            <article className="feature-card feature-card--2" data-reveal data-delay="2">
+              <span className="feature-num">02</span>
+              <span className="feature-icon">
+                <i className="bx bx-wallet" />
+              </span>
+              <h3>Paid from anywhere</h3>
+              <p>
+                Cards, bank transfers, mobile money or a simple link. Your clients pay
+                however suits them.
+              </p>
+            </article>
+            <article className="feature-card feature-card--3" data-reveal data-delay="3">
+              <span className="feature-num">03</span>
+              <span className="feature-icon">
+                <i className="bx bx-bot" />
+              </span>
+              <h3>AI does the busywork</h3>
+              <p>
+                Draft invoices, smart reminders and insights, generated for you so you
+                stay focused on the work.
+              </p>
+            </article>
+            <article className="feature-card feature-card--4" data-reveal data-delay="4">
+              <span className="feature-num">04</span>
+              <span className="feature-icon">
+                <i className="bx bx-printer" />
+              </span>
+              <h3>Print-ready invoices</h3>
+              <p>
+                Beautiful invoices and receipts that print perfectly, or download as a
+                PDF in one click.
+              </p>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------- PRICING */}
+      <div className="pricing-container" id="pricing">
+        <div className="pricing-content">
+          <div className="pricing-header" data-reveal>
+            <h1>Start your journey</h1>
+          </div>
+          <div className="pricing-card" data-reveal data-delay="2">
+            <h4>Free</h4>
+            <p>Get started for free</p>
+            <h3>$0.00</h3>
+            <ul>
+              <li>Free online system</li>
+              <li>SSL security</li>
+              <li>Dashboard management</li>
+              <li>Unlimited invoices</li>
+            </ul>
+            <Link to="/signup" className="pricing-btn">
+              Get started for free
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------ REGISTER */}
+      <div className="register-container">
+        <div className="register-content">
+          <div className="register-text" data-reveal="left">
+            <h1 className="register-header-text">Complete business management suite</h1>
+            <p className="register-text-small">
+              Invoices, clients, payments and insights. Everything you need to
+              run the money side of your business, in one place.
+            </p>
+            <Link to="/signup" className="cta-btn-register">
+              Get Started for free <i className="bx bx-right-arrow-alt" />
+            </Link>
+          </div>
+          <div className="register-img" data-reveal="right">
+            <img src="/images/Register-img.png" alt="" />
+          </div>
+        </div>
+      </div>
+
+      {/* ----------------------------------------------------------- SUBSCRIBE */}
+      <div className="subscribe-container">
+        <img src="/images/subscribe-img.png" alt="" className="subscribe-image" />
+        <div className="subscribe-content">
+          <div className="subscribe-text" data-reveal>
+            <h1 className="subscribe-header-text">
+              Stay in the loop, subscribe to our newsletter
+            </h1>
+            <p className="subscribe-sub-text">
+              No unnecessary noise, just the good stuff for your business.
             </p>
           </div>
+          <form
+            className="subscribe-form"
+            data-reveal
+            data-delay="2"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <input type="search" placeholder="Email: johndoe@gmail.com" />{' '}
+            <a>
+              Sign Up <i className="bx bx-right-arrow-alt" />
+            </a>
+          </form>
+        </div>
+      </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                ),
-                title: 'Quick Invoice Creation',
-                description: 'Create professional invoices in under a minute with our intuitive interface.',
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                ),
-                title: 'Real-time Analytics',
-                description: 'Track your revenue, payments, and business performance at a glance.',
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ),
-                title: 'Multiple Currencies',
-                description: 'Send invoices in any currency and get paid from anywhere in the world.',
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                ),
-                title: 'Smart Reminders',
-                description: 'Automated payment reminders help you get paid without awkward follow-ups.',
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                ),
-                title: 'Client Management',
-                description: 'Keep all your client information organized and accessible in one place.',
-              },
-              {
-                icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                ),
-                title: 'Secure & Reliable',
-                description: 'Bank-level encryption keeps your data and your clients\' data safe.',
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="p-6 bg-gray-50 rounded-2xl hover:bg-white hover:shadow-lg transition-all duration-300"
-              >
-                <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-xl flex items-center justify-center mb-4">
-                  {feature.icon}
+      {/* ------------------------------------------------------------- REVIEWS */}
+      <div className="user-review-container">
+        <img src="/images/Ellipse 82.png" className="elipse" alt="" />
+        <img src="/images/Polygon 1.png" className="polygon1" alt="" />
+        <img src="/images/Polygon 2.png" className="polygon2" alt="" />
+        <div className="user-review-content">
+          <div className="usr-rev-text" data-reveal>
+            <h1>When 2 million users say it, it can only be true</h1>
+          </div>
+          <div className="user-review">
+            {[1, 2].map((n) => (
+              <div className="user-review-card" key={n} data-reveal data-delay={String(n)}>
+                <img src="/images/quote.png" alt="" className="quote-img" />
+                <div className="user-review-card-content">
+                  <div className="user-review-card-header">
+                    <img src="/images/Peculiar.png" alt="" className="user-review-img" />
+                    <h4 className="user-review-name">John Doe</h4>
+                    <sub className="user-review-occupation">CEO, Batallion</sub>
+                  </div>
+                  <p className="user-review-card-text">
+                    I have been using Invoicier for a while now and it has been
+                    completely worthwhile. Getting paid has never been simpler.
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-            Ready to streamline your invoicing?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join thousands of businesses that trust Invoicier to manage their invoices.
-          </p>
-          <Link to="/signup">
-            <Button size="lg">
-              Get Started for Free
-              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Button>
+      {/* -------------------------------------------------------------- FOOTER */}
+      <footer className="footer-container">
+        <span className="footer-pattern" aria-hidden="true" />
+
+        <div className="footer-cta" data-reveal>
+          <h2>Ready to get paid faster?</h2>
+          <p>Create your first invoice in minutes. No card required.</p>
+          <Link to="/signup" className="cta-btn footer-cta-btn">
+            Get Started for free <i className="bx bx-right-arrow-alt" />
           </Link>
         </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center gap-3 mb-6 md:mb-0">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">I</span>
-              </div>
-              <span className="text-xl font-bold">Invoicier</span>
+        <div className="footer-content">
+          <div className="footer-brand">
+            <span className="footer-brand-name">Invoicier</span>
+            <p>Invoicing on autopilot. Create, send and get paid, anywhere.</p>
+            <ul className="social-icons">
+              <li className="social-icon">
+                <a href="#" className="link" aria-label="Twitter">
+                  <i className="bx bxl-twitter" />
+                </a>
+              </li>
+              <li className="social-icon">
+                <a href="#" className="link" aria-label="LinkedIn">
+                  <i className="bx bxl-linkedin" />
+                </a>
+              </li>
+              <li className="social-icon">
+                <a href="#" className="link" aria-label="Instagram">
+                  <i className="bx bxl-instagram" />
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footer-cols">
+            <div className="footer-col">
+              <h4>Product</h4>
+              <ul>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Integrations</a></li>
+                <li><Link to="/signup">Get started</Link></li>
+              </ul>
             </div>
-            <p className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} Invoicier. All rights reserved.
-            </p>
+            <div className="footer-col">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Contact</a></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <h4>Resources</h4>
+              <ul>
+                <li><a href="#">Help center</a></li>
+                <li><a href="#">Guides</a></li>
+                <li><Link to="/login">Sign in</Link></li>
+                <li><a href="#">Terms &amp; Privacy</a></li>
+              </ul>
+            </div>
           </div>
         </div>
+
+        <div className="footer-bottom">
+          <span>© 2026 Invoicier. All rights reserved.</span>
+          <span>Made for businesses that move fast.</span>
+        </div>
+
+        <span className="footer-wordmark" aria-hidden="true">
+          invoicier
+        </span>
       </footer>
-    </div>
+    </section>
   );
 };
