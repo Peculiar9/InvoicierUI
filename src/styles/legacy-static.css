@@ -4567,6 +4567,133 @@
   margin-bottom: 16px;
 }
 
+/* ---- payout methods ---- */
+.settings-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.payout-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1px dashed var(--ws-border);
+  border-radius: 12px;
+  color: #8a8a99;
+  font-size: 0.88rem;
+}
+.payout-empty .bx {
+  font-size: 1.3rem;
+  color: #c2c0cf;
+}
+.payout-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.payout-method {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--ws-border);
+  border-radius: 14px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.payout-method.is-default {
+  border-color: var(--purple-color);
+  box-shadow: 0 0 0 3px var(--ws-tint);
+}
+.payout-method-pick {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+.payout-method-pick input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--purple-color);
+  cursor: pointer;
+}
+.payout-method-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--ws-tint);
+  color: var(--purple-color);
+  font-size: 1.4rem;
+}
+.payout-method-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.payout-method-info strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: var(--ws-ink);
+}
+.payout-method-info span {
+  font-size: 0.82rem;
+  color: #8a8a99;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.payout-default-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ws-tint);
+  color: var(--purple-color);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.payout-method-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 4px;
+}
+.payout-method-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ws-muted);
+  color: #6a6a7b;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.payout-method-actions button:hover {
+  background: #ececf3;
+  color: var(--ws-ink);
+}
+@media (max-width: 560px) {
+  .settings-head-row {
+    flex-direction: column;
+  }
+  .settings-head-row .btn {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ws-content > * {
     animation: none;
