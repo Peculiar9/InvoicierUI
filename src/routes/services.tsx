@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Dashboard } from '@/pages';
+import { Services } from '@/pages';
 import { requireAuth } from '@/lib/guards';
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/services')({
   beforeLoad: requireAuth,
-  component: Dashboard,
+  component: Services,
 });

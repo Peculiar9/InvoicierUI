@@ -11,13 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as InvoicesCreateRouteImport } from './routes/invoices.create'
-import { Route as InvoicesInvoiceIdRouteImport } from './routes/invoices.$invoiceId'
+import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -29,6 +30,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -37,6 +43,11 @@ const LoginRoute = LoginRouteImport.update({
 const InvoicesRoute = InvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -54,50 +65,48 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvoicesCreateRoute = InvoicesCreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => InvoicesRoute,
-} as any)
-const InvoicesInvoiceIdRoute = InvoicesInvoiceIdRouteImport.update({
-  id: '/$invoiceId',
-  path: '/$invoiceId',
-  getParentRoute: () => InvoicesRoute,
+const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
+  id: '/pay/$invoiceId',
+  path: '/pay/$invoiceId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/clients': typeof ClientsRoute
   '/dashboard': typeof DashboardRoute
-  '/invoices': typeof InvoicesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/invoices': typeof InvoicesRoute
   '/login': typeof LoginRoute
+  '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
-  '/invoices/create': typeof InvoicesCreateRoute
+  '/pay/$invoiceId': typeof PayInvoiceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/clients': typeof ClientsRoute
   '/dashboard': typeof DashboardRoute
-  '/invoices': typeof InvoicesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/invoices': typeof InvoicesRoute
   '/login': typeof LoginRoute
+  '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
-  '/invoices/create': typeof InvoicesCreateRoute
+  '/pay/$invoiceId': typeof PayInvoiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/clients': typeof ClientsRoute
   '/dashboard': typeof DashboardRoute
-  '/invoices': typeof InvoicesRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/invoices': typeof InvoicesRoute
   '/login': typeof LoginRoute
+  '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
-  '/invoices/create': typeof InvoicesCreateRoute
+  '/pay/$invoiceId': typeof PayInvoiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,44 +114,50 @@ export interface FileRouteTypes {
     | '/'
     | '/clients'
     | '/dashboard'
+    | '/forgot-password'
     | '/invoices'
     | '/login'
+    | '/services'
     | '/settings'
     | '/signup'
-    | '/invoices/$invoiceId'
-    | '/invoices/create'
+    | '/pay/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/clients'
     | '/dashboard'
+    | '/forgot-password'
     | '/invoices'
     | '/login'
+    | '/services'
     | '/settings'
     | '/signup'
-    | '/invoices/$invoiceId'
-    | '/invoices/create'
+    | '/pay/$invoiceId'
   id:
     | '__root__'
     | '/'
     | '/clients'
     | '/dashboard'
+    | '/forgot-password'
     | '/invoices'
     | '/login'
+    | '/services'
     | '/settings'
     | '/signup'
-    | '/invoices/$invoiceId'
-    | '/invoices/create'
+    | '/pay/$invoiceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClientsRoute: typeof ClientsRoute
   DashboardRoute: typeof DashboardRoute
-  InvoicesRoute: typeof InvoicesRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  InvoicesRoute: typeof InvoicesRoute
   LoginRoute: typeof LoginRoute
+  ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  PayInvoiceIdRoute: typeof PayInvoiceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -161,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -173,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/invoices'
       fullPath: '/invoices'
       preLoaderRoute: typeof InvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -196,45 +225,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/invoices/create': {
-      id: '/invoices/create'
-      path: '/create'
-      fullPath: '/invoices/create'
-      preLoaderRoute: typeof InvoicesCreateRouteImport
-      parentRoute: typeof InvoicesRoute
-    }
-    '/invoices/$invoiceId': {
-      id: '/invoices/$invoiceId'
-      path: '/$invoiceId'
-      fullPath: '/invoices/$invoiceId'
-      preLoaderRoute: typeof InvoicesInvoiceIdRouteImport
-      parentRoute: typeof InvoicesRoute
+    '/pay/$invoiceId': {
+      id: '/pay/$invoiceId'
+      path: '/pay/$invoiceId'
+      fullPath: '/pay/$invoiceId'
+      preLoaderRoute: typeof PayInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface InvoicesRouteChildren {
-  InvoicesInvoiceIdRoute: typeof InvoicesInvoiceIdRoute
-  InvoicesCreateRoute: typeof InvoicesCreateRoute
-}
-
-const InvoicesRouteChildren: InvoicesRouteChildren = {
-  InvoicesInvoiceIdRoute: InvoicesInvoiceIdRoute,
-  InvoicesCreateRoute: InvoicesCreateRoute,
-}
-
-const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
-  InvoicesRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClientsRoute: ClientsRoute,
   DashboardRoute: DashboardRoute,
-  InvoicesRoute: InvoicesRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  InvoicesRoute: InvoicesRoute,
   LoginRoute: LoginRoute,
+  ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  PayInvoiceIdRoute: PayInvoiceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

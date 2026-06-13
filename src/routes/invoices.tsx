@@ -1,13 +1,8 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Invoices } from '@/pages';
-import { useAuthStore } from '@/stores/authStore';
+import { requireAuth } from '@/lib/guards';
 
 export const Route = createFileRoute('/invoices')({
-  beforeLoad: () => {
-    const { isAuthenticated } = useAuthStore.getState();
-    if (!isAuthenticated) {
-      throw redirect({ to: '/login' });
-    }
-  },
+  beforeLoad: requireAuth,
   component: Invoices,
 });
