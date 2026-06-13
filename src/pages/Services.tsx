@@ -4,6 +4,7 @@ import { Modal } from '@/components/Modal';
 import { EmptyState } from '@/components/EmptyState';
 import { useServicesStore } from '@/stores/servicesStore';
 import { formatCurrency } from '@/utils/format';
+import { isFilled, isNonNegativeNumber } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 
 export const Services = () => {
@@ -14,18 +15,19 @@ export const Services = () => {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', price: 0 });
-  const [nameError, setNameError] = useState('');
+  const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
 
   const submit = () => {
-    if (!form.name.trim()) {
-      setNameError('A name is required');
-      return;
-    }
-    addService({ name: form.name, description: form.description, price: Number(form.price) || 0 });
+    const next: { name?: string; price?: string } = {};
+    if (!isFilled(form.name)) next.name = 'A name is required';
+    if (!isNonNegativeNumber(Number(form.price))) next.price = 'Enter a valid price (0 or more)';
+    setErrors(next);
+    if (Object.keys(next).length > 0) return;
+    addService({ name: form.name, description: form.description, price: Number(form.price) });
     toast.success('Service added');
     setOpen(false);
     setForm({ name: '', description: '', price: 0 });
-    setNameError('');
+    setErrors({});
   };
 
   return (
@@ -152,14 +154,14 @@ export const Services = () => {
             <span>Name</span>
             <input
               value={form.name}
-              className={nameError ? 'is-invalid' : ''}
+              className={errors.name ? 'is-invalid' : ''}
               onChange={(e) => {
                 setForm({ ...form, name: e.target.value });
-                setNameError('');
+                setErrors((er) => ({ ...er, name: undefined }));
               }}
               placeholder="Website build"
             />
-            {nameError && <small className="field-error">{nameError}</small>}
+            {errors.name && <small className="field-error">{errors.name}</small>}
           </label>
           <label className="cinv-field">
             <span>Description</span>
@@ -174,9 +176,16 @@ export const Services = () => {
             <input
               type="number"
               min={0}
+              step="0.01"
+              inputMode="decimal"
               value={form.price}
-              onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+              className={errors.price ? 'is-invalid' : ''}
+              onChange={(e) => {
+                setForm({ ...form, price: Math.max(0, Number(e.target.value) || 0) });
+                setErrors((er) => ({ ...er, price: undefined }));
+              }}
             />
+            {errors.price && <small className="field-error">{errors.price}</small>}
           </label>
         </div>
       </Modal>

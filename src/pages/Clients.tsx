@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { useClients, useCreateClient } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatDate } from '@/utils/format';
-import { isEmail } from '@/lib/validate';
+import { isEmail, isFilled, isPhone } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 
 export const Clients = () => {
@@ -21,7 +21,7 @@ export const Clients = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
-  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
 
   const filtered = clients.filter((c) => {
     const q = query.toLowerCase();
@@ -32,9 +32,10 @@ export const Clients = () => {
   const toggleSelect = (id: string) => setSelected((cur) => (cur === id ? null : id));
 
   const submit = () => {
-    const next: { name?: string; email?: string } = {};
-    if (!form.name.trim()) next.name = 'Name is required';
+    const next: { name?: string; email?: string; phone?: string } = {};
+    if (!isFilled(form.name)) next.name = 'Name is required';
     if (!isEmail(form.email)) next.email = 'Enter a valid email';
+    if (!isPhone(form.phone)) next.phone = 'Enter a valid phone number';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -238,10 +239,17 @@ export const Clients = () => {
           <label className="cinv-field">
             <span>Phone</span>
             <input
+              type="tel"
+              inputMode="tel"
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              className={errors.phone ? 'is-invalid' : ''}
+              onChange={(e) => {
+                setForm({ ...form, phone: e.target.value });
+                setErrors((er) => ({ ...er, phone: undefined }));
+              }}
               placeholder="Optional"
             />
+            {errors.phone && <small className="field-error">{errors.phone}</small>}
           </label>
         </div>
       </Modal>

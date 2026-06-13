@@ -451,14 +451,22 @@ export const InvoicePanel = () => {
                         <input
                           type="number"
                           min={0}
+                          step="1"
+                          inputMode="numeric"
                           value={line.quantity}
-                          onChange={(e) => updateItem(i, { quantity: Number(e.target.value) })}
+                          onChange={(e) =>
+                            updateItem(i, { quantity: Math.max(0, Number(e.target.value) || 0) })
+                          }
                         />
                         <input
                           type="number"
                           min={0}
+                          step="0.01"
+                          inputMode="decimal"
                           value={line.unitPrice}
-                          onChange={(e) => updateItem(i, { unitPrice: Number(e.target.value) })}
+                          onChange={(e) =>
+                            updateItem(i, { unitPrice: Math.max(0, Number(e.target.value) || 0) })
+                          }
                         />
                         <span className="cinv-line-total">
                           {formatCurrency(line.total, currency)}
