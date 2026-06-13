@@ -2967,6 +2967,7 @@
 }
 
 .dash-card {
+  min-width: 0;
   background: #fff;
   border: 1px solid var(--ws-border);
   border-radius: var(--ws-radius);
@@ -2998,10 +2999,13 @@
 
 .dash-charts {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
   gap: 20px;
 }
 .dash-chart {
+  position: relative;
+  width: 100%;
+  min-width: 0;
   height: 280px;
 }
 .dash-status-body {
@@ -3054,7 +3058,7 @@
 
 .dash-lower {
   display: grid;
-  grid-template-columns: 1.7fr 1fr;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
   gap: 20px;
 }
 .dash-table-wrap {
@@ -3170,78 +3174,232 @@
 @media screen and (max-width: 1100px) {
   .dash-charts,
   .dash-lower {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media screen and (max-width: 1100px) {
-  /* left cubicle becomes an off-canvas drawer */
+  /* ---- left cubicle becomes a floating bottom tab bar ---- */
   .ws-rail-left {
-    top: 0;
-    height: 100vh;
-    width: 220px;
-    padding: 18px 14px;
-    border-radius: 0 22px 22px 0;
-    justify-content: flex-start;
-    transform: translateX(-120%);
-    transition: transform 0.28s ease;
-    overflow-y: auto;
+    top: auto;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    gap: 2px;
+    padding: 7px 9px;
+    border-radius: 24px;
+    box-shadow: var(--ws-shadow-float);
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  .ws-drawer-open .ws-rail-left {
-    transform: translateX(0);
+  .ws-rail-left::-webkit-scrollbar {
+    display: none;
   }
-  .ws-rail-logo {
-    align-self: flex-start;
+  /* the "i" logo is redundant in a bottom bar */
+  .ws-rail-left .ws-rail-logo {
+    display: none;
   }
+  .ws-rail-nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+    width: auto;
+  }
+  /* icon-only tabs; the active tab expands to reveal its label as a pill */
   .ws-rail-item {
     flex-direction: row;
-    gap: 14px;
-    justify-content: flex-start;
-    padding: 12px 14px;
-    font-size: 0.9rem;
+    gap: 0;
+    padding: 11px 13px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
-  .ws-burger {
-    display: inline-flex;
+  .ws-rail-item .bx {
+    font-size: 1.5rem;
   }
-  .ws-drawer-open .ws-scrim {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 850;
-    border: 0;
-    background: rgba(20, 18, 30, 0.4);
+  .ws-rail-item span {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.28s ease, opacity 0.2s ease, margin 0.28s ease;
   }
-  /* right quick actions become a bottom bar */
-  .ws-rail-right {
+  .ws-rail-item.active span {
+    max-width: 96px;
+    opacity: 1;
+    margin-left: 7px;
+  }
+  /* logout sits at the end of the bar, no divider */
+  .ws-rail-logout {
+    width: auto;
+    margin-top: 0;
+    padding-top: 11px;
+    border-top: 0;
+  }
+
+  /* burger/drawer no longer used on mobile */
+  .ws-burger,
+  .ws-scrim {
+    display: none;
+  }
+
+  /* ---- contextual quick-actions hang as a floating FAB cluster ---- */
+  .ws-rail-right:not(.ipanel-rail) {
     top: auto;
-    right: 0;
-    bottom: 0;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+    left: auto;
     transform: none;
-    width: 100%;
+    width: auto;
   }
-  .ws-rail-right ul {
+  .ws-rail-right:not(.ipanel-rail) ul {
+    flex-direction: column-reverse; /* primary nearest the thumb */
+    align-items: flex-end;
+    gap: 12px;
+    width: auto;
+  }
+  .ws-rail-right:not(.ipanel-rail) .ws-action {
+    box-shadow: var(--ws-shadow-float);
+  }
+  /* primary action becomes a filled purple FAB */
+  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action {
+    width: 62px;
+    height: 62px;
+    background: var(--purple-color);
+    border-color: transparent;
+    box-shadow: 0 14px 28px rgba(146, 78, 233, 0.42);
+  }
+  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action .bx,
+  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action i {
+    color: #fff;
+  }
+  /* labels can't rely on hover on touch — show them as pills to the left */
+  .ws-rail-right:not(.ipanel-rail) .ws-action::after {
+    opacity: 1;
+    box-shadow: var(--ws-shadow);
+  }
+
+  /* ---- invoice-panel rail: clean bottom action bar within the panel ---- */
+  .ws-rail-right.ipanel-rail {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    transform: none;
+    width: min(680px, 94vw);
+  }
+  .ws-rail-right.ipanel-rail ul {
     flex-direction: row;
     justify-content: space-around;
     width: 100%;
-    padding: 10px var(--ws-px);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
     background: #fff;
     border-top: 1px solid var(--ws-border);
-    box-shadow: 0 -6px 22px rgba(29, 27, 46, 0.05);
+    box-shadow: 0 -6px 22px rgba(29, 27, 46, 0.06);
   }
-  .ws-action::after {
+  .ws-rail-right.ipanel-rail .ws-action::after {
     display: none;
   }
+
+  /* clear the floating bottom bar */
   .ws-content {
-    padding-bottom: 96px;
+    padding-bottom: 120px;
   }
 }
 @media screen and (max-width: 720px) {
+  .dash {
+    gap: 14px;
+  }
+  /* compact 2-up metric cards: icon on top, value scaled down to fit */
   .dash-kpis {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .dash-kpi {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+  }
+  .dash-kpi-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.3rem;
+  }
+  .dash-kpi-value {
+    font-size: 1.4rem;
+  }
+  .dash-kpi-label,
+  .dash-kpi-sub {
+    font-size: 0.74rem;
+  }
+  .dash-card {
+    padding: 18px;
+  }
+  .dash-card-head {
+    margin-bottom: 14px;
+  }
+  .dash-card-head h2 {
+    font-size: 1rem;
+  }
+  .dash-chart {
+    height: 220px;
+  }
+  /* tighter table cells so the scroll is shorter */
+  .dash-table th,
+  .dash-table td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .dash-table td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 0.84rem;
+  }
+  /* chart-card header wraps cleanly; figure reads as a stat */
+  .dash-card-head {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+  .dash-card-figure {
+    font-size: 1.15rem;
+  }
+  /* invoice status: thicker proportional bar + roomier, tidy legend */
+  .dash-status-bar {
+    height: 14px;
+    margin-bottom: 18px;
+  }
+  .dash-status-list {
+    gap: 13px;
+  }
+  .dash-status-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
-@media screen and (max-width: 420px) {
+/* recent-invoices: drop the secondary Date column so it fits without scroll */
+@media screen and (max-width: 560px) {
+  .dash-invoices .dash-table th:nth-child(3),
+  .dash-invoices .dash-table td:nth-child(3) {
+    display: none;
+  }
+}
+/* very narrow: single column, but keep the compact horizontal card */
+@media screen and (max-width: 380px) {
   .dash-kpis {
     grid-template-columns: 1fr;
+  }
+  .dash-kpi {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
   }
 }
 

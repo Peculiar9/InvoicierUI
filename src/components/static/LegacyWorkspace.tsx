@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useLogout } from '@/hooks';
@@ -45,16 +44,13 @@ export const LegacyWorkspace = ({
   title = 'Dashboard',
   actions,
 }: LegacyWorkspaceProps) => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const { mutate: logout } = useLogout();
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const panelOpen = useInvoicePanelStore((s) => s.open);
 
   return (
-    <div
-      className={`legacy-page legacy-workspace ws-shell${drawerOpen ? ' ws-drawer-open' : ''}`}
-    >
-      {/* floating left nav cubicle */}
+    <div className="legacy-page legacy-workspace ws-shell">
+      {/* floating left nav cubicle (desktop) / bottom tab bar (mobile) */}
       <aside className="ws-rail ws-rail-left">
         <Link to="/dashboard" className="ws-rail-logo" aria-label="Invoicier">
           i
@@ -66,7 +62,6 @@ export const LegacyWorkspace = ({
               to={item.to}
               title={item.label}
               className={`ws-rail-item${active === item.id ? ' active' : ''}`}
-              onClick={() => setDrawerOpen(false)}
             >
               <i className={`bx ${item.icon}`} aria-hidden="true" />
               <span>{item.label}</span>
@@ -84,23 +79,8 @@ export const LegacyWorkspace = ({
         </button>
       </aside>
 
-      <button
-        type="button"
-        className="ws-scrim"
-        aria-label="Close menu"
-        onClick={() => setDrawerOpen(false)}
-      />
-
       <div className="ws-body">
         <header className="ws-topbar">
-          <button
-            type="button"
-            className="ws-burger"
-            aria-label="Open menu"
-            onClick={() => setDrawerOpen((v) => !v)}
-          >
-            <i className="bx bx-menu" />
-          </button>
           <h1 className="ws-title">{title}</h1>
           <div className="ws-topbar-actions">
             <button type="button" className="ws-create-btn" onClick={() => openCreate()}>

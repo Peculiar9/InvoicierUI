@@ -146,12 +146,20 @@ export const Dashboard = () => {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: { grid: { display: false }, border: { display: false } },
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 },
+      },
       y: {
         beginAtZero: true,
         border: { display: false },
         grid: { color: 'rgba(29,27,46,0.06)' },
-        ticks: { callback: (value) => `$${formatNumber(Number(value))}` },
+        ticks: {
+          font: { size: 11 },
+          maxTicksLimit: 5,
+          callback: (value) => `$${formatNumber(Number(value))}`,
+        },
       },
     },
   };
