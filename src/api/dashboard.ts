@@ -1,22 +1,12 @@
 import apiClient from './client';
-import type { DashboardStats, ChartData, ApiResponse, Invoice } from '@/types';
-
-interface DashboardData {
-  stats: DashboardStats;
-  revenueChart: ChartData;
-  invoiceStatusChart: ChartData;
-  recentInvoices: Invoice[];
-  recentActivities: Activity[];
-}
-
-interface Activity {
-  id: string;
-  type: 'invoice_created' | 'invoice_sent' | 'invoice_paid' | 'client_added';
-  description: string;
-  timestamp: string;
-  invoiceId?: string;
-  clientId?: string;
-}
+import type {
+  Activity,
+  ApiResponse,
+  ChartData,
+  DashboardData,
+  DashboardStats,
+  Invoice,
+} from '@/types';
 
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
