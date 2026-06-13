@@ -80,6 +80,23 @@ export interface ChartData {
   }[];
 }
 
+export interface Activity {
+  id: string;
+  type: 'invoice_created' | 'invoice_sent' | 'invoice_paid' | 'client_added';
+  description: string;
+  timestamp: string;
+  invoiceId?: string;
+  clientId?: string;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  revenueChart: ChartData;
+  invoiceStatusChart: ChartData;
+  recentInvoices: Invoice[];
+  recentActivities: Activity[];
+}
+
 export interface LoginCredentials {
   email: string;
   password: string;
