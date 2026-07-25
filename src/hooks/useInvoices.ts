@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoicesApi } from '@/api/invoices';
-import type { CreateInvoiceDto, UpdateInvoiceDto } from '@/types';
+import type { CreateInvoiceDto, MarkPaidDto, UpdateInvoiceDto } from '@/types';
 
 interface UseInvoicesParams {
   status?: string;
@@ -81,8 +81,9 @@ export const useMarkInvoicePaid = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => invoicesApi.markAsPaid(id),
-    onSuccess: (_, id) => {
+    mutationFn: ({ id, data }: { id: string; data?: MarkPaidDto }) =>
+      invoicesApi.markAsPaid(id, data),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });

@@ -3,6 +3,7 @@ import type {
   Invoice,
   CreateInvoiceDto,
   UpdateInvoiceDto,
+  MarkPaidDto,
   ApiResponse,
   PaginatedResponse,
 } from '@/types';
@@ -54,9 +55,10 @@ export const invoicesApi = {
     return response.data.data;
   },
 
-  markAsPaid: async (id: string): Promise<Invoice> => {
+  markAsPaid: async (id: string, data?: MarkPaidDto): Promise<Invoice> => {
     const response = await apiClient.post<ApiResponse<Invoice>>(
-      `/invoices/${id}/mark-paid`
+      `/invoices/${id}/mark-paid`,
+      data
     );
     return response.data.data;
   },
