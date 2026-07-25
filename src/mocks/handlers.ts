@@ -115,6 +115,8 @@ export const handlers = [
       dueDate: (body.dueDate as string) ?? now,
       notes: body.notes as string | undefined,
       terms: body.terms as string | undefined,
+      vatEnabled: Boolean(body.vatEnabled),
+      whtExpected: Boolean(body.whtExpected),
       createdAt: now,
       updatedAt: now,
     };
@@ -139,6 +141,8 @@ export const handlers = [
     if (typeof body.terms === 'string') invoice.terms = body.terms;
     if (body.status) invoice.status = body.status as Invoice['status'];
     if (typeof body.taxRate === 'number') invoice.taxRate = body.taxRate;
+    if (typeof body.vatEnabled === 'boolean') invoice.vatEnabled = body.vatEnabled;
+    if (typeof body.whtExpected === 'boolean') invoice.whtExpected = body.whtExpected;
 
     if (Array.isArray(body.items)) {
       invoice.items = (body.items as Array<Record<string, unknown>>).map((it, idx) => {
@@ -178,10 +182,20 @@ export const handlers = [
     }
     return ok(invoice as Invoice, 'Invoice sent');
   }),
-  http.post('*/api/invoices/:id/mark-paid', ({ params }) => {
+  http.post('*/api/invoices/:id/mark-paid', async ({ params, request }) => {
     const invoice = invoices.find((i) => i.id === params.id);
     if (invoice) {
+      const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
       invoice.status = 'paid';
+      // Cash basis: the ledger row is written at the payment event, keyed on
+      // the date the money actually landed.
+      invoice.dateReceived =
+        typeof body?.dateReceived === 'string' ? body.dateReceived : new Date().toISOString();
+      invoice.amountReceived =
+        typeof body?.amountReceived === 'number' ? body.amountReceived : invoice.total;
+      if (typeof body?.whtWithheld === 'number' && body.whtWithheld > 0) {
+        invoice.whtWithheld = body.whtWithheld;
+      }
       logActivity('invoice_paid', `${invoice.client?.name ?? 'Client'} paid an invoice`, {
         invoiceId: invoice.id,
       });

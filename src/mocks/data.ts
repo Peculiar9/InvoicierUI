@@ -144,7 +144,7 @@ export function logActivity(
 /* ---- live-computed dashboard figures ---- */
 export function computeStats(): DashboardStats {
   const paid = invoices.filter((i) => i.status === 'paid');
-  const totalReceived = paid.reduce((s, i) => s + i.total, 0);
+  const totalReceived = paid.reduce((s, i) => s + (i.amountReceived ?? i.total), 0);
   return {
     totalReceived,
     totalInvoices: invoices.length,
@@ -152,6 +152,8 @@ export function computeStats(): DashboardStats {
     pendingInvoices: invoices.filter((i) => i.status === 'pending').length,
     overdueInvoices: invoices.filter((i) => i.status === 'overdue').length,
     paidThisMonth: totalReceived,
+    taxReadyPaid: paid.filter((i) => i.dateReceived).length,
+    paidCount: paid.length,
   };
 }
 
