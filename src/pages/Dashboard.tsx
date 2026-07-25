@@ -167,6 +167,25 @@ export const Dashboard = () => {
   const attnIcon = { overdue: 'bx-alarm-exclamation', 'no-date': 'bx-calendar-x', stale: 'bx-edit-alt' };
   const attnLabel = { overdue: 'Overdue', 'no-date': 'Tax gap', stale: 'Stale draft' };
 
+  // Receivables aging: how old the money you are owed is.
+  const DAY = 24 * 60 * 60 * 1000;
+  const openInvoices = allInvoices.filter(
+    (inv) => inv.status !== 'paid' && inv.status !== 'cancelled' && inv.status !== 'draft'
+  );
+  const AGING = [
+    { label: 'Current', color: '#0c8d6f', test: (d: number) => d <= 0 },
+    { label: '1 to 30', color: '#e0a008', test: (d: number) => d > 0 && d <= 30 },
+    { label: '31 to 60', color: '#f97316', test: (d: number) => d > 30 && d <= 60 },
+    { label: '61 to 90', color: '#ef5d54', test: (d: number) => d > 60 && d <= 90 },
+    { label: '90+', color: '#b91c1c', test: (d: number) => d > 90 },
+  ].map((bucket) => ({
+    ...bucket,
+    amount: openInvoices
+      .filter((inv) => bucket.test(Math.floor((Date.now() - new Date(inv.dueDate).getTime()) / DAY)))
+      .reduce((sum, inv) => sum + inv.total, 0),
+  }));
+  const agingTotal = AGING.reduce((sum, b) => sum + b.amount, 0);
+
   const kpis = [
     {
       label: 'Collected',
@@ -332,6 +351,36 @@ export const Dashboard = () => {
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* Receivables aging: how old the owed money is */}
+        {agingTotal > 0 && (
+          <section className="dash-card iw-statusline">
+            <div className="iw-statusline-top">
+              <h2>Receivables aging</h2>
+              <div className="iw-statusline-legend">
+                {AGING.filter((b) => b.amount > 0).map((b) => (
+                  <span className="iw-statusline-chip" key={b.label}>
+                    <i style={{ background: b.color }} />
+                    {b.label} <em>days</em>
+                    <b>{formatCurrency(b.amount)}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="dash-status-bar">
+              {AGING.map((b) =>
+                b.amount > 0 ? (
+                  <span
+                    key={b.label}
+                    className="dash-status-seg"
+                    style={{ flexGrow: b.amount, background: b.color }}
+                    title={`${b.label} days: ${formatCurrency(b.amount)}`}
+                  />
+                ) : null
+              )}
+            </div>
           </section>
         )}
 

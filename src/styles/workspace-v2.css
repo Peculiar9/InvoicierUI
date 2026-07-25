@@ -2239,3 +2239,10 @@
     margin-left: 50px;
   }
 }
+
+/* aging chips reuse the statusline language; the "days" word stays quiet */
+.iw .iw-statusline-chip em {
+  font-style: normal;
+  color: var(--ink-faint);
+  font-size: 0.7rem;
+}
