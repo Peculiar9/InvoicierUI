@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
+import { Pager } from '@/components/Pager';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
@@ -25,9 +26,12 @@ const statusLabel: Record<InvoiceStatus, string> = {
   cancelled: 'Cancelled',
 };
 
+const PAGE_SIZE = 8;
+
 export const Invoices = () => {
   const [status, setStatus] = useState<InvoiceStatus | 'all'>('all');
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
   const { data, isLoading } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
@@ -41,6 +45,9 @@ export const Invoices = () => {
       inv.invoiceNumber.toLowerCase().includes(q);
     return matchesStatus && matchesQuery;
   });
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const paged = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   return (
     <LegacyWorkspace
@@ -56,7 +63,10 @@ export const Invoices = () => {
               type="search"
               placeholder="Search invoices or clients"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
             />
           </label>
           <div className="view-tabs">
@@ -65,7 +75,10 @@ export const Invoices = () => {
                 key={tab.key}
                 type="button"
                 className={`view-tab${status === tab.key ? ' active' : ''}`}
-                onClick={() => setStatus(tab.key)}
+                onClick={() => {
+                  setStatus(tab.key);
+                  setPage(1);
+                }}
               >
                 {tab.label}
               </button>
@@ -97,19 +110,20 @@ export const Invoices = () => {
             )
           ) : (
             <div className="dash-table-wrap">
-              <table className="dash-table">
+              <table className="dash-table dash-table--invoices">
                 <thead>
                   <tr>
                     <th>Invoice</th>
                     <th>Client</th>
                     <th>Issued</th>
                     <th>Due</th>
+                    <th>Received</th>
                     <th>Amount</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((inv) => (
+                  {paged.map((inv) => (
                     <tr
                       key={inv.id}
                       className="dash-row-click"
@@ -123,6 +137,11 @@ export const Invoices = () => {
                       <td className="dash-muted">
                         {formatDate(inv.dueDate, { month: 'short', day: 'numeric' })}
                       </td>
+                      <td className="dash-muted">
+                        {inv.dateReceived
+                          ? formatDate(inv.dateReceived, { month: 'short', day: 'numeric' })
+                          : '-'}
+                      </td>
                       <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
                       <td>
                         <span className={`dash-badge is-${inv.status}`}>
@@ -133,6 +152,7 @@ export const Invoices = () => {
                   ))}
                 </tbody>
               </table>
+              <Pager page={current} pages={pages} onPage={setPage} />
             </div>
           )}
         </div>
