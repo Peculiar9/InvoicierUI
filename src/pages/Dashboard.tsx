@@ -14,9 +14,8 @@ import { LegacyWorkspace } from '@/components/static';
 import { Skeleton } from '@/components/Skeleton';
 import { useDashboardData } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
-import { usePayoutStore } from '@/stores/payoutStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
-import type { Activity, Invoice, InvoiceStatus } from '@/types';
+import type { Invoice, InvoiceStatus } from '@/types';
 
 ChartJS.register(
   CategoryScale,
@@ -28,16 +27,8 @@ ChartJS.register(
   Legend
 );
 
-// TEMPORARY: dashboard font test — match the workspace --ws-font
-ChartJS.defaults.font.family = "'DM Sans', sans-serif";
-ChartJS.defaults.color = '#8a8a99';
-
-const activityIcon: Record<Activity['type'], string> = {
-  invoice_created: 'bx-plus-circle',
-  invoice_sent: 'bx-send',
-  invoice_paid: 'bx-check-circle',
-  client_added: 'bx-user-plus',
-};
+ChartJS.defaults.font.family = "'Poppins', sans-serif";
+ChartJS.defaults.color = '#9b99ab';
 
 const statusLabel: Record<InvoiceStatus, string> = {
   draft: 'Draft',
@@ -52,7 +43,6 @@ export const Dashboard = () => {
   const { data, isLoading } = useDashboardData();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
-  const withdrawn = usePayoutStore((s) => s.withdrawals).reduce((sum, w) => sum + w.amount, 0);
 
   if (isLoading || !data) {
     return (
@@ -85,18 +75,20 @@ export const Dashboard = () => {
     );
   }
 
-  const { stats, revenueChart, invoiceStatusChart, recentInvoices, recentActivities } = data;
+  const { stats, revenueChart, invoiceStatusChart, recentInvoices } = data;
 
   const outstanding = recentInvoices
     .filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
     .reduce((sum, inv) => sum + inv.total, 0);
-  const available = Math.max(0, stats.totalReceived - withdrawn);
+  const paidCount = stats.paidCount ?? 0;
+  const taxReady = stats.taxReadyPaid ?? 0;
+  const marchPct = paidCount === 0 ? 100 : Math.round((taxReady / paidCount) * 100);
 
   const kpis = [
     {
-      label: 'Available balance',
-      value: formatCurrency(available),
-      sub: `${formatCurrency(stats.totalReceived)} collected`,
+      label: 'Collected',
+      value: formatCurrency(stats.totalReceived),
+      sub: 'income received, cash basis',
       icon: 'bx-wallet',
       tone: 'green',
     },
@@ -158,7 +150,7 @@ export const Dashboard = () => {
         ticks: {
           font: { size: 11 },
           maxTicksLimit: 5,
-          callback: (value) => `$${formatNumber(Number(value))}`,
+          callback: (value) => formatNumber(Number(value)),
         },
       },
     },
@@ -194,57 +186,63 @@ export const Dashboard = () => {
           ))}
         </section>
 
-        {/* Charts row */}
-        <section className="dash-charts">
-          <article className="dash-card dash-revenue">
-            <header className="dash-card-head">
-              <div>
-                <h2>Revenue</h2>
-                <p>Last 6 months</p>
-              </div>
-              <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
-            </header>
-            <div className="dash-chart">
-              <Line data={revenueData} options={revenueOptions} />
-            </div>
-          </article>
+        {/* March readiness: paid invoices carrying a date-received */}
+        <div className="iw-march">
+          <i className="bx bx-calendar-check" aria-hidden="true" />
+          <span>
+            <b>March readiness.</b> Paid invoices with a date received recorded:{' '}
+            {taxReady} of {paidCount}.
+          </span>
+          <span className="iw-march-track" aria-hidden="true">
+            <span className="iw-march-fill" style={{ width: `${marchPct}%` }} />
+          </span>
+          <span className="iw-march-pct">{marchPct}%</span>
+        </div>
 
-          <article className="dash-card dash-status">
-            <header className="dash-card-head">
-              <div>
-                <h2>Invoice status</h2>
-                <p>{statusValues.reduce((a, b) => a + b, 0)} invoices</p>
-              </div>
-            </header>
-            <div className="dash-status-bar">
-              {invoiceStatusChart.labels.map((label, i) =>
-                statusValues[i] > 0 ? (
-                  <span
-                    key={label}
-                    className="dash-status-seg"
-                    style={{ flexGrow: statusValues[i], background: statusColors[i] }}
-                    title={`${label}: ${statusValues[i]}`}
-                  />
-                ) : null
-              )}
-            </div>
-            <ul className="dash-status-list">
+        {/* Invoice status: one clean line, bar + inline legend */}
+        <section className="dash-card iw-statusline">
+          <div className="iw-statusline-top">
+            <h2>Invoice status</h2>
+            <div className="iw-statusline-legend">
               {invoiceStatusChart.labels.map((label, i) => (
-                <li key={label}>
-                  <span className="dash-status-dot" style={{ background: statusColors[i] }} />
-                  <span className="dash-status-name">{label}</span>
-                  <span className="dash-status-count">{statusValues[i]}</span>
-                  <span className="dash-status-pct">
-                    {Math.round((statusValues[i] / statusTotal) * 100)}%
-                  </span>
-                </li>
+                <span className="iw-statusline-chip" key={label}>
+                  <i style={{ background: statusColors[i] }} />
+                  {label}
+                  <b>{statusValues[i]}</b>
+                </span>
               ))}
-            </ul>
-          </article>
+            </div>
+          </div>
+          <div className="dash-status-bar">
+            {invoiceStatusChart.labels.map((label, i) =>
+              statusValues[i] > 0 ? (
+                <span
+                  key={label}
+                  className="dash-status-seg"
+                  style={{ flexGrow: statusValues[i], background: statusColors[i] }}
+                  title={`${label}: ${statusValues[i]} of ${statusTotal}`}
+                />
+              ) : null
+            )}
+          </div>
         </section>
 
-        {/* Lower row: recent invoices + activity */}
-        <section className="dash-lower">
+        {/* Revenue, full width */}
+        <section className="dash-card dash-revenue">
+          <header className="dash-card-head">
+            <div>
+              <h2>Revenue</h2>
+              <p>Last 6 months</p>
+            </div>
+            <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
+          </header>
+          <div className="dash-chart">
+            <Line data={revenueData} options={revenueOptions} />
+          </div>
+        </section>
+
+        {/* Recent invoices, full width */}
+        <section className="dash-lower dash-lower--single">
           <article className="dash-card dash-invoices">
             <header className="dash-card-head">
               <div>
@@ -253,7 +251,7 @@ export const Dashboard = () => {
               </div>
             </header>
             <div className="dash-table-wrap">
-              <table className="dash-table">
+              <table className="dash-table dash-table--recent">
                 <thead>
                   <tr>
                     <th>Invoice</th>
@@ -286,28 +284,6 @@ export const Dashboard = () => {
                 </tbody>
               </table>
             </div>
-          </article>
-
-          <article className="dash-card dash-activity">
-            <header className="dash-card-head">
-              <div>
-                <h2>Activity</h2>
-                <p>Recent</p>
-              </div>
-            </header>
-            <ul className="dash-feed">
-              {recentActivities.map((act) => (
-                <li key={act.id}>
-                  <span className={`dash-feed-icon is-${act.type}`}>
-                    <i className={`bx ${activityIcon[act.type]}`} />
-                  </span>
-                  <div className="dash-feed-body">
-                    <p>{act.description}</p>
-                    <time>{formatDate(act.timestamp, { month: 'short', day: 'numeric' })}</time>
-                  </div>
-                </li>
-              ))}
-            </ul>
           </article>
         </section>
       </div>
