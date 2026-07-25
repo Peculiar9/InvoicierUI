@@ -12,6 +12,7 @@ import {
   useSendInvoice,
   useUpdateInvoice,
 } from '@/hooks';
+import { useAuthStore } from '@/stores/authStore';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useServicesStore } from '@/stores/servicesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -64,6 +65,8 @@ export const InvoicePanel = () => {
   const [payDate, setPayDate] = useState('');
   const [payAmount, setPayAmount] = useState('');
   const [payWht, setPayWht] = useState('');
+
+  const emailVerified = useAuthStore((s) => s.user?.emailVerified ?? true);
 
   const editing = mode === 'create' || mode === 'edit';
 
@@ -238,6 +241,10 @@ export const InvoicePanel = () => {
   };
 
   const emailAndSend = async (inv: Invoice) => {
+    if (!emailVerified) {
+      toast.error('Verify your email first, so invoices go out under your name');
+      return;
+    }
     const method = await sendInvoiceEmail(inv, profile);
     sendInvoice.mutate(inv.id, {
       onSuccess: () =>
