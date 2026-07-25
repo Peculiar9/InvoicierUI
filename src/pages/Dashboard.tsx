@@ -17,7 +17,6 @@ import { Skeleton } from '@/components/Skeleton';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
-import { copyInvoiceLink } from '@/lib/invoiceActions';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import type { Invoice, InvoiceStatus } from '@/types';
 
@@ -173,9 +172,6 @@ export const Dashboard = () => {
       })),
   ].slice(0, 6);
 
-  const attnIcon = { overdue: 'bx-alarm-exclamation', 'no-date': 'bx-calendar-x', stale: 'bx-edit-alt' };
-  const attnLabel = { overdue: 'Overdue', 'no-date': 'Tax gap', stale: 'Stale draft' };
-
   // Receivables aging: how old the money you are owed is.
   const DAY = 24 * 60 * 60 * 1000;
   const openInvoices = allInvoices.filter(
@@ -183,10 +179,10 @@ export const Dashboard = () => {
   );
   const AGING = [
     { label: 'Current', color: '#0c8d6f', test: (d: number) => d <= 0 },
-    { label: '1 to 30', color: '#e0a008', test: (d: number) => d > 0 && d <= 30 },
-    { label: '31 to 60', color: '#f97316', test: (d: number) => d > 30 && d <= 60 },
-    { label: '61 to 90', color: '#ef5d54', test: (d: number) => d > 60 && d <= 90 },
-    { label: '90+', color: '#b91c1c', test: (d: number) => d > 90 },
+    { label: '1-30d', color: '#e0a008', test: (d: number) => d > 0 && d <= 30 },
+    { label: '31-60d', color: '#f97316', test: (d: number) => d > 30 && d <= 60 },
+    { label: '61-90d', color: '#ef5d54', test: (d: number) => d > 60 && d <= 90 },
+    { label: '90d+', color: '#b91c1c', test: (d: number) => d > 90 },
   ].map((bucket) => ({
     ...bucket,
     amount: openInvoices
@@ -350,6 +346,31 @@ export const Dashboard = () => {
           ))}
         </div>
 
+        {/* Needs attention first: what to DO, before what to admire */}
+        {attention.length > 0 && (
+          <section className="dash-card iw-attn">
+            <div className="iw-attn-head">
+              <h2>Needs attention</h2>
+              <span>
+                {attention.length} item{attention.length === 1 ? '' : 's'}
+              </span>
+            </div>
+            <ul>
+              {attention.slice(0, 4).map(({ inv, kind, text }) => (
+                <li key={`${kind}-${inv.id}`}>
+                  <span className={`iw-attn-dot is-${kind}`} aria-hidden="true" />
+                  <p>{text}</p>
+                  <small>#{inv.invoiceNumber}</small>
+                  <button type="button" className="iw-attn-go" onClick={() => openView(inv.id)}>
+                    {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
+                    <i className="bx bx-right-arrow-alt" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* KPI cards */}
         <section className="dash-kpis">
           {kpis.map((kpi) => (
@@ -386,45 +407,6 @@ export const Dashboard = () => {
           <span className="iw-march-pct">{marchPct}%</span>
         </div>
 
-        {/* Needs attention: the rows a human should touch today */}
-        {attention.length > 0 && (
-          <section className="dash-card iw-attn">
-            <div className="iw-attn-head">
-              <h2>Needs attention</h2>
-              <span>{attention.length} item{attention.length === 1 ? '' : 's'}</span>
-            </div>
-            <ul>
-              {attention.map(({ inv, kind, text }) => (
-                <li key={`${kind}-${inv.id}`}>
-                  <span className={`iw-attn-icon is-${kind}`}>
-                    <i className={`bx ${attnIcon[kind]}`} />
-                  </span>
-                  <div className="iw-attn-body">
-                    <p>{text}</p>
-                    <small>
-                      {attnLabel[kind]} · #{inv.invoiceNumber}
-                    </small>
-                  </div>
-                  <div className="iw-attn-actions">
-                    {kind === 'overdue' && (
-                      <button type="button" onClick={() => copyInvoiceLink(inv.id)}>
-                        Copy link
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="primary"
-                      onClick={() => openView(inv.id)}
-                    >
-                      {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         {/* The ledger tiles: tax figures forming as payments land */}
         <section className="iw-tiles">
           <article className="dash-card iw-tile">
@@ -448,43 +430,28 @@ export const Dashboard = () => {
           </article>
         </section>
 
-        {/* Receivables aging: how old the owed money is */}
-        {agingTotal > 0 && (
-          <section className="dash-card iw-statusline">
-            <div className="iw-statusline-top">
-              <h2>Receivables aging</h2>
-              <div className="iw-statusline-legend">
-                {AGING.filter((b) => b.amount > 0).map((b) => (
-                  <span className="iw-statusline-chip" key={b.label}>
-                    <i style={{ background: b.color }} />
-                    {b.label} <em>days</em>
-                    <b>{formatCurrency(b.amount)}</b>
-                  </span>
-                ))}
-              </div>
+        {/* One quiet card for both distributions: bar first, labels beneath */}
+        <section className="dash-card iw-bands">
+          <div className="iw-band">
+            <div className="iw-band-head">
+              <h2>Invoice status</h2>
+              <span>{statusTotal} invoices</span>
             </div>
             <div className="dash-status-bar">
-              {AGING.map((b) =>
-                b.amount > 0 ? (
+              {invoiceStatusChart.labels.map((label, i) =>
+                statusValues[i] > 0 ? (
                   <span
-                    key={b.label}
+                    key={label}
                     className="dash-status-seg"
-                    style={{ flexGrow: b.amount, background: b.color }}
-                    title={`${b.label} days: ${formatCurrency(b.amount)}`}
+                    style={{ flexGrow: statusValues[i], background: statusColors[i] }}
+                    title={`${label}: ${statusValues[i]} of ${statusTotal}`}
                   />
                 ) : null
               )}
             </div>
-          </section>
-        )}
-
-        {/* Invoice status: one clean line, bar + inline legend */}
-        <section className="dash-card iw-statusline">
-          <div className="iw-statusline-top">
-            <h2>Invoice status</h2>
-            <div className="iw-statusline-legend">
+            <div className="iw-band-legend">
               {invoiceStatusChart.labels.map((label, i) => (
-                <span className="iw-statusline-chip" key={label}>
+                <span key={label}>
                   <i style={{ background: statusColors[i] }} />
                   {label}
                   <b>{statusValues[i]}</b>
@@ -492,18 +459,36 @@ export const Dashboard = () => {
               ))}
             </div>
           </div>
-          <div className="dash-status-bar">
-            {invoiceStatusChart.labels.map((label, i) =>
-              statusValues[i] > 0 ? (
-                <span
-                  key={label}
-                  className="dash-status-seg"
-                  style={{ flexGrow: statusValues[i], background: statusColors[i] }}
-                  title={`${label}: ${statusValues[i]} of ${statusTotal}`}
-                />
-              ) : null
-            )}
-          </div>
+
+          {agingTotal > 0 && (
+            <div className="iw-band">
+              <div className="iw-band-head">
+                <h2>Receivables aging</h2>
+                <span>{formatCurrency(agingTotal)} open</span>
+              </div>
+              <div className="dash-status-bar">
+                {AGING.map((b) =>
+                  b.amount > 0 ? (
+                    <span
+                      key={b.label}
+                      className="dash-status-seg"
+                      style={{ flexGrow: b.amount, background: b.color }}
+                      title={`${b.label}: ${formatCurrency(b.amount)}`}
+                    />
+                  ) : null
+                )}
+              </div>
+              <div className="iw-band-legend">
+                {AGING.filter((b) => b.amount > 0).map((b) => (
+                  <span key={b.label}>
+                    <i style={{ background: b.color }} />
+                    {b.label}
+                    <b>{formatCurrency(b.amount)}</b>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Revenue, full width */}

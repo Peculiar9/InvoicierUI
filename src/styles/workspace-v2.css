@@ -2620,3 +2620,134 @@
   font-size: 0.72rem;
   background-position: right 11px center;
 }
+
+/* ============================================================================
+   HIERARCHY PASS — attention leads and stays lean, bands read cleanly
+   ========================================================================== */
+
+/* attention v2: one line per item, one action, severity as a dot */
+.iw .iw-attn ul {
+  gap: 0;
+}
+.iw .iw-attn li {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+}
+.iw .iw-attn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.iw .iw-attn-dot.is-overdue {
+  background: var(--danger);
+  box-shadow: 0 0 0 4px rgba(212, 69, 60, 0.14);
+}
+.iw .iw-attn-dot.is-no-date {
+  background: var(--warn);
+  box-shadow: 0 0 0 4px rgba(185, 125, 16, 0.14);
+}
+.iw .iw-attn-dot.is-stale {
+  background: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-tint);
+}
+.iw .iw-attn li p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iw .iw-attn li small {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  color: var(--ink-faint);
+}
+.iw .iw-attn-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  cursor: pointer;
+  transition: background 0.2s ease, gap 0.2s ease;
+}
+.iw .iw-attn-go i {
+  font-size: 1rem;
+  transition: transform 0.2s var(--ease-out);
+}
+.iw .iw-attn-go:hover {
+  background: var(--brand-tint);
+}
+.iw .iw-attn-go:hover i {
+  transform: translateX(3px);
+}
+
+/* bands card: title row, bar, quiet legend beneath */
+.iw .iw-bands {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.iw .iw-band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.iw .iw-band-head h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .iw-band-head span {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.iw .iw-band .dash-status-bar {
+  margin-bottom: 0;
+  height: 10px;
+}
+.iw .iw-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.iw .iw-band-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.iw .iw-band-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.iw .iw-band-legend b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .iw .iw-attn li {
+    grid-template-columns: 8px minmax(0, 1fr) auto;
+  }
+  .iw .iw-attn li small {
+    display: none;
+  }
+}
