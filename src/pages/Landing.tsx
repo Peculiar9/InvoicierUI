@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, RefObject } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { useAuthStore } from '@/stores/authStore';
 import { Typewriter } from '@/components/static';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
@@ -656,6 +657,37 @@ const Statement = () => {
   );
 };
 
+/* TEMPORARY: dev shortcut into the onboarding journey. Self-authenticates
+   against the mock backend and jumps to /welcome. Delete before launch. */
+const TempOnboardingButton = () => {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setUser = useAuthStore((s) => s.setUser);
+
+  const go = () => {
+    if (!isAuthenticated) {
+      setUser(
+        {
+          id: 'usr_demo',
+          email: 'demo@invoicier.app',
+          username: 'demo',
+          createdAt: new Date().toISOString(),
+        },
+        'mock-jwt-token'
+      );
+    }
+    navigate({ to: '/welcome' });
+  };
+
+  return (
+    <button type="button" className="lp-temp-ob" onClick={go}>
+      <b>Temp</b>
+      <i className="bx bx-test-tube" aria-hidden="true" />
+      Test the onboarding
+    </button>
+  );
+};
+
 /* feeds the bento cards' cursor spotlight */
 const spotlight = (event: ReactMouseEvent<HTMLElement>) => {
   const rect = event.currentTarget.getBoundingClientRect();
@@ -752,6 +784,7 @@ export const Landing = () => {
 
       <main className="lp" ref={rootRef}>
         <MarketingNav />
+        <TempOnboardingButton />
 
         {/* ------------------------------------------------------------ HERO */}
         <section className="lp-hero">

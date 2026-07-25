@@ -3237,3 +3237,44 @@
   background: linear-gradient(150deg, var(--brand), var(--brand-deep));
   color: #fff;
 }
+
+/* TEMPORARY: dev shortcut into onboarding. Delete with the button. */
+.lp-temp-ob {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 95;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s ease;
+}
+.lp-temp-ob:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.lp-temp-ob b {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lp-temp-ob i {
+  color: var(--accent);
+  font-size: 1rem;
+}
