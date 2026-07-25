@@ -2751,3 +2751,354 @@
     display: none;
   }
 }
+
+/* ============================================================================
+   THE WELCOME JOURNEY — brand world, three steps, one stamp
+   ========================================================================== */
+
+.ob {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(170deg, #5d3e89, var(--brand-deeper));
+  position: relative;
+  overflow: hidden;
+}
+.ob::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 70%);
+  mask-image: linear-gradient(180deg, #000, transparent 70%);
+  pointer-events: none;
+}
+.ob-card {
+  position: relative;
+  width: min(680px, 100%);
+  padding: clamp(28px, 5vw, 48px);
+  background: #fff;
+  border-radius: 28px;
+  box-shadow: 0 40px 100px rgba(20, 8, 36, 0.45);
+}
+.ob-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+.ob-progress span {
+  height: 5px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.4s ease;
+}
+.ob-progress span.on {
+  background: var(--brand);
+}
+.ob-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: iw-bye-in 0.4s var(--ease-out);
+}
+.ob-kicker {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+.ob-step h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.15;
+}
+.ob-step > p {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-top: -6px;
+}
+.ob-ask {
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.ob-personas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.ob-personas button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s var(--ease-out);
+}
+.ob-personas button:hover {
+  border-color: rgba(146, 78, 233, 0.4);
+  transform: translateY(-1px);
+}
+.ob-personas button.active {
+  border-color: var(--brand);
+  background: linear-gradient(160deg, #fff, rgba(146, 78, 233, 0.07));
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+.ob-personas i {
+  font-size: 1.3rem;
+  color: var(--brand-600);
+  margin-bottom: 4px;
+}
+.ob-personas b {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.ob-personas small {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+.ob-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.ob-nav--center {
+  justify-content: center;
+}
+.ob-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.ob-back:hover {
+  color: var(--ink);
+}
+.ob-skip {
+  position: absolute;
+  right: clamp(28px, 5vw, 48px);
+  bottom: 12px;
+  border: 0;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.ob-skip:hover {
+  color: var(--brand-600);
+}
+
+/* brand step */
+.ob-brand {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.ob-brand-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.ob-clear {
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ob-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ob-swatches button {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s ease;
+}
+.ob-swatches button:hover {
+  transform: scale(1.12);
+}
+.ob-swatches button.active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ink);
+}
+.ob-swatch-custom {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1.5px dashed var(--border);
+  border-radius: 50%;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.ob-swatch-custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.ob-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+}
+.ob-preview-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ob-preview-top img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.ob-preview-mono {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--acc, var(--brand));
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.ob-preview-top b {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.ob-preview-top small {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+.ob-preview-rule {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--acc, var(--brand));
+}
+.ob-preview-line {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+}
+.ob-preview-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 6px;
+}
+.ob-preview-total small {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.ob-preview-total b {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--acc, var(--brand));
+  font-variant-numeric: tabular-nums;
+}
+
+/* tax step */
+.ob-toggles {
+  margin: 4px 0 0;
+}
+.ob-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* the stamp finale */
+.ob-step--done {
+  align-items: center;
+  text-align: center;
+  padding: 20px 0 28px;
+}
+.ob-stamp-wrap {
+  margin-bottom: 6px;
+}
+.ob-stamp {
+  display: inline-block;
+  padding: 0.5em 1.1em;
+  border: 3px solid rgba(12, 141, 111, 0.6);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(12, 141, 111, 0.25);
+  color: var(--paid);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  rotate: -6deg;
+  animation: ob-stamp-in 0.5s var(--ease-snap) 0.2s both;
+}
+@keyframes ob-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) rotate(-12deg);
+    filter: blur(5px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95);
+    filter: blur(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .ob-brand,
+  .ob-row,
+  .ob-personas {
+    grid-template-columns: 1fr;
+  }
+  .ob-card {
+    border-radius: 20px;
+  }
+}
