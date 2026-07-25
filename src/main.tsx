@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { routeTree } from './routeTree.gen';
 import './index.css';
 import './styles/legacy-static.css';
+import './styles/workspace-v2.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
