@@ -2460,3 +2460,54 @@
 .iw .iw-period::-webkit-scrollbar {
   display: none;
 }
+
+/* pager v2: count on the left, nav on the right */
+.iw .iw-pager {
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.iw .iw-pager-count {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.iw .iw-pager-count em,
+.iw .iw-pager-nav em {
+  font-style: normal;
+  color: var(--ink-faint);
+}
+.iw .iw-pager-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.iw .iw-pager-nav span {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.iw .iw-pager-nav button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.iw .iw-pager-nav button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand-600);
+}
+.iw .iw-pager-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -152,7 +152,14 @@ export const Invoices = () => {
                   ))}
                 </tbody>
               </table>
-              <Pager page={current} pages={pages} onPage={setPage} />
+              <Pager
+                page={current}
+                pages={pages}
+                total={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPage={setPage}
+                noun="invoices"
+              />
             </div>
           )}
         </div>
