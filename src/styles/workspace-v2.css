@@ -2601,3 +2601,15 @@
     justify-content: center;
   }
 }
+
+/* notifications on small screens: a sheet under the topbar, not an
+   anchored popover that can run off-screen */
+@media (max-width: 560px) {
+  .iw .iw-bell-panel {
+    position: fixed;
+    top: 64px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
