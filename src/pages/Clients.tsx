@@ -20,6 +20,9 @@ export const Clients = () => {
 
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [sortKey, setSortKey] = useState<'name-asc' | 'name-desc' | 'newest' | 'oldest'>(
+    'name-asc'
+  );
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
@@ -31,9 +34,15 @@ export const Clients = () => {
     const q = query.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
   });
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortKey === 'name-asc') return a.name.localeCompare(b.name);
+    if (sortKey === 'name-desc') return b.name.localeCompare(a.name);
+    if (sortKey === 'oldest') return a.createdAt.localeCompare(b.createdAt);
+    return b.createdAt.localeCompare(a.createdAt); // newest
+  });
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const current = Math.min(page, pages);
-  const paged = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const paged = sorted.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const selectedClient = clients.find((c) => c.id === selected) ?? null;
 
   const toggleSelect = (id: string) => setSelected((cur) => (cur === id ? null : id));
@@ -82,27 +91,43 @@ export const Clients = () => {
               }}
             />
           </label>
-          <div className="view-switch" role="group" aria-label="View mode">
-            <button
-              type="button"
-              className={view === 'grid' ? 'active' : ''}
-              onClick={() => setView('grid')}
-              aria-label="Grid view"
-            >
-              <i className="bx bx-grid-alt" />
-            </button>
-            <button
-              type="button"
-              className={view === 'list' ? 'active' : ''}
-              onClick={() => setView('list')}
-              aria-label="List view"
-            >
-              <i className="bx bx-list-ul" />
+          <select
+            className="iw-select"
+            value={sortKey}
+            aria-label="Sort clients"
+            onChange={(e) => {
+              setSortKey(e.target.value as typeof sortKey);
+              setPage(1);
+            }}
+          >
+            <option value="name-asc">Name, A to Z</option>
+            <option value="name-desc">Name, Z to A</option>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+          <div className="view-toolbar-side">
+            <div className="view-switch" role="group" aria-label="View mode">
+              <button
+                type="button"
+                className={view === 'grid' ? 'active' : ''}
+                onClick={() => setView('grid')}
+                aria-label="Grid view"
+              >
+                <i className="bx bx-grid-alt" />
+              </button>
+              <button
+                type="button"
+                className={view === 'list' ? 'active' : ''}
+                onClick={() => setView('list')}
+                aria-label="List view"
+              >
+                <i className="bx bx-list-ul" />
+              </button>
+            </div>
+            <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+              <i className="bx bx-plus" /> Add client
             </button>
           </div>
-          <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
-            <i className="bx bx-plus" /> Add client
-          </button>
         </div>
 
         {selectedClient && (

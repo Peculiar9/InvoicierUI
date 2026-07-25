@@ -2582,3 +2582,22 @@
     min-width: 0;
   }
 }
+
+/* the toggle and primary action live together at the toolbar's edge */
+.iw .view-toolbar-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+@media (max-width: 560px) {
+  .iw .view-toolbar-side {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .iw .view-toolbar-side .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
