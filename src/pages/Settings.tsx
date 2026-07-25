@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
+import { TemplatePicker } from '@/components/TemplatePicker';
 import { useInvoices } from '@/hooks';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { usePayoutStore } from '@/stores/payoutStore';
@@ -282,6 +283,29 @@ export const Settings = () => {
                 Save changes
               </button>
             </div>
+          </div>
+        )}
+
+        {tab === 'profile' && (
+          <div className="dash-card">
+            <h3 className="cinv-section-title">Invoice template</h3>
+            <p className="dash-muted settings-lead">
+              The paper your clients open. Changes apply to every invoice from
+              now on.
+            </p>
+            <TemplatePicker
+              compact
+              value={profile.template ?? 'classic'}
+              onChange={(template) => {
+                setProfile({ template });
+                toast.success('Template updated');
+              }}
+              brand={{
+                name: profile.name,
+                color: profile.brandColor ?? '#924ee9',
+                logo: profile.logo,
+              }}
+            />
           </div>
         )}
 
