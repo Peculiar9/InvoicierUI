@@ -193,6 +193,24 @@ export const Dashboard = () => {
   }));
   const agingTotal = AGING.reduce((sum, b) => sum + b.amount, 0);
 
+  // The ledger tiles: the tax return forming in real time.
+  const vatCollected = paidInPeriod.reduce((sum, inv) => sum + inv.tax, 0);
+  const whtCredits = paidInPeriod.reduce((sum, inv) => sum + (inv.whtWithheld ?? 0), 0);
+  const paidWithDates = paidInPeriod.filter((inv) => inv.dateReceived);
+  const daysToPaid =
+    paidWithDates.length === 0
+      ? null
+      : Math.round(
+          paidWithDates.reduce(
+            (sum, inv) =>
+              sum +
+              (new Date(inv.dateReceived as string).getTime() -
+                new Date(inv.issueDate).getTime()) /
+                DAY,
+            0
+          ) / paidWithDates.length
+        );
+
   const kpis = [
     {
       label: 'Collected',
@@ -367,6 +385,29 @@ export const Dashboard = () => {
             </ul>
           </section>
         )}
+
+        {/* The ledger tiles: tax figures forming as payments land */}
+        <section className="iw-tiles">
+          <article className="dash-card iw-tile">
+            <span className="iw-tile-label">VAT collected</span>
+            <b>{formatCurrency(vatCollected)}</b>
+            <small>{periodSub}, at 7.5% per invoice</small>
+          </article>
+          <article className="dash-card iw-tile">
+            <span className="iw-tile-label">WHT credits</span>
+            <b>{formatCurrency(whtCredits)}</b>
+            <small>withheld by clients, saved as credits</small>
+          </article>
+          <article className="dash-card iw-tile">
+            <span className="iw-tile-label">Days to paid</span>
+            <b>{daysToPaid === null ? '-' : daysToPaid}</b>
+            <small>
+              {daysToPaid === null
+                ? 'record a date received to see this'
+                : 'average, sent to money received'}
+            </small>
+          </article>
+        </section>
 
         {/* Receivables aging: how old the owed money is */}
         {agingTotal > 0 && (

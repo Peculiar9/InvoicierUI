@@ -2263,3 +2263,41 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* ledger tiles: three quiet tax figures */
+.iw .iw-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.iw .iw-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 20px;
+}
+.iw .iw-tile-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.iw .iw-tile b {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.iw .iw-tile small {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+@media (max-width: 760px) {
+  .iw .iw-tiles {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
