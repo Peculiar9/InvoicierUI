@@ -11,6 +11,7 @@ import {
 import type { ChartOptions } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
 import { Skeleton } from '@/components/Skeleton';
 import { useDashboardData, useInvoices } from '@/hooks';
@@ -297,6 +298,43 @@ export const Dashboard = () => {
       ]}
     >
       <div className="dash">
+        {Boolean(invData) && allInvoices.length === 0 ? (
+          /* first run: coach the first invoice instead of showing empty charts */
+          <section className="dash-card iw-firstrun">
+            <span className="iw-firstrun-kicker">Welcome to Invoicier</span>
+            <h2>Three steps to your first tax-grade payment.</h2>
+            <ol>
+              <li className={stats.totalClients > 0 ? 'done' : ''}>
+                <i className={`bx ${stats.totalClients > 0 ? 'bx-check-circle' : 'bx-user-plus'}`} />
+                <div>
+                  <b>Add a client</b>
+                  <p>Name and email is enough to start.</p>
+                </div>
+                <Link to="/clients" className="iw-btn iw-btn--ghost">
+                  {stats.totalClients > 0 ? 'View clients' : 'Add client'}
+                </Link>
+              </li>
+              <li>
+                <i className="bx bx-receipt" />
+                <div>
+                  <b>Send your first invoice</b>
+                  <p>Thirty seconds, VAT and WHT captured as you type.</p>
+                </div>
+                <button type="button" className="iw-btn" onClick={() => openCreate()}>
+                  Create invoice
+                </button>
+              </li>
+              <li>
+                <i className="bx bx-badge-check" />
+                <div>
+                  <b>Record the payment</b>
+                  <p>Date received is the field March cares about.</p>
+                </div>
+              </li>
+            </ol>
+          </section>
+        ) : (
+          <>
         {/* reporting period */}
         <div className="iw-period" role="group" aria-label="Reporting period">
           {PERIODS.map((p) => (
@@ -526,6 +564,8 @@ export const Dashboard = () => {
             </div>
           </article>
         </section>
+          </>
+        )}
       </div>
     </LegacyWorkspace>
   );
