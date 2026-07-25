@@ -370,9 +370,10 @@ export const InvoicePanel = () => {
                   <button type="button" className="btn btn-ghost" onClick={() => printInvoice()}>
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
-                  {invoice && invoice.status !== 'paid' && (
+                  {invoice && (invoice.status !== 'paid' || !invoice.dateReceived) && (
                     <button type="button" className="btn btn-ghost" onClick={openPaidDialog}>
-                      <i className="bx bx-check-circle" /> Mark paid
+                      <i className="bx bx-check-circle" />{' '}
+                      {invoice.status === 'paid' ? 'Record payment details' : 'Mark paid'}
                     </button>
                   )}
                   <button
