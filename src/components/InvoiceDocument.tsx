@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Client, InvoiceStatus } from '@/types';
@@ -39,11 +40,23 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
   const { currency } = data;
 
   return (
-    <article className="invoice-doc">
+    <article
+      className="invoice-doc"
+      style={{ '--acc': profile.brandColor ?? '#924ee9' } as CSSProperties}
+    >
       <header className="invoice-doc-top">
-        <div>
-          <span className="invoice-doc-mark">Invoice</span>
-          <h2>#{data.invoiceNumber}</h2>
+        <div className="invoice-doc-brand">
+          {profile.logo ? (
+            <img className="invoice-doc-logo" src={profile.logo} alt="" />
+          ) : (
+            <span className="invoice-doc-monogram" aria-hidden="true">
+              {(profile.name.charAt(0) || 'i').toUpperCase()}
+            </span>
+          )}
+          <div>
+            <span className="invoice-doc-mark">Invoice</span>
+            <h2>#{data.invoiceNumber}</h2>
+          </div>
         </div>
         {data.status && (
           <span className={`dash-badge is-${data.status}`}>{statusLabel[data.status]}</span>

@@ -3102,3 +3102,30 @@
     border-radius: 20px;
   }
 }
+
+/* the invoice document wears the brand (panel, preview, pay page, print) */
+.invoice-doc-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.invoice-doc-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.invoice-doc-monogram {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--acc, #924ee9);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.invoice-doc .invoice-doc-mark {
+  color: var(--acc, #924ee9);
+}
