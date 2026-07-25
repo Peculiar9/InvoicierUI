@@ -56,6 +56,17 @@ export interface Invoice {
   terms?: string;
   createdAt: string;
   updatedAt: string;
+  /* ---- tax-grade record fields (the tax engine eats these later) ---- */
+  /** VAT applied at invoice level (7.5% in v1). */
+  vatEnabled?: boolean;
+  /** The client is expected to withhold WHT on payment. */
+  whtExpected?: boolean;
+  /** Date the money actually landed. Cash basis: income exists when received. */
+  dateReceived?: string;
+  /** Amount actually received (fees and FX spreads mean it can differ). */
+  amountReceived?: number;
+  /** Amount withheld by the client; spawns a WHT credit record. */
+  whtWithheld?: number;
 }
 
 export type InvoiceStatus = 'draft' | 'pending' | 'sent' | 'paid' | 'overdue' | 'cancelled';
@@ -67,6 +78,9 @@ export interface DashboardStats {
   pendingInvoices: number;
   overdueInvoices: number;
   paidThisMonth: number;
+  /** Paid invoices carrying a date-received: the March-readiness signal. */
+  taxReadyPaid?: number;
+  paidCount?: number;
 }
 
 export interface ChartData {
@@ -131,8 +145,17 @@ export interface CreateInvoiceDto {
   notes?: string;
   terms?: string;
   taxRate?: number;
+  vatEnabled?: boolean;
+  whtExpected?: boolean;
 }
 
 export interface UpdateInvoiceDto extends Partial<CreateInvoiceDto> {
   status?: InvoiceStatus;
+}
+
+/** The three answers that make a foreign payment tax-grade. */
+export interface MarkPaidDto {
+  dateReceived: string;
+  amountReceived: number;
+  whtWithheld?: number;
 }
