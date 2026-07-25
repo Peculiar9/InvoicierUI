@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { TemplatePicker } from '@/components/TemplatePicker';
 import { useSettingsStore } from '@/stores/settingsStore';
-import type { Persona } from '@/stores/settingsStore';
+import type { InvoiceTemplate, Persona } from '@/stores/settingsStore';
 
 /**
  * The welcome journey: three small steps and a stamp. Collects only what the
@@ -33,6 +34,7 @@ export const Welcome = () => {
   const [wht, setWht] = useState(false);
   const [currency, setCurrency] = useState('NGN');
   const [tin, setTin] = useState('');
+  const [template, setTemplate] = useState<InvoiceTemplate>('classic');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const displayName = tradingName.trim() || name.trim() || 'Your name here';
@@ -55,6 +57,7 @@ export const Welcome = () => {
       persona: persona ?? undefined,
       vatRegistered: vat,
       whtUsual: wht,
+      template,
       currency,
       tin: tin.trim() || undefined,
     });
@@ -65,7 +68,7 @@ export const Welcome = () => {
     <div className="ob iw">
       <div className="ob-card">
         <div className="ob-progress" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
             <span key={i} className={step >= i ? 'on' : ''} />
           ))}
         </div>
@@ -249,8 +252,33 @@ export const Welcome = () => {
           </div>
         )}
 
-        {/* ----------------------------------------------- step 3: the tax */}
+        {/* ------------------------------------------ step 5: pick the paper */}
         {step === 4 && (
+          <div className="ob-step">
+            <span className="ob-kicker">Pick your paper</span>
+            <h1>Which one should your clients open?</h1>
+            <p>
+              Same brand, three personalities. This is exactly what the invoice
+              looks like, and you can change it anytime in settings.
+            </p>
+            <TemplatePicker
+              value={template}
+              onChange={setTemplate}
+              brand={{ name: displayName, color, logo }}
+            />
+            <div className="ob-nav">
+              <button type="button" className="ob-back" onClick={() => setStep(3)}>
+                <i className="bx bx-left-arrow-alt" /> Back
+              </button>
+              <button type="button" className="iw-btn" onClick={() => setStep(5)}>
+                That is the one <i className="bx bx-right-arrow-alt" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ----------------------------------------------- step 3: the tax */}
+        {step === 5 && (
           <div className="ob-step">
             <span className="ob-kicker">The boring part, kept short</span>
             <h1>Two questions now, zero questions in March.</h1>
@@ -289,10 +317,10 @@ export const Welcome = () => {
               </label>
             </div>
             <div className="ob-nav">
-              <button type="button" className="ob-back" onClick={() => setStep(3)}>
+              <button type="button" className="ob-back" onClick={() => setStep(4)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={() => setStep(5)}>
+              <button type="button" className="iw-btn" onClick={() => setStep(6)}>
                 Almost there <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
@@ -300,7 +328,7 @@ export const Welcome = () => {
         )}
 
         {/* --------------------------------------------------- the stamp */}
-        {step === 5 && (
+        {step === 6 && (
           <div className="ob-step ob-step--done">
             <div className="ob-stamp-wrap">
               <span className="ob-stamp">Open for business</span>
@@ -317,8 +345,8 @@ export const Welcome = () => {
           </div>
         )}
 
-        {step < 5 && (
-          <button type="button" className="ob-skip" onClick={() => setStep(5)}>
+        {step < 6 && (
+          <button type="button" className="ob-skip" onClick={() => setStep(6)}>
             Skip the dressing room
           </button>
         )}
