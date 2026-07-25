@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
+import { Pager } from '@/components/Pager';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useClients, useCreateClient } from '@/hooks';
@@ -19,14 +20,19 @@ export const Clients = () => {
   const [query, setQuery] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [selected, setSelected] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
 
+  const PAGE_SIZE = 8;
   const filtered = clients.filter((c) => {
     const q = query.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
   });
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const paged = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
   const selectedClient = clients.find((c) => c.id === selected) ?? null;
 
   const toggleSelect = (id: string) => setSelected((cur) => (cur === id ? null : id));
@@ -69,7 +75,10 @@ export const Clients = () => {
               type="search"
               placeholder="Search clients"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
             />
           </label>
           <div className="view-switch" role="group" aria-label="View mode">
@@ -99,7 +108,7 @@ export const Clients = () => {
           <div className="view-hint">
             <i className="bx bx-info-circle" />
             <span>
-              <strong>{selectedClient.name}</strong> selected — tap the glowing{' '}
+              <strong>{selectedClient.name}</strong> selected. Tap the glowing{' '}
               <i className="bx bx-plus" /> to invoice them.
             </span>
             <button type="button" onClick={() => setSelected(null)}>
@@ -136,8 +145,9 @@ export const Clients = () => {
             />
           )
         ) : view === 'grid' ? (
-          <div className="client-grid">
-            {filtered.map((c) => (
+          <>
+            <div className="client-grid">
+              {paged.map((c) => (
               <button
                 type="button"
                 className={`client-card${selected === c.id ? ' selected' : ''}`}
@@ -153,7 +163,9 @@ export const Clients = () => {
                 {selected === c.id && <i className="bx bx-check client-check" />}
               </button>
             ))}
-          </div>
+            </div>
+            <Pager page={current} pages={pages} onPage={setPage} />
+          </>
         ) : (
           <div className="dash-card">
             <div className="dash-table-wrap">
@@ -167,7 +179,7 @@ export const Clients = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((c) => (
+                  {paged.map((c) => (
                     <tr
                       key={c.id}
                       className={`dash-row-click${selected === c.id ? ' selected' : ''}`}
@@ -180,7 +192,7 @@ export const Clients = () => {
                         {c.name}
                       </td>
                       <td className="dash-muted">{c.email}</td>
-                      <td className="dash-muted">{c.phone ?? '—'}</td>
+                      <td className="dash-muted">{c.phone ?? '-'}</td>
                       <td className="dash-muted">
                         {formatDate(c.createdAt, { month: 'short', year: 'numeric' })}
                       </td>
@@ -188,6 +200,7 @@ export const Clients = () => {
                   ))}
                 </tbody>
               </table>
+              <Pager page={current} pages={pages} onPage={setPage} />
             </div>
           </div>
         )}
