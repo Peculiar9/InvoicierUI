@@ -2083,3 +2083,40 @@
     height: 44px;
   }
 }
+
+/* reporting period pills */
+.iw .iw-period {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.iw .iw-period button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.iw .iw-period button:hover {
+  color: var(--ink);
+}
+.iw .iw-period button.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+@media (max-width: 560px) {
+  .iw .iw-period {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

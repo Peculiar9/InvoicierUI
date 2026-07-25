@@ -10,12 +10,37 @@ import {
 } from 'chart.js';
 import type { ChartOptions } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Skeleton } from '@/components/Skeleton';
-import { useDashboardData } from '@/hooks';
+import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import type { Invoice, InvoiceStatus } from '@/types';
+
+/* ---- reporting period ---- */
+
+type Period = 'month' | 'quarter' | 'year' | 'all';
+
+const PERIODS: { key: Period; label: string; sub: string }[] = [
+  { key: 'month', label: 'This month', sub: 'this month' },
+  { key: 'quarter', label: 'This quarter', sub: 'this quarter' },
+  { key: 'year', label: 'This year', sub: 'this tax year' },
+  { key: 'all', label: 'All time', sub: 'all time' },
+];
+
+const periodStart = (period: Period): Date | null => {
+  const now = new Date();
+  if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+  if (period === 'quarter') {
+    return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+  }
+  if (period === 'year') return new Date(now.getFullYear(), 0, 1);
+  return null;
+};
+
+const inPeriod = (iso: string | undefined, start: Date | null) =>
+  start === null || (Boolean(iso) && new Date(iso as string) >= start);
 
 ChartJS.register(
   CategoryScale,
@@ -41,8 +66,10 @@ const statusLabel: Record<InvoiceStatus, string> = {
 
 export const Dashboard = () => {
   const { data, isLoading } = useDashboardData();
+  const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const [period, setPeriod] = useState<Period>('year');
 
   if (isLoading || !data) {
     return (
@@ -76,8 +103,25 @@ export const Dashboard = () => {
   }
 
   const { stats, revenueChart, invoiceStatusChart, recentInvoices } = data;
+  const allInvoices = invData?.data ?? [];
 
-  const outstanding = recentInvoices
+  const start = periodStart(period);
+  const periodSub = PERIODS.find((p) => p.key === period)?.sub ?? '';
+
+  // Collected follows the period on a cash basis; the money-owed figures are
+  // a current balance, so they ignore the period on purpose.
+  const paidInPeriod = allInvoices.filter(
+    (inv) =>
+      inv.status === 'paid' && inPeriod(inv.dateReceived ?? inv.updatedAt, start)
+  );
+  const collected = paidInPeriod.reduce(
+    (sum, inv) => sum + (inv.amountReceived ?? inv.total),
+    0
+  );
+  const issuedInPeriod = allInvoices.filter((inv) =>
+    inPeriod(inv.issueDate, start)
+  ).length;
+  const outstanding = allInvoices
     .filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
     .reduce((sum, inv) => sum + inv.total, 0);
   const paidCount = stats.paidCount ?? 0;
@@ -87,8 +131,8 @@ export const Dashboard = () => {
   const kpis = [
     {
       label: 'Collected',
-      value: formatCurrency(stats.totalReceived),
-      sub: 'income received, cash basis',
+      value: formatCurrency(collected),
+      sub: `received ${periodSub}, cash basis`,
       icon: 'bx-wallet',
       tone: 'green',
     },
@@ -101,8 +145,8 @@ export const Dashboard = () => {
     },
     {
       label: 'Invoices',
-      value: formatNumber(stats.totalInvoices),
-      sub: `${stats.pendingInvoices} pending`,
+      value: formatNumber(issuedInPeriod),
+      sub: `issued ${periodSub}, ${stats.pendingInvoices} pending`,
       icon: 'bx-receipt',
       tone: 'purple',
     },
@@ -170,6 +214,20 @@ export const Dashboard = () => {
       ]}
     >
       <div className="dash">
+        {/* reporting period */}
+        <div className="iw-period" role="group" aria-label="Reporting period">
+          {PERIODS.map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              className={period === p.key ? 'active' : ''}
+              onClick={() => setPeriod(p.key)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
         {/* KPI cards */}
         <section className="dash-kpis">
           {kpis.map((kpi) => (
