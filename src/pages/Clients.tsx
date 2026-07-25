@@ -3,6 +3,7 @@ import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
 import { Pager } from '@/components/Pager';
+import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useClients, useCreateClient } from '@/hooks';
@@ -175,7 +176,7 @@ export const Clients = () => {
           </>
         ) : (
           <div className="dash-card">
-            <div className="dash-table-wrap">
+            <SwipeScroll className="dash-table-wrap">
               <table className="dash-table">
                 <thead>
                   <tr>
@@ -207,15 +208,15 @@ export const Clients = () => {
                   ))}
                 </tbody>
               </table>
-              <Pager
-                page={current}
-                pages={pages}
-                total={filtered.length}
-                pageSize={PAGE_SIZE}
-                onPage={setPage}
-                noun="clients"
-              />
-            </div>
+            </SwipeScroll>
+            <Pager
+              page={current}
+              pages={pages}
+              total={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPage={setPage}
+              noun="clients"
+            />
           </div>
         )}
       </div>

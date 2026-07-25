@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
 import { Skeleton } from '@/components/Skeleton';
+import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { copyInvoiceLink } from '@/lib/invoiceActions';
@@ -528,7 +529,7 @@ export const Dashboard = () => {
                 <p>{recentInvoices.length} latest</p>
               </div>
             </header>
-            <div className="dash-table-wrap">
+            <SwipeScroll className="dash-table-wrap">
               <table className="dash-table dash-table--recent">
                 <thead>
                   <tr>
@@ -561,7 +562,7 @@ export const Dashboard = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </SwipeScroll>
           </article>
         </section>
           </>

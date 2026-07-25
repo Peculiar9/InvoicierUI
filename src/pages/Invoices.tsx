@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
+import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
@@ -109,7 +110,7 @@ export const Invoices = () => {
               />
             )
           ) : (
-            <div className="dash-table-wrap">
+            <SwipeScroll className="dash-table-wrap">
               <table className="dash-table dash-table--invoices">
                 <thead>
                   <tr>
@@ -152,15 +153,17 @@ export const Invoices = () => {
                   ))}
                 </tbody>
               </table>
-              <Pager
-                page={current}
-                pages={pages}
-                total={filtered.length}
-                pageSize={PAGE_SIZE}
-                onPage={setPage}
-                noun="invoices"
-              />
-            </div>
+            </SwipeScroll>
+          )}
+          {!isLoading && filtered.length > 0 && (
+            <Pager
+              page={current}
+              pages={pages}
+              total={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPage={setPage}
+              noun="invoices"
+            />
           )}
         </div>
       </div>
