@@ -12,6 +12,7 @@ export const mockUser: User = {
   id: 'usr_1',
   email: 'demo@invoicier.app',
   username: 'demo',
+  emailVerified: true,
   firstName: 'Demo',
   lastName: 'User',
   createdAt: '2026-01-01T09:00:00.000Z',

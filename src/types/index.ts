@@ -2,6 +2,8 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  /** cleared by the verification link; gates sending, nothing else */
+  emailVerified?: boolean;
   firstName?: string;
   lastName?: string;
   avatar?: string;

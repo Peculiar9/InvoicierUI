@@ -31,7 +31,9 @@ export const handlers = [
   http.post('*/api/auth/login', () => ok({ user: mockUser, token })),
   http.post('*/api/auth/signup', async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as Partial<typeof mockUser>;
-    return ok({ user: { ...mockUser, ...body }, token });
+    // the verification email goes out in the background right here, so it
+    // lands while onboarding runs
+    return ok({ user: { ...mockUser, ...body, emailVerified: false }, token });
   }),
   http.post('*/api/auth/logout', () => new HttpResponse(null, { status: 200 })),
   http.get('*/api/auth/profile', () => ok(mockUser)),
@@ -40,6 +42,8 @@ export const handlers = [
     return ok({ ...mockUser, ...updates });
   }),
   http.post('*/api/auth/forgot-password', () => new HttpResponse(null, { status: 200 })),
+  http.post('*/api/auth/resend-verification', () => new HttpResponse(null, { status: 200 })),
+  http.post('*/api/auth/verify-email', () => ok({ verified: true }, 'Email verified')),
   http.post('*/api/auth/reset-password', () => new HttpResponse(null, { status: 200 })),
 
   // ---- dashboard (computed live from the local DB) ----
