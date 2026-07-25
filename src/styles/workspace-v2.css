@@ -2511,3 +2511,36 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* sortable column headers */
+.iw .iw-th {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.iw .iw-th i {
+  font-size: 0.9rem;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.iw .iw-th:hover {
+  color: var(--ink);
+}
+.iw .iw-th.active {
+  color: var(--brand-600);
+}
+.iw .iw-th.active i {
+  opacity: 1;
+}

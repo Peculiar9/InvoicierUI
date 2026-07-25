@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatCurrency, formatDate } from '@/utils/format';
-import type { InvoiceStatus } from '@/types';
+import type { Invoice, InvoiceStatus } from '@/types';
 
 const tabs: { key: InvoiceStatus | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -29,13 +29,44 @@ const statusLabel: Record<InvoiceStatus, string> = {
 
 const PAGE_SIZE = 8;
 
+type SortKey =
+  | 'invoiceNumber'
+  | 'client'
+  | 'issueDate'
+  | 'dueDate'
+  | 'dateReceived'
+  | 'total'
+  | 'status';
+
+/** numeric-and-date keys read best newest/biggest first */
+const DESC_FIRST: SortKey[] = ['issueDate', 'dueDate', 'dateReceived', 'total'];
+
+const sortValue = (inv: Invoice, key: SortKey): string | number => {
+  if (key === 'client') return inv.client.name.toLowerCase();
+  if (key === 'total') return inv.total;
+  return (inv[key] as string | undefined) ?? '';
+};
+
 export const Invoices = () => {
   const [status, setStatus] = useState<InvoiceStatus | 'all'>('all');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
+    key: 'issueDate',
+    dir: -1,
+  });
   const { data, isLoading } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+
+  const toggleSort = (key: SortKey) => {
+    setSort((cur) =>
+      cur.key === key
+        ? { key, dir: cur.dir === 1 ? -1 : 1 }
+        : { key, dir: DESC_FIRST.includes(key) ? -1 : 1 }
+    );
+    setPage(1);
+  };
 
   const invoices = data?.data ?? [];
   const filtered = invoices.filter((inv) => {
@@ -46,9 +77,35 @@ export const Invoices = () => {
       inv.invoiceNumber.toLowerCase().includes(q);
     return matchesStatus && matchesQuery;
   });
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const sorted = [...filtered].sort((a, b) => {
+    const va = sortValue(a, sort.key);
+    const vb = sortValue(b, sort.key);
+    return (va < vb ? -1 : va > vb ? 1 : 0) * sort.dir;
+  });
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const current = Math.min(page, pages);
-  const paged = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const paged = sorted.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+  const Th = ({ k, children }: { k: SortKey; children: string }) => (
+    <th aria-sort={sort.key === k ? (sort.dir === 1 ? 'ascending' : 'descending') : undefined}>
+      <button
+        type="button"
+        className={`iw-th${sort.key === k ? ' active' : ''}`}
+        onClick={() => toggleSort(k)}
+      >
+        {children}
+        <i
+          className={`bx ${
+            sort.key === k
+              ? sort.dir === 1
+                ? 'bx-chevron-up'
+                : 'bx-chevron-down'
+              : 'bx-sort-alt-2'
+          }`}
+        />
+      </button>
+    </th>
+  );
 
   return (
     <LegacyWorkspace
@@ -114,13 +171,13 @@ export const Invoices = () => {
               <table className="dash-table dash-table--invoices">
                 <thead>
                   <tr>
-                    <th>Invoice</th>
-                    <th>Client</th>
-                    <th>Issued</th>
-                    <th>Due</th>
-                    <th>Received</th>
-                    <th>Amount</th>
-                    <th>Status</th>
+                    <Th k="invoiceNumber">Invoice</Th>
+                    <Th k="client">Client</Th>
+                    <Th k="issueDate">Issued</Th>
+                    <Th k="dueDate">Due</Th>
+                    <Th k="dateReceived">Received</Th>
+                    <Th k="total">Amount</Th>
+                    <Th k="status">Status</Th>
                   </tr>
                 </thead>
                 <tbody>
