@@ -2120,3 +2120,122 @@
     overflow-x: auto;
   }
 }
+
+/* needs-attention queue */
+.iw .iw-attn {
+  margin-bottom: 20px;
+}
+.iw .iw-attn-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.iw .iw-attn-head h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .iw-attn-head span {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+}
+.iw .iw-attn ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.iw .iw-attn li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.iw .iw-attn li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.iw .iw-attn-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.iw .iw-attn-icon.is-overdue {
+  background: rgba(212, 69, 60, 0.1);
+  color: var(--danger);
+}
+.iw .iw-attn-icon.is-no-date {
+  background: rgba(185, 125, 16, 0.12);
+  color: var(--warn);
+}
+.iw .iw-attn-icon.is-stale {
+  background: var(--brand-tint);
+  color: var(--brand-600);
+}
+.iw .iw-attn-body {
+  min-width: 0;
+  flex: 1;
+}
+.iw .iw-attn-body p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iw .iw-attn-body small {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+.iw .iw-attn-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.iw .iw-attn-actions button {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.iw .iw-attn-actions button:hover {
+  border-color: var(--brand);
+  color: var(--brand-600);
+}
+.iw .iw-attn-actions button.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.iw .iw-attn-actions button.primary:hover {
+  opacity: 0.92;
+  color: #fff;
+}
+@media (max-width: 560px) {
+  .iw .iw-attn-body p {
+    white-space: normal;
+  }
+  .iw .iw-attn li {
+    flex-wrap: wrap;
+  }
+  .iw .iw-attn-actions {
+    margin-left: 50px;
+  }
+}

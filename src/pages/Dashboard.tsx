@@ -15,6 +15,7 @@ import { LegacyWorkspace } from '@/components/static';
 import { Skeleton } from '@/components/Skeleton';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { copyInvoiceLink } from '@/lib/invoiceActions';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import type { Invoice, InvoiceStatus } from '@/types';
 
@@ -127,6 +128,44 @@ export const Dashboard = () => {
   const paidCount = stats.paidCount ?? 0;
   const taxReady = stats.taxReadyPaid ?? 0;
   const marchPct = paidCount === 0 ? 100 : Math.round((taxReady / paidCount) * 100);
+
+  // What needs a human today: overdue money, paid rows missing their
+  // date-received, and drafts going stale.
+  const STALE_DAYS = 7;
+  const staleBefore = Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000;
+  const attention: Array<{
+    inv: Invoice;
+    kind: 'overdue' | 'no-date' | 'stale';
+    text: string;
+  }> = [
+    ...allInvoices
+      .filter((inv) => inv.status === 'overdue')
+      .map((inv) => ({
+        inv,
+        kind: 'overdue' as const,
+        text: `${formatCurrency(inv.total, inv.currency)} from ${inv.client.name} is past due`,
+      })),
+    ...allInvoices
+      .filter((inv) => inv.status === 'paid' && !inv.dateReceived)
+      .map((inv) => ({
+        inv,
+        kind: 'no-date' as const,
+        text: `${inv.client.name} paid, but the date received is not recorded`,
+      })),
+    ...allInvoices
+      .filter(
+        (inv) =>
+          inv.status === 'draft' && new Date(inv.updatedAt).getTime() < staleBefore
+      )
+      .map((inv) => ({
+        inv,
+        kind: 'stale' as const,
+        text: `Draft for ${inv.client.name} has been sitting for over a week`,
+      })),
+  ].slice(0, 6);
+
+  const attnIcon = { overdue: 'bx-alarm-exclamation', 'no-date': 'bx-calendar-x', stale: 'bx-edit-alt' };
+  const attnLabel = { overdue: 'Overdue', 'no-date': 'Tax gap', stale: 'Stale draft' };
 
   const kpis = [
     {
@@ -256,6 +295,45 @@ export const Dashboard = () => {
           </span>
           <span className="iw-march-pct">{marchPct}%</span>
         </div>
+
+        {/* Needs attention: the rows a human should touch today */}
+        {attention.length > 0 && (
+          <section className="dash-card iw-attn">
+            <div className="iw-attn-head">
+              <h2>Needs attention</h2>
+              <span>{attention.length} item{attention.length === 1 ? '' : 's'}</span>
+            </div>
+            <ul>
+              {attention.map(({ inv, kind, text }) => (
+                <li key={`${kind}-${inv.id}`}>
+                  <span className={`iw-attn-icon is-${kind}`}>
+                    <i className={`bx ${attnIcon[kind]}`} />
+                  </span>
+                  <div className="iw-attn-body">
+                    <p>{text}</p>
+                    <small>
+                      {attnLabel[kind]} · #{inv.invoiceNumber}
+                    </small>
+                  </div>
+                  <div className="iw-attn-actions">
+                    {kind === 'overdue' && (
+                      <button type="button" onClick={() => copyInvoiceLink(inv.id)}>
+                        Copy link
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => openView(inv.id)}
+                    >
+                      {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Invoice status: one clean line, bar + inline legend */}
         <section className="dash-card iw-statusline">
