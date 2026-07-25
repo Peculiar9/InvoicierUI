@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
@@ -21,6 +21,16 @@ const PERSONAS: { key: Persona; icon: string; title: string; line: string }[] = 
 const SWATCHES = ['#924ee9', '#1d1b2e', '#ff5a5f', '#0c8d6f', '#357fff', '#b97d10'];
 const CONFETTI_COLORS = ['#924ee9', '#ff5a5f', '#0c8d6f', '#e0a008', '#357fff'];
 
+/* the pause that loads templates and sets the table */
+const PREP_MSGS = [
+  'Preparing your workspace',
+  'Hanging your logo on the wall',
+  'Pressing your invoice paper',
+  'Warming up the ledger',
+  'Unlocking the front door',
+];
+const PREP_MS = 3400;
+
 export const Welcome = () => {
   const navigate = useNavigate();
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
@@ -36,6 +46,8 @@ export const Welcome = () => {
   const [currency, setCurrency] = useState('NGN');
   const [tin, setTin] = useState('');
   const [template, setTemplate] = useState<InvoiceTemplate>('classic');
+  const [prepping, setPrepping] = useState(false);
+  const [prepIdx, setPrepIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // one burst per mount; each piece gets its own fall
@@ -64,6 +76,20 @@ export const Welcome = () => {
     reader.readAsDataURL(file);
   };
 
+  useEffect(() => {
+    if (!prepping) return;
+    const timer = setInterval(
+      () => setPrepIdx((i) => Math.min(i + 1, PREP_MSGS.length - 1)),
+      Math.floor(PREP_MS / PREP_MSGS.length)
+    );
+    const done = setTimeout(() => navigate({ to: '/dashboard' }), PREP_MS);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(done);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prepping]);
+
   const finish = () => {
     completeOnboarding({
       name: displayName,
@@ -76,7 +102,7 @@ export const Welcome = () => {
       currency,
       tin: tin.trim() || undefined,
     });
-    navigate({ to: '/dashboard' });
+    setPrepping(true);
   };
 
   return (
@@ -97,6 +123,20 @@ export const Welcome = () => {
               }}
             />
           ))}
+        </div>
+      )}
+      {prepping && (
+        <div className="ob-prep" role="status">
+          <div className="ob-prep-tile">
+            {logo ? <img src={logo} alt="" /> : <b>{monogram}</b>}
+            <span className="ob-prep-ring" aria-hidden="true" />
+          </div>
+          <p className="ob-prep-msg" key={prepIdx}>
+            {PREP_MSGS[prepIdx]}
+          </p>
+          <span className="ob-prep-bar" aria-hidden="true">
+            <span />
+          </span>
         </div>
       )}
       <div className="ob-card">
