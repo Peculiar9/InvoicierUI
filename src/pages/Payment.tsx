@@ -74,7 +74,19 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
                     type="button"
                     className="pay-btn pay-btn--primary"
                     disabled={markPaid.isPending}
-                    onClick={() => markPaid.mutate(invoice.id, { onSuccess: () => setPaid(true) })}
+                    onClick={() =>
+                      markPaid.mutate(
+                        {
+                          id: invoice.id,
+                          // a checkout confirms itself: paid in full, today
+                          data: {
+                            dateReceived: new Date().toISOString().slice(0, 10),
+                            amountReceived: invoice.total,
+                          },
+                        },
+                        { onSuccess: () => setPaid(true) }
+                      )
+                    }
                   >
                     {markPaid.isPending ? (
                       <span className="ws-spin" aria-hidden="true" />
