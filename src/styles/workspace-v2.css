@@ -3551,3 +3551,64 @@
     animation: none;
   }
 }
+
+/* unverified email badge + panel */
+.iw .iw-verify-wrap {
+  position: relative;
+}
+.iw .iw-verify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 1.5px dashed rgba(185, 125, 16, 0.5);
+  border-radius: 999px;
+  background: rgba(185, 125, 16, 0.08);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--warn);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.iw .iw-verify-badge:hover {
+  background: rgba(185, 125, 16, 0.14);
+  border-color: var(--warn);
+}
+.iw .iw-verify-badge i {
+  font-size: 1rem;
+}
+.iw .iw-verify-panel {
+  padding: 8px 14px 14px;
+}
+.iw .iw-verify-copy {
+  margin: 10px 0 14px;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.iw .iw-verify-copy b {
+  color: var(--ink);
+}
+.iw .iw-verify-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.iw .iw-spin--dark {
+  width: 26px;
+  height: 26px;
+  border-width: 3px;
+  border-color: rgba(146, 78, 233, 0.2);
+  border-top-color: var(--brand);
+}
+@media (max-width: 560px) {
+  .iw .iw-verify-badge {
+    font-size: 0;
+    gap: 0;
+    padding: 9px 11px;
+  }
+  .iw .iw-verify-badge i {
+    font-size: 1.05rem;
+  }
+}

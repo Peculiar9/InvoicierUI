@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useLogout, useRecentActivities } from '@/hooks';
+import { authApi } from '@/api/auth';
+import { useAuthStore } from '@/stores/authStore';
+import { toast } from '@/lib/toast';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { InvoicePanel } from '@/components/InvoicePanel';
 import { formatDate } from '@/utils/format';
@@ -76,6 +79,15 @@ export const LegacyWorkspace = ({
   const [notifOpen, setNotifOpen] = useState(false);
   const { data: activities = [] } = useRecentActivities(6);
 
+  const user = useAuthStore((s) => s.user);
+  const [verifyOpen, setVerifyOpen] = useState(false);
+  const unverified = Boolean(user) && user?.emailVerified === false;
+  const resendVerification = async () => {
+    await authApi.resendVerification();
+    toast.success(`Verification link resent to ${user?.email}`);
+    setVerifyOpen(false);
+  };
+
   const cycleRail = () => {
     // auto -> pin open -> pin shut -> back to auto
     const next: RailMode =
@@ -149,6 +161,48 @@ export const LegacyWorkspace = ({
         <header className="ws-topbar">
           <h1 className="ws-title">{title}</h1>
           <div className="ws-topbar-actions">
+            {unverified && (
+              <div className="iw-verify-wrap">
+                <button
+                  type="button"
+                  className="iw-verify-badge"
+                  aria-expanded={verifyOpen}
+                  onClick={() => setVerifyOpen((v) => !v)}
+                >
+                  <i className="bx bx-envelope" />
+                  Verify your email
+                </button>
+                {verifyOpen && (
+                  <>
+                    <button
+                      type="button"
+                      className="iw-bell-scrim"
+                      aria-label="Close"
+                      onClick={() => setVerifyOpen(false)}
+                    />
+                    <div className="iw-bell-panel iw-verify-panel">
+                      <div className="iw-bell-head">
+                        <b>One click to go</b>
+                      </div>
+                      <p className="iw-verify-copy">
+                        We sent a link to <b>{user?.email}</b>. Until you click
+                        it, invoices cannot go out under your name. Everything
+                        else works.
+                      </p>
+                      <div className="iw-verify-actions">
+                        <button type="button" className="iw-btn iw-btn--ghost" onClick={resendVerification}>
+                          Resend the link
+                        </button>
+                        {/* TEMPORARY: stands in for the emailed link. Delete before launch. */}
+                        <Link to="/verify-email" className="iw-btn" onClick={() => setVerifyOpen(false)}>
+                          Open the link (demo)
+                        </Link>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
             <div className="iw-bell-wrap">
               <button
                 type="button"
