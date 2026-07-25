@@ -74,8 +74,9 @@ export const InvoicePanel = () => {
       setClientId(prefillClientId ?? '');
       setCurrency(profile.currency || 'NGN');
       setDueDate('');
-      setVatEnabled(true);
-      setWhtExpected(false);
+      // onboarding answers set the defaults; every invoice can still differ
+      setVatEnabled(profile.vatRegistered ?? true);
+      setWhtExpected(profile.whtUsual ?? false);
       setTerms('Payment due within 14 days');
       setNotes('');
       setItems([{ ...emptyItem }]);
