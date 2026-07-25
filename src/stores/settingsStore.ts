@@ -19,7 +19,7 @@ const defaultProfile: BusinessProfile = {
   email: 'accounts@resolve.co',
   phone: '08120822334',
   address: 'No 1 This is the actual address, Lagos',
-  currency: 'USD',
+  currency: 'NGN',
 };
 
 export const useSettingsStore = create<SettingsState>()(
