@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
+import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceTemplate, Persona } from '@/stores/settingsStore';
 
@@ -34,6 +35,7 @@ const PREP_MS = 3400;
 export const Welcome = () => {
   const navigate = useNavigate();
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
+  const accountEmail = useAuthStore((s) => s.user?.email);
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
@@ -410,6 +412,12 @@ export const Welcome = () => {
             <p>
               First invoice takes thirty seconds. March takes care of itself.
             </p>
+            {accountEmail && (
+              <p className="ob-mail">
+                <i className="bx bx-envelope" aria-hidden="true" /> Your
+                verification link is waiting at <b>{accountEmail}</b>
+              </p>
+            )}
             <div className="ob-nav ob-nav--center">
               <button type="button" className="iw-btn iw-btn--lg" onClick={finish}>
                 Enter your workspace <i className="bx bx-right-arrow-alt" />
