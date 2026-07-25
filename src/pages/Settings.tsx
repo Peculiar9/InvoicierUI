@@ -199,6 +199,8 @@ export const Settings = () => {
   return (
     <LegacyWorkspace active="settings" title="Settings">
       <div className="view view--narrow">
+        {/* v1 scope: Payouts is hidden, not wired. The tab returns with the
+            payment rails; the code below stays intact. */}
         <div className="settings-tabs">
           <button
             type="button"
@@ -206,13 +208,6 @@ export const Settings = () => {
             onClick={() => setTab('profile')}
           >
             Business profile
-          </button>
-          <button
-            type="button"
-            className={tab === 'payouts' ? 'active' : ''}
-            onClick={() => setTab('payouts')}
-          >
-            Payouts
           </button>
         </div>
 
