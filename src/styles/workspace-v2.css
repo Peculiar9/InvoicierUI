@@ -2613,3 +2613,10 @@
     width: auto;
   }
 }
+
+/* compact per-page select inside the pager */
+.iw .iw-select--sm {
+  padding: 7px 30px 7px 13px;
+  font-size: 0.72rem;
+  background-position: right 11px center;
+}

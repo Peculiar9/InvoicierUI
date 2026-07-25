@@ -27,8 +27,6 @@ const statusLabel: Record<InvoiceStatus, string> = {
   cancelled: 'Cancelled',
 };
 
-const PAGE_SIZE = 8;
-
 type SortKey =
   | 'invoiceNumber'
   | 'client'
@@ -51,6 +49,7 @@ export const Invoices = () => {
   const [status, setStatus] = useState<InvoiceStatus | 'all'>('all');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
     key: 'issueDate',
     dir: -1,
@@ -89,9 +88,9 @@ export const Invoices = () => {
     const vb = sortValue(b, sort.key);
     return (va < vb ? -1 : va > vb ? 1 : 0) * sort.dir;
   });
-  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
-  const paged = sorted.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const paged = sorted.slice((current - 1) * pageSize, current * pageSize);
 
   const Th = ({ k, children }: { k: SortKey; children: string }) => (
     <th aria-sort={sort.key === k ? (sort.dir === 1 ? 'ascending' : 'descending') : undefined}>
@@ -258,8 +257,12 @@ export const Invoices = () => {
               page={current}
               pages={pages}
               total={filtered.length}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onPage={setPage}
+              onPageSize={(n) => {
+                setPageSize(n);
+                setPage(1);
+              }}
               noun="invoices"
             />
           )}

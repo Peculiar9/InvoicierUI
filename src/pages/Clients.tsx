@@ -25,11 +25,11 @@ export const Clients = () => {
   );
   const [selected, setSelected] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
 
-  const PAGE_SIZE = 8;
   const filtered = clients.filter((c) => {
     const q = query.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
@@ -40,9 +40,9 @@ export const Clients = () => {
     if (sortKey === 'oldest') return a.createdAt.localeCompare(b.createdAt);
     return b.createdAt.localeCompare(a.createdAt); // newest
   });
-  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
-  const paged = sorted.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const paged = sorted.slice((current - 1) * pageSize, current * pageSize);
   const selectedClient = clients.find((c) => c.id === selected) ?? null;
 
   const toggleSelect = (id: string) => setSelected((cur) => (cur === id ? null : id));
@@ -194,8 +194,12 @@ export const Clients = () => {
               page={current}
               pages={pages}
               total={filtered.length}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onPage={setPage}
+              onPageSize={(n) => {
+                setPageSize(n);
+                setPage(1);
+              }}
               noun="clients"
             />
           </>
@@ -238,8 +242,12 @@ export const Clients = () => {
               page={current}
               pages={pages}
               total={filtered.length}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onPage={setPage}
+              onPageSize={(n) => {
+                setPageSize(n);
+                setPage(1);
+              }}
               noun="clients"
             />
           </div>
