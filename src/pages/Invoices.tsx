@@ -55,6 +55,8 @@ export const Invoices = () => {
     key: 'issueDate',
     dir: -1,
   });
+  const [clientFilter, setClientFilter] = useState('');
+  const [currencyFilter, setCurrencyFilter] = useState('');
   const { data, isLoading } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
@@ -69,13 +71,18 @@ export const Invoices = () => {
   };
 
   const invoices = data?.data ?? [];
+  const clientOptions = [...new Map(invoices.map((i) => [i.client.id, i.client])).values()];
+  const currencyOptions = [...new Set(invoices.map((i) => i.currency))];
+
   const filtered = invoices.filter((inv) => {
     const matchesStatus = status === 'all' || inv.status === status;
+    const matchesClient = !clientFilter || inv.client.id === clientFilter;
+    const matchesCurrency = !currencyFilter || inv.currency === currencyFilter;
     const q = query.toLowerCase();
     const matchesQuery =
       inv.client.name.toLowerCase().includes(q) ||
       inv.invoiceNumber.toLowerCase().includes(q);
-    return matchesStatus && matchesQuery;
+    return matchesStatus && matchesClient && matchesCurrency && matchesQuery;
   });
   const sorted = [...filtered].sort((a, b) => {
     const va = sortValue(a, sort.key);
@@ -141,6 +148,40 @@ export const Invoices = () => {
                 {tab.label}
               </button>
             ))}
+          </div>
+          <div className="iw-filters">
+            <select
+              className="iw-select"
+              value={clientFilter}
+              aria-label="Filter by client"
+              onChange={(e) => {
+                setClientFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All clients</option>
+              {clientOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="iw-select"
+              value={currencyFilter}
+              aria-label="Filter by currency"
+              onChange={(e) => {
+                setCurrencyFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">All currencies</option>
+              {currencyOptions.map((cur) => (
+                <option key={cur} value={cur}>
+                  {cur}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -2544,3 +2544,41 @@
 .iw .iw-th.active i {
   opacity: 1;
 }
+
+/* toolbar filter selects */
+.iw .iw-filters {
+  display: flex;
+  gap: 8px;
+}
+.iw .iw-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 10px 34px 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background-color: var(--card);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1.5 5 5.5 9 1.5' fill='none' stroke='%23924ee9' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.iw .iw-select:hover,
+.iw .iw-select:focus-visible {
+  border-color: var(--brand);
+  color: var(--ink);
+  outline: none;
+}
+@media (max-width: 560px) {
+  .iw .iw-filters {
+    width: 100%;
+  }
+  .iw .iw-select {
+    flex: 1;
+    min-width: 0;
+  }
+}
