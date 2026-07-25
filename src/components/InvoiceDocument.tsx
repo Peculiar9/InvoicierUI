@@ -41,7 +41,7 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
 
   return (
     <article
-      className="invoice-doc"
+      className={`invoice-doc invoice-doc--${profile.template ?? 'classic'}`}
       style={{ '--acc': profile.brandColor ?? '#924ee9' } as CSSProperties}
     >
       <header className="invoice-doc-top">

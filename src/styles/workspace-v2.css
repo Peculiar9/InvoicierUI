@@ -3195,3 +3195,63 @@
       'bands';
   }
 }
+
+/* ============================================================================
+   INVOICE TEMPLATES — three papers, one brand
+   ========================================================================== */
+
+/* The Bold: the accent runs the header */
+.invoice-doc--bold .invoice-doc-top {
+  background: var(--acc, #924ee9);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+}
+.invoice-doc--bold .invoice-doc-top h2 {
+  color: #fff;
+}
+.invoice-doc--bold .invoice-doc-mark {
+  color: rgba(255, 255, 255, 0.75);
+}
+.invoice-doc--bold .invoice-doc-monogram {
+  background: #fff;
+  color: var(--acc, #924ee9);
+}
+.invoice-doc--bold .invoice-doc-logo {
+  background: #fff;
+}
+.invoice-doc--bold .invoice-doc-grand span:last-child {
+  color: var(--acc, #924ee9);
+}
+
+/* The Ledger: mono numbers, ruled lines, tax-office energy */
+.invoice-doc--ledger .invoice-doc-mark {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.invoice-doc--ledger .invoice-doc-monogram {
+  border-radius: 6px;
+}
+.invoice-doc--ledger .invoice-doc-logo {
+  border-radius: 6px;
+}
+.invoice-doc--ledger .invoice-doc-table th {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+}
+.invoice-doc--ledger .invoice-doc-table td:nth-child(n + 2),
+.invoice-doc--ledger .invoice-doc-totals {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.invoice-doc--ledger .invoice-doc-table td,
+.invoice-doc--ledger .invoice-doc-table th {
+  border-bottom: 1px dashed #d9d2ee;
+}
+.invoice-doc--ledger .invoice-doc-grand {
+  border-top: 2px solid var(--acc, #924ee9);
+  padding-top: 8px;
+}

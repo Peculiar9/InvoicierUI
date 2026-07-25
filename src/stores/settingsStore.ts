@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type Persona = 'freelancer' | 'studio' | 'specialist' | 'collector';
+export type InvoiceTemplate = 'classic' | 'ledger' | 'bold';
 
 export interface BusinessProfile {
   name: string;
@@ -15,6 +16,8 @@ export interface BusinessProfile {
   /** accent color used on the invoice document */
   brandColor?: string;
   persona?: Persona;
+  /** invoice document layout, chosen in onboarding, changeable in settings */
+  template?: InvoiceTemplate;
   /* ---- tax posture: sets the invoice form defaults ---- */
   vatRegistered?: boolean;
   whtUsual?: boolean;
@@ -35,6 +38,7 @@ const defaultProfile: BusinessProfile = {
   address: 'No 1 This is the actual address, Lagos',
   currency: 'NGN',
   brandColor: '#924ee9',
+  template: 'classic',
   vatRegistered: true,
   whtUsual: false,
 };
