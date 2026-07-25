@@ -66,10 +66,10 @@ describe('InvoicePanel', () => {
     expect(screen.getByText(/Create invoice/)).toBeInTheDocument();
     expect(screen.getByText('Select a client…')).toBeInTheDocument();
     expect(screen.getByText(/Add item/)).toBeInTheDocument();
-    // the floating cute action rail (Save / Send / Preview …) is present while preparing
-    expect(screen.getByTitle('Save')).toBeInTheDocument();
-    expect(screen.getByTitle('Send')).toBeInTheDocument();
-    expect(screen.getByTitle('Preview')).toBeInTheDocument();
+    // the sticky action bar (Save / Send / Preview …) is present while preparing
+    expect(screen.getByRole('button', { name: /Save/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Send/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Preview/ })).toBeInTheDocument();
   });
 
   it('pre-fills the client when opened via openCreate(clientId)', () => {

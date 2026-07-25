@@ -47,9 +47,10 @@ export const InvoicePanel = () => {
   const remove = useDeleteInvoice();
 
   const [clientId, setClientId] = useState('');
-  const [currency, setCurrency] = useState(profile.currency || 'USD');
+  const [currency, setCurrency] = useState(profile.currency || 'NGN');
   const [dueDate, setDueDate] = useState('');
-  const [taxRate, setTaxRate] = useState(0.075);
+  const [vatEnabled, setVatEnabled] = useState(true);
+  const [whtExpected, setWhtExpected] = useState(false);
   const [terms, setTerms] = useState('Payment due within 14 days');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
@@ -58,6 +59,12 @@ export const InvoicePanel = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ client?: string; items?: string }>({});
 
+  // The three answers that make a payment tax-grade.
+  const [paidOpen, setPaidOpen] = useState(false);
+  const [payDate, setPayDate] = useState('');
+  const [payAmount, setPayAmount] = useState('');
+  const [payWht, setPayWht] = useState('');
+
   const editing = mode === 'create' || mode === 'edit';
 
   // Reset / prefill the form whenever the panel opens in a form mode.
@@ -65,9 +72,10 @@ export const InvoicePanel = () => {
     if (!open) return;
     if (mode === 'create') {
       setClientId(prefillClientId ?? '');
-      setCurrency(profile.currency || 'USD');
+      setCurrency(profile.currency || 'NGN');
       setDueDate('');
-      setTaxRate(0.075);
+      setVatEnabled(true);
+      setWhtExpected(false);
       setTerms('Payment due within 14 days');
       setNotes('');
       setItems([{ ...emptyItem }]);
@@ -76,7 +84,8 @@ export const InvoicePanel = () => {
       setClientId(invoice.client.id);
       setCurrency(invoice.currency);
       setDueDate(invoice.dueDate ? invoice.dueDate.slice(0, 10) : '');
-      setTaxRate(invoice.taxRate);
+      setVatEnabled(invoice.vatEnabled ?? invoice.taxRate > 0);
+      setWhtExpected(invoice.whtExpected ?? false);
       setTerms(invoice.terms ?? '');
       setNotes(invoice.notes ?? '');
       setItems(
@@ -95,8 +104,21 @@ export const InvoicePanel = () => {
   const client = clients.find((c) => c.id === clientId) ?? null;
   const lines = items.map((it) => ({ ...it, total: it.quantity * it.unitPrice }));
   const subtotal = lines.reduce((s, l) => s + l.total, 0);
+  const taxRate = vatEnabled ? 0.075 : 0;
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
+
+  // The flow adds up: a client first, then at least one real item. Save and
+  // Send stay asleep until the invoice can actually exist.
+  const hasValidItem = items.some(
+    (it) => it.description.trim() && it.quantity > 0 && it.unitPrice >= 0
+  );
+  const formReady = Boolean(clientId) && hasValidItem && subtotal > 0;
+  const flowHint = !clientId
+    ? { step: '1 of 2', text: 'Pick a client to get started' }
+    : !formReady
+      ? { step: '2 of 2', text: 'Add at least one item with a price' }
+      : null;
 
   const draftDoc: InvoiceDocData = {
     invoiceNumber: invoice?.invoiceNumber ?? 'DRAFT',
@@ -134,6 +156,8 @@ export const InvoicePanel = () => {
     currency,
     dueDate: dueDate || new Date().toISOString().slice(0, 10),
     taxRate,
+    vatEnabled,
+    whtExpected,
     notes,
     terms,
     items: items.map((it) => ({
@@ -142,6 +166,40 @@ export const InvoicePanel = () => {
       unitPrice: it.unitPrice,
     })),
   });
+
+  const openPaidDialog = () => {
+    if (!invoice) return;
+    setPayDate(new Date().toISOString().slice(0, 10));
+    setPayAmount(String(invoice.total));
+    setPayWht('');
+    setPaidOpen(true);
+  };
+
+  const confirmPaid = () => {
+    if (!invoice) return;
+    const amount = Number(payAmount);
+    if (!payDate || !Number.isFinite(amount) || amount <= 0) {
+      toast.error('Date received and a valid amount are required');
+      return;
+    }
+    const wht = Number(payWht) || 0;
+    markPaid.mutate(
+      {
+        id: invoice.id,
+        data: {
+          dateReceived: payDate,
+          amountReceived: amount,
+          ...(wht > 0 ? { whtWithheld: wht } : {}),
+        },
+      },
+      {
+        onSuccess: () => {
+          setPaidOpen(false);
+          toast.success('Payment recorded, receipt on its way');
+        },
+      }
+    );
+  };
 
   const validate = (): boolean => {
     const next: { client?: string; items?: string } = {};
@@ -238,14 +296,21 @@ export const InvoicePanel = () => {
   };
 
   const editActions = [
-    { label: 'Save', img: 'save.png', className: 'legacy-save', onClick: handleSave },
-    { label: 'Send', img: 'send.png', className: 'legacy-send', onClick: handleSend },
-    { label: 'Copy Link', img: 'copy.png', className: 'legacy-copy', onClick: handleCopy },
-    { label: 'Download', img: 'download.png', className: 'legacy-download', onClick: handleDownload },
+    { label: 'Save', bx: 'bx-save', primary: true, needsReady: true, onClick: handleSave },
+    { label: 'Send', bx: 'bx-send', primary: false, needsReady: true, onClick: handleSend },
+    { label: 'Copy Link', bx: 'bx-link', primary: false, needsReady: true, onClick: handleCopy },
+    {
+      label: 'Download',
+      bx: 'bx-download',
+      primary: false,
+      needsReady: true,
+      onClick: handleDownload,
+    },
     {
       label: 'Preview',
-      img: 'preview.png',
-      className: 'legacy-preview',
+      bx: 'bx-show',
+      primary: false,
+      needsReady: false,
       onClick: () => setPreviewOpen(true),
     },
   ];
@@ -306,16 +371,7 @@ export const InvoicePanel = () => {
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
                   {invoice && invoice.status !== 'paid' && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() =>
-                        sendInvoice &&
-                        markPaid.mutate(invoice.id, {
-                          onSuccess: () => toast.success('Marked as paid'),
-                        })
-                      }
-                    >
+                    <button type="button" className="btn btn-ghost" onClick={openPaidDialog}>
                       <i className="bx bx-check-circle" /> Mark paid
                     </button>
                   )}
@@ -352,6 +408,20 @@ export const InvoicePanel = () => {
                   </button>
                 </div>
                 <div className="ipanel-body">
+                  {invoice?.status === 'paid' && invoice.dateReceived && (
+                    <div className="iw-march" style={{ marginBottom: 16 }}>
+                      <i className="bx bx-badge-check" aria-hidden="true" />
+                      <span>
+                        <b>Tax-grade record.</b> Received{' '}
+                        {formatCurrency(invoice.amountReceived ?? invoice.total, invoice.currency)}{' '}
+                        on {invoice.dateReceived.slice(0, 10)}
+                        {invoice.whtWithheld
+                          ? `, ${formatCurrency(invoice.whtWithheld, invoice.currency)} withheld (WHT credit)`
+                          : ''}
+                        .
+                      </span>
+                    </div>
+                  )}
                   {invoice ? (
                     <InvoiceDocument data={invoice} />
                   ) : (
@@ -365,6 +435,17 @@ export const InvoicePanel = () => {
             {editing && (
               <>
                 <div className="ipanel-body">
+                  {flowHint ? (
+                    <div className="iw-flowhint" role="status">
+                      <span className="step">{flowHint.step}</span>
+                      {flowHint.text}
+                    </div>
+                  ) : (
+                    <div className="iw-flowhint iw-flowhint--ready" role="status">
+                      <i className="bx bx-check-circle" aria-hidden="true" />
+                      Ready to save, send or share
+                    </div>
+                  )}
                   <div className="cinv-fields">
                     <label className="cinv-field">
                       <span>Client</span>
@@ -388,10 +469,10 @@ export const InvoicePanel = () => {
                     <label className="cinv-field">
                       <span>Currency</span>
                       <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+                        <option value="NGN">NGN, paid via Paystack</option>
                         <option value="USD">USD</option>
                         <option value="EUR">EUR</option>
                         <option value="GBP">GBP</option>
-                        <option value="NGN">NGN</option>
                       </select>
                     </label>
                     <label className="cinv-field">
@@ -402,15 +483,28 @@ export const InvoicePanel = () => {
                         onChange={(e) => setDueDate(e.target.value)}
                       />
                     </label>
-                    <label className="cinv-field">
-                      <span>Tax rate</span>
-                      <select value={taxRate} onChange={(e) => setTaxRate(Number(e.target.value))}>
-                        <option value={0}>0%</option>
-                        <option value={0.05}>5%</option>
-                        <option value={0.075}>7.5%</option>
-                        <option value={0.1}>10%</option>
-                        <option value={0.2}>20%</option>
-                      </select>
+                  </div>
+
+                  <div className="iw-toggles">
+                    <label className="iw-toggle">
+                      <input
+                        type="checkbox"
+                        checked={vatEnabled}
+                        onChange={(e) => setVatEnabled(e.target.checked)}
+                      />
+                      <span className="knob" aria-hidden="true" />
+                      VAT 7.5%
+                      <small>invoice level</small>
+                    </label>
+                    <label className="iw-toggle">
+                      <input
+                        type="checkbox"
+                        checked={whtExpected}
+                        onChange={(e) => setWhtExpected(e.target.checked)}
+                      />
+                      <span className="knob" aria-hidden="true" />
+                      Client withholds WHT
+                      <small>credit recorded on payment</small>
                     </label>
                   </div>
 
@@ -494,10 +588,12 @@ export const InvoicePanel = () => {
                       <span>Subtotal</span>
                       <span>{formatCurrency(subtotal, currency)}</span>
                     </div>
-                    <div>
-                      <span>Tax ({Math.round(taxRate * 100)}%)</span>
-                      <span>{formatCurrency(tax, currency)}</span>
-                    </div>
+                    {vatEnabled && (
+                      <div>
+                        <span>VAT (7.5%)</span>
+                        <span>{formatCurrency(tax, currency)}</span>
+                      </div>
+                    )}
                     <div className="cinv-grand">
                       <span>Total</span>
                       <span>{formatCurrency(total, currency)}</span>
@@ -518,13 +614,14 @@ export const InvoicePanel = () => {
                     <input type="text" value={terms} onChange={(e) => setTerms(e.target.value)} />
                   </label>
                 </div>
+
               </>
             )}
           </>
         )}
       </aside>
 
-      {/* floating cute action rail while preparing an invoice */}
+      {/* the contextual right rail rides along while preparing an invoice */}
       {open && editing && (
         <aside className="ws-rail ws-rail-right ipanel-rail" key="invoice-actions">
           <ul>
@@ -532,16 +629,20 @@ export const InvoicePanel = () => {
               <li key={action.label}>
                 <button
                   type="button"
-                  className={`ws-action ${action.className}`}
-                  data-label={action.label}
-                  title={action.label}
+                  className={`ws-action${action.primary ? ' ws-action--primary' : ''}`}
+                  data-label={
+                    action.needsReady && !formReady
+                      ? `${action.label} · finish the invoice first`
+                      : action.label
+                  }
+                  aria-label={action.label}
                   onClick={action.onClick}
-                  disabled={!!busy}
+                  disabled={!!busy || (action.needsReady && !formReady)}
                 >
                   {busy === action.label ? (
-                    <span className="ws-spin" aria-hidden="true" />
+                    <span className="iw-spin" aria-hidden="true" />
                   ) : (
-                    <img src={`/images/${action.img}`} alt="" />
+                    <i className={`bx ${action.bx}`} aria-hidden="true" />
                   )}
                 </button>
               </li>
@@ -557,6 +658,75 @@ export const InvoicePanel = () => {
         size="lg"
       >
         <InvoiceDocument data={draftDoc} />
+      </Modal>
+
+      {/* the three answers that make a payment tax-grade */}
+      <Modal open={paidOpen} onClose={() => setPaidOpen(false)} title="Record payment">
+        <div className="iw-paid-form">
+          <p className="hint">
+            <b>Date received drives your tax record.</b> Income exists when the
+            money lands, not when you invoiced. For foreign payments it also
+            sets the conversion rate that filing season will use.
+          </p>
+          <div className="iw-paid-grid">
+            <label className="cinv-field">
+              <span>Date received</span>
+              <input
+                type="date"
+                value={payDate}
+                onChange={(e) => setPayDate(e.target.value)}
+              />
+            </label>
+            <label className="cinv-field">
+              <span>Amount received ({invoice?.currency})</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                inputMode="decimal"
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+                placeholder="After fees and FX spreads"
+              />
+            </label>
+          </div>
+          {invoice?.whtExpected && (
+            <label className="cinv-field">
+              <span>Amount withheld, WHT ({invoice?.currency})</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                inputMode="decimal"
+                value={payWht}
+                onChange={(e) => setPayWht(e.target.value)}
+                placeholder="Spawns a WHT credit record"
+              />
+            </label>
+          )}
+          <div className="iw-paid-actions">
+            <button
+              type="button"
+              className="iw-btn iw-btn--ghost"
+              onClick={() => setPaidOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="iw-btn"
+              onClick={confirmPaid}
+              disabled={markPaid.isPending}
+            >
+              {markPaid.isPending ? (
+                <span className="iw-spin" aria-hidden="true" />
+              ) : (
+                <i className="bx bx-check-circle" aria-hidden="true" />
+              )}
+              Record payment
+            </button>
+          </div>
+        </div>
       </Modal>
     </>
   );
