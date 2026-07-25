@@ -27,7 +27,7 @@ export const useSignup = () => {
     mutationFn: (credentials: SignupCredentials) => authApi.signup(credentials),
     onSuccess: (data) => {
       setUser(data.user, data.token);
-      navigate({ to: '/dashboard' });
+      navigate({ to: '/welcome' });
     },
   });
 };
