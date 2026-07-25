@@ -1,0 +1,3239 @@
+/* ============================================================================
+   Landing v2 — "the brand loop"
+   The page opens inside the brand (full-cover loader on the footer's deep
+   purple + ghost wordmark) and closes inside it (the footer itself). Between
+   the two: the same house style — Poppins set huge and tight, brand purple
+   spent decisively, coral reserved for live/status moments — executed as a
+   crafted DOM page (no PNG mockups). Scoped under .lp / .lp-loader so the
+   legacy marketing styles (auth pages) stay untouched.
+   ========================================================================== */
+
+.lp,
+.lp-loader {
+  --brand: #924ee9;
+  --brand-600: #7c3aed;
+  --brand-deep: #5a3b81;
+  --brand-deeper: #43285f;
+  --brand-tint: rgba(146, 78, 233, 0.1);
+  --accent: #ff5a5f;
+  --paid: #0c8d6f;
+
+  --ink: #1d1b2e;
+  --ink-soft: #5f5d72;
+  --ink-faint: #9b99ab;
+  --surface: #ffffff;
+  --surface-muted: #f7f5fc;
+  --border: #ece8f6;
+
+  --font: 'Poppins', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --fs-display: clamp(2.75rem, 1.35rem + 6vw, 5.5rem);
+  --fs-mega: clamp(2.25rem, 1.3rem + 4vw, 3.5rem);
+  --fs-h2: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --fs-h3: 1.25rem;
+  --fs-lg: 1.125rem;
+  --fs-base: 1rem;
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.75rem;
+
+  --content-max: 1180px;
+  --gutter: clamp(20px, 5vw, 72px);
+  --section-y: clamp(72px, 9vw, 128px);
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 4px 24px rgba(29, 27, 46, 0.06);
+  --shadow-md: 0 18px 48px rgba(29, 27, 46, 0.1);
+  --shadow-brand: 0 8px 20px rgba(146, 78, 233, 0.2);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+.lp *,
+.lp *::before,
+.lp *::after,
+.lp-loader *,
+.lp-loader *::before,
+.lp-loader *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.lp) {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.lp) {
+    scroll-behavior: smooth;
+  }
+}
+
+.lp {
+  position: relative;
+  overflow-x: clip;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* no color here: `.lp a` would outrank single-class button/link rules
+   and repaint white button text in body ink */
+.lp a {
+  text-decoration: none;
+}
+.lp ul {
+  list-style: none;
+}
+.lp h1,
+.lp h2,
+.lp h3,
+.lp h4 {
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.lp img {
+  max-width: 100%;
+}
+.lp :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.lp-shell {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* ============================================================================
+   LOADER — the footer's brand world as a full-page cover
+   ========================================================================== */
+
+.lp-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  font-family: var(--font);
+  background: linear-gradient(170deg, #5d3e89, var(--brand-deeper));
+  color: #fff;
+}
+.lp-loader::before {
+  /* the footer's dot pattern */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 70%);
+  mask-image: linear-gradient(180deg, #000, transparent 70%);
+  pointer-events: none;
+}
+.lp-loader::after {
+  /* slow aurora drifting behind the wordmark */
+  content: '';
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  background:
+    radial-gradient(closest-side, rgba(255, 90, 95, 0.16), transparent 65%),
+    radial-gradient(closest-side, rgba(146, 78, 233, 0.5), transparent 70%);
+  filter: blur(40px);
+  animation: lp-aurora 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes lp-aurora {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(28deg) scale(1.15);
+  }
+}
+
+/* nav-logo continuity: sits where the page logo lands after the lift */
+.lp-loader-logo {
+  position: absolute;
+  z-index: 2;
+  top: 28px;
+  left: clamp(20px, 4vw, 56px);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+.lp-loader-logo b {
+  color: var(--accent);
+}
+
+.lp-loader.is-leaving {
+  animation: lp-curtain 0.85s var(--ease-snap) forwards;
+}
+/* diagonal wipe: the edge sweeps up and flattens as it exits */
+@keyframes lp-curtain {
+  0% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  55% {
+    clip-path: polygon(0 0, 100% 0, 100% 52%, 0 72%);
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 0%, 0 0%);
+    visibility: hidden;
+  }
+}
+.lp-loader.is-leaving .lp-loader-mark {
+  transform: translateY(-70px);
+  opacity: 0.4;
+}
+.lp-loader.is-leaving .lp-loader-rail,
+.lp-loader.is-leaving .lp-loader-stamp,
+.lp-loader.is-leaving .lp-loader-logo {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* ---- the wordmark: ghost layer + light layer clipped by progress ---- */
+.lp-loader-mark {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  font-size: clamp(3.4rem, 16vw, 15rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  user-select: none;
+  transition: transform 0.8s var(--ease-snap), opacity 0.8s ease;
+}
+.lp-loader-mark .ghost,
+.lp-loader-mark .lit {
+  display: block;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.lp-loader-mark .ghost {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+}
+.lp-loader-mark .lit {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.72));
+  clip-path: inset(-15% calc(100% - var(--p, 0%)) -15% 0);
+  transition: clip-path 0.18s linear;
+  text-shadow: 0 0 60px rgba(255, 255, 255, 0.35);
+}
+/* the scanning beam riding the fill edge */
+.lp-loader-beam {
+  position: absolute;
+  z-index: 2;
+  top: -14%;
+  bottom: -14%;
+  left: var(--p, 0%);
+  width: 3px;
+  translate: -50%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  filter: blur(0.5px) drop-shadow(0 0 14px rgba(255, 255, 255, 0.85));
+  transition: left 0.18s linear, opacity 0.35s ease;
+}
+.lp-loader.is-done .lp-loader-beam {
+  opacity: 0;
+}
+.lp-loader.is-done .lp-loader-mark {
+  animation: lp-mark-pop 0.4s var(--ease-out);
+}
+@keyframes lp-mark-pop {
+  40% {
+    transform: scale(1.02);
+  }
+}
+
+/* ---- PAID stamp at 100% ---- */
+.lp-loader-stamp {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  padding: 0.38em 1em;
+  border: 3px solid #ffd9da;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 2px rgba(255, 217, 218, 0.35);
+  color: #ffd9da;
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  background: rgba(255, 90, 95, 0.24);
+  backdrop-filter: blur(2px);
+  transform: translate(-50%, -50%) rotate(-8deg) scale(2.4);
+  opacity: 0;
+  pointer-events: none;
+}
+.lp-loader.is-done .lp-loader-stamp {
+  animation: lp-stamp 0.45s var(--ease-snap) forwards;
+}
+/* thuds in with overshoot, blur resolving on impact */
+@keyframes lp-stamp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(2.4);
+    filter: blur(6px);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(0.94);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1);
+  }
+}
+
+/* ---- bottom rail: counter, status copy, hairline progress ---- */
+.lp-loader-rail {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 clamp(20px, 4vw, 56px) clamp(18px, 3.5vw, 40px);
+}
+.lp-loader-count {
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.25);
+}
+.lp-loader.is-done .lp-loader-count {
+  animation: lp-mark-pop 0.4s var(--ease-out);
+}
+.lp-loader-count sup {
+  font-size: 0.32em;
+  font-weight: 700;
+  vertical-align: super;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 0.08em;
+}
+.lp-loader-status {
+  max-width: 40ch;
+  text-align: right;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+.lp-loader-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(calc(var(--p, 0) / 100));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), #fff);
+  transition: transform 0.18s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-loader::after,
+  .lp-loader.is-done .lp-loader-mark,
+  .lp-loader.is-done .lp-loader-count,
+  .lp-loader.is-done .lp-loader-stamp {
+    animation: none;
+  }
+  .lp-loader-beam {
+    display: none;
+  }
+  .lp-loader.is-leaving {
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  .lp-loader.is-leaving .lp-loader-mark {
+    transform: none;
+  }
+  .lp-loader.is-done .lp-loader-stamp {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1);
+  }
+}
+
+/* ============================================================================
+   REVEALS — gated by the loader; .in-view is added once it lifts
+   ========================================================================== */
+
+.lp [data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+.lp [data-reveal='left'] {
+  transform: translateX(-34px);
+}
+.lp [data-reveal='right'] {
+  transform: translateX(34px);
+}
+.lp [data-reveal].in-view {
+  opacity: 1;
+  transform: none;
+}
+.lp [data-delay='1'] { --d: 1; }
+.lp [data-delay='2'] { --d: 2; }
+.lp [data-delay='3'] { --d: 3; }
+.lp [data-delay='4'] { --d: 4; }
+.lp [data-delay='5'] { --d: 5; }
+.lp [data-delay='6'] { --d: 6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp [data-reveal],
+  .lp-hero h1[data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .lp-waitlist-postcard {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   NAV — glass pill that firms up on scroll
+   ========================================================================== */
+
+.lp-nav-wrap {
+  position: fixed;
+  top: 14px;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  padding-inline: var(--gutter);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.lp-nav {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  max-width: var(--content-max);
+  padding: 10px 12px 10px 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+.lp-nav.is-scrolled {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.lp-logo {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.lp-logo b {
+  color: var(--accent);
+}
+.lp-nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 34px);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.lp-nav-links a {
+  position: relative;
+  padding: 6px 2px;
+  color: inherit;
+  transition: color 0.2s ease;
+}
+.lp-nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand);
+  transition: right 0.3s var(--ease-out);
+}
+.lp-nav-links a:hover {
+  color: var(--ink);
+}
+.lp-nav-links a:hover::after {
+  right: 0;
+}
+.lp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lp-nav-login {
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  transition: background 0.2s ease;
+}
+.lp-nav-login:hover {
+  background: var(--brand-tint);
+}
+/* one button family: the waitlist pill, everywhere. Solid brand, full
+   radius, tight brand shadow, a light sweep on hover, a press on click. */
+.lp-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-brand);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.lp-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform 0.55s ease;
+  pointer-events: none;
+}
+.lp-btn i {
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.2s var(--ease-out);
+}
+.lp-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(146, 78, 233, 0.28);
+}
+.lp-btn:hover::after {
+  transform: translateX(130%);
+}
+.lp-btn:hover i {
+  transform: translateX(3px);
+}
+.lp-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+/* house ghost: transparent always, border and text turn brand on hover */
+.lp-btn--ghost {
+  padding: 12.5px 22.5px;
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
+}
+.lp-btn--ghost::after {
+  display: none;
+}
+.lp-btn--ghost:hover {
+  background: transparent;
+  border-color: var(--brand);
+  color: var(--brand);
+  box-shadow: none;
+  opacity: 1;
+}
+.lp-btn--lg {
+  padding: 16px 30px;
+  font-size: var(--fs-base);
+}
+.lp-btn--lg.lp-btn--ghost {
+  padding: 14.5px 28.5px;
+}
+/* nav CTA: same silhouette as every other button, just more compact */
+.lp-nav .lp-btn {
+  padding: 11px 20px;
+}
+
+/* mobile menu */
+.lp-nav-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1.4rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.lp-nav-sheet {
+  display: none;
+}
+@media (max-width: 880px) {
+  .lp-nav-links,
+  .lp-nav-login {
+    display: none;
+  }
+  .lp-nav-toggle {
+    display: inline-flex;
+  }
+  .lp-nav-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: var(--gutter);
+    right: var(--gutter);
+    padding: 12px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s var(--ease-out);
+  }
+  .lp-nav-sheet.is-open {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .lp-nav-sheet a {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .lp-nav-sheet a:hover {
+    background: var(--surface-muted);
+  }
+}
+
+/* ============================================================================
+   HERO
+   ========================================================================== */
+
+.lp-hero {
+  position: relative;
+  padding-top: clamp(120px, 16vh, 170px);
+  padding-bottom: var(--section-y);
+  overflow: clip;
+}
+.lp-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.lp-hero-bg .grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+  opacity: 0.7;
+}
+.lp-hero-bg .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  animation: lp-drift 12s ease-in-out infinite alternate;
+}
+.lp-hero-bg .blob--brand {
+  width: 460px;
+  height: 460px;
+  right: -6%;
+  top: -12%;
+  background: rgba(146, 78, 233, 0.18);
+}
+.lp-hero-bg .blob--coral {
+  width: 340px;
+  height: 340px;
+  left: -8%;
+  top: 30%;
+  background: rgba(255, 90, 95, 0.1);
+  animation-delay: -4s;
+}
+@keyframes lp-drift {
+  to {
+    transform: translate(36px, 26px) scale(1.08);
+  }
+}
+/* faint currency glyphs adrift in the hero air */
+.lp-hero-bg .cur {
+  position: absolute;
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  color: rgba(146, 78, 233, 0.13);
+  animation: float-lite 9s ease-in-out infinite;
+  user-select: none;
+}
+.lp-hero-bg .cur--ngn { top: 18%; left: 44%; font-size: clamp(2rem, 3.6vw, 3.2rem); }
+.lp-hero-bg .cur--usd { top: 64%; left: 3%; animation-delay: -3s; }
+.lp-hero-bg .cur--eur { top: 10%; left: 8%; animation-delay: -6s; }
+.lp-hero-bg .cur--gbp { top: 78%; right: 5%; animation-delay: -4.5s; color: rgba(255, 90, 95, 0.12); }
+@keyframes float-lite {
+  50% {
+    transform: translateY(-16px) rotate(4deg);
+  }
+}
+
+.lp-hero-inner {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+}
+
+/* ledger tag: mono type, coral diamond, dashed rule that firms up on hover */
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--rule-dash, #d9d2ee);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  transition: color 0.25s ease, border-color 0.25s ease, border-bottom-style 0.25s ease;
+}
+.lp-tag::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  rotate: 45deg;
+  transition: rotate 0.45s var(--ease-out), background 0.25s ease;
+}
+.lp-tag i {
+  font-size: 1.05rem;
+  color: var(--brand-600);
+  transition: transform 0.25s var(--ease-out);
+}
+.lp-tag:hover {
+  color: var(--ink);
+  border-bottom-style: solid;
+  border-bottom-color: var(--brand);
+}
+.lp-tag:hover::before {
+  rotate: 225deg;
+  background: var(--brand);
+}
+.lp-tag:hover i {
+  transform: translateX(4px);
+}
+
+.lp-hero h1 {
+  margin-top: 22px;
+  font-size: var(--fs-display);
+  font-weight: 800;
+  line-height: 1.03;
+}
+/* the headline resolves from a blur as it rises */
+.lp-hero h1[data-reveal] {
+  filter: blur(12px);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out),
+    filter 0.9s var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+.lp-hero h1[data-reveal].in-view {
+  filter: blur(0);
+}
+.lp-hero h1 .type-wrap {
+  position: relative;
+  display: inline-block;
+  min-width: 9ch;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--brand);
+}
+.lp-hero h1 .type-caret {
+  display: inline-block;
+  width: 0.06em;
+  min-width: 3px;
+  height: 0.88em;
+  margin-left: 0.06em;
+  background: var(--brand);
+  vertical-align: -0.06em;
+  animation: lp-caret 1s steps(1) infinite;
+}
+@keyframes lp-caret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.lp-hero-sub {
+  margin-top: 22px;
+  max-width: 47ch;
+  font-size: var(--fs-lg);
+}
+.lp-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 34px;
+}
+/* honest assurance row: product facts, not fabricated social proof */
+.lp-assure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin-top: 38px;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+.lp-assure span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp-assure i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+  font-size: 0.8rem;
+  transition: transform 0.25s var(--ease-out), background 0.25s ease;
+}
+.lp-assure span:hover i {
+  transform: scale(1.2) rotate(8deg);
+  background: rgba(12, 141, 111, 0.2);
+}
+
+/* ---- the invoice mock: crisp paper on a quiet tint ---- */
+.lp-invoice-scene {
+  position: relative;
+  perspective: 1200px;
+}
+.lp-invoice-scene::before {
+  content: '';
+  position: absolute;
+  inset: -8% -6%;
+  z-index: -1;
+  background:
+    radial-gradient(60% 55% at 62% 38%, rgba(146, 78, 233, 0.16), transparent 70%),
+    radial-gradient(38% 34% at 20% 80%, rgba(255, 90, 95, 0.1), transparent 70%);
+}
+
+/* ---- hero illustration: the courier makes the pitch ---- */
+.lp-hero-art {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #fdf9f1;
+  box-shadow: var(--shadow-md);
+  transform: rotate(1.5deg) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+.lp-hero-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.lp-hero-art-strip {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.lp-hero-art-strip .lp-invoice-steps {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+@keyframes lp-float {
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* in-card lifecycle stepper, synced with the status pill */
+.lp-invoice-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+.lp-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color 0.3s ease;
+}
+.lp-step::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.lp-step.is-done-step::before {
+  background: var(--brand);
+}
+.lp-step.is-active {
+  color: var(--ink);
+}
+.lp-step.is-active::before {
+  background: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-tint);
+}
+.lp-step:last-child.is-active {
+  color: var(--paid);
+}
+.lp-step:last-child.is-active::before {
+  background: var(--paid);
+  box-shadow: 0 0 0 4px rgba(12, 141, 111, 0.14);
+}
+
+/* floating toasts */
+.lp-toast {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-xs);
+  animation: lp-float 6s ease-in-out infinite;
+}
+.lp-toast strong {
+  display: block;
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  letter-spacing: -0.01em;
+}
+.lp-toast small {
+  color: var(--ink-faint);
+}
+.lp-toast--paid {
+  right: -4%;
+  top: -13%;
+  animation-delay: -2.2s;
+}
+.lp-toast--paid .tick {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.14);
+  color: var(--paid);
+  font-size: 1rem;
+}
+.lp-toast--remind {
+  left: -8%;
+  bottom: -12%;
+  animation-delay: -4.4s;
+}
+.lp-toast--remind .bell {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1rem;
+}
+
+/* ============================================================================
+   MARQUEE
+   ========================================================================== */
+
+.lp-marquee {
+  --fade: 80px;
+  overflow: hidden;
+  padding: 18px 0;
+  border-block: 1px solid var(--border);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+}
+.lp-marquee-track {
+  display: flex;
+  gap: 44px;
+  width: max-content;
+  animation: lp-marquee 32s linear infinite;
+}
+.lp-marquee:hover .lp-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes lp-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.lp-marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 44px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.lp-marquee-item::after {
+  content: '◆';
+  font-size: 0.5rem;
+  color: var(--brand);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-marquee-track {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   SECTION HEADERS
+   ========================================================================== */
+
+.lp-section {
+  padding-block: var(--section-y);
+}
+.lp-kicker {
+  display: block;
+  margin-bottom: 14px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+.lp-section-head {
+  max-width: 620px;
+  margin-bottom: clamp(36px, 5vw, 64px);
+}
+.lp-section-head h2 {
+  font-size: var(--fs-h2);
+  font-weight: 800;
+}
+.lp-section-head p {
+  margin-top: 14px;
+  font-size: var(--fs-lg);
+}
+
+/* ============================================================================
+   FLOW — draft → sent → paid, on rails
+   ========================================================================== */
+
+.lp-flow {
+  background: var(--surface-muted);
+  border-block: 1px solid var(--border);
+}
+.lp-flow-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 40px);
+}
+.lp-flow-rail::before,
+.lp-flow-rail::after {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  border-radius: 2px;
+}
+.lp-flow-rail::before {
+  background: var(--border);
+}
+.lp-flow-rail::after {
+  background: linear-gradient(90deg, var(--brand), var(--paid));
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.lp-flow-rail.in-view::after {
+  animation: lp-rail 1.6s var(--ease-out) 0.3s forwards;
+}
+@keyframes lp-rail {
+  to {
+    transform: scaleX(1);
+  }
+}
+.lp-flow-step {
+  position: relative;
+  z-index: 1;
+}
+.lp-flow-dot {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--border);
+  color: var(--brand-600);
+  font-size: 1.5rem;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, color 0.4s ease;
+}
+.lp-flow-rail.in-view .lp-flow-step:nth-child(1) .lp-flow-dot { transition-delay: 0.45s; }
+.lp-flow-rail.in-view .lp-flow-step:nth-child(2) .lp-flow-dot { transition-delay: 0.95s; }
+.lp-flow-rail.in-view .lp-flow-step:nth-child(3) .lp-flow-dot { transition-delay: 1.5s; }
+.lp-flow-rail.in-view .lp-flow-dot {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 6px var(--brand-tint);
+}
+.lp-flow-rail.in-view .lp-flow-step:nth-child(3) .lp-flow-dot {
+  border-color: var(--paid);
+  box-shadow: 0 0 0 6px rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+}
+.lp-flow-rail.in-view .lp-flow-dot i {
+  animation: lp-dot-pop 0.5s var(--ease-out) both;
+}
+.lp-flow-rail.in-view .lp-flow-step:nth-child(1) .lp-flow-dot i { animation-delay: 0.45s; }
+.lp-flow-rail.in-view .lp-flow-step:nth-child(2) .lp-flow-dot i { animation-delay: 0.95s; }
+.lp-flow-rail.in-view .lp-flow-step:nth-child(3) .lp-flow-dot i { animation-delay: 1.5s; }
+@keyframes lp-dot-pop {
+  0% {
+    transform: scale(0.4);
+  }
+  70% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.lp-flow-num {
+  display: block;
+  margin-top: 22px;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+}
+.lp-flow-step h3 {
+  margin-top: 8px;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+}
+.lp-flow-step p {
+  margin-top: 10px;
+  font-size: var(--fs-sm);
+  max-width: 32ch;
+}
+
+/* ============================================================================
+   STATS — count-up band
+   ========================================================================== */
+
+.lp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(24px, 4vw, 56px);
+  padding-block: clamp(48px, 6vw, 80px);
+}
+.lp-stat b {
+  display: block;
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lp-stat b i {
+  font-style: normal;
+  color: var(--brand);
+}
+.lp-stat span {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--fs-sm);
+  color: var(--ink-faint);
+}
+
+/* ============================================================================
+   FEATURES — bento
+   ========================================================================== */
+
+.lp-bento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(210px, auto);
+  gap: 18px;
+}
+.lp-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+/* cursor spotlight, position fed by JS */
+.lp-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(146, 78, 233, 0.12),
+    transparent 65%
+  );
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.lp-card:hover::before {
+  opacity: 1;
+}
+.lp-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(146, 78, 233, 0.35);
+  box-shadow: var(--shadow-md);
+}
+.lp-card--wide {
+  grid-column: span 2;
+}
+.lp-card h3 {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+}
+.lp-card p {
+  font-size: var(--fs-sm);
+  max-width: 46ch;
+}
+.lp-card-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: auto;
+  border-radius: 14px;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1.4rem;
+}
+.lp-chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.lp-chip {
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.lp-card--sheet::after {
+  /* a tiny paper invoice peeking from the corner */
+  content: '';
+  position: absolute;
+  right: -22px;
+  top: -22px;
+  width: 120px;
+  height: 150px;
+  border-radius: 10px;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    repeating-linear-gradient(180deg, var(--border) 0 2px, transparent 2px 18px) 14px 40px / 70% 60% no-repeat padding-box;
+  background-color: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transform: rotate(10deg);
+  transition: transform 0.3s var(--ease-out);
+}
+.lp-card--sheet:hover::after {
+  transform: rotate(5deg) translateY(4px);
+}
+
+/* ============================================================================
+   PRICING
+   ========================================================================== */
+
+.lp-pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 80px);
+}
+.lp-pricing-copy h2 {
+  font-size: var(--fs-mega);
+  font-weight: 800;
+}
+.lp-pricing-copy p {
+  margin-top: 16px;
+  font-size: var(--fs-lg);
+  max-width: 42ch;
+}
+.lp-price-card {
+  position: relative;
+  padding: 36px;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(140deg, var(--brand), rgba(255, 90, 95, 0.65), var(--brand)) border-box;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-md);
+}
+/* stamp-styled, like everything official around here */
+.lp-price-badge {
+  position: absolute;
+  top: -16px;
+  right: 26px;
+  padding: 6px 14px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-transform: uppercase;
+  rotate: 3deg;
+  transition: rotate 0.3s var(--ease-out);
+}
+.lp-price-card:hover .lp-price-badge {
+  rotate: -2deg;
+}
+.lp-price-card h4 {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+.lp-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 12px;
+}
+.lp-price strong {
+  font-size: clamp(2.8rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lp-price span {
+  color: var(--ink-faint);
+  font-size: var(--fs-sm);
+}
+.lp-price-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border);
+}
+.lp-price-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+.lp-price-list i {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.lp-price-card .lp-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 26px;
+}
+.lp-price-note {
+  margin-top: 14px;
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--ink-faint);
+}
+
+/* ============================================================================
+   TESTIMONIALS
+   ========================================================================== */
+
+.lp-quotes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.lp-quote {
+  position: relative;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+.lp-quote::before {
+  content: '“';
+  position: absolute;
+  top: 6px;
+  left: 22px;
+  font-size: 5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand-tint);
+  pointer-events: none;
+}
+.lp-quote p {
+  position: relative;
+  font-size: var(--fs-lg);
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+}
+.lp-quote footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.lp-quote-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.lp-quote:nth-child(1) .lp-quote-avatar { background: var(--brand); }
+.lp-quote:nth-child(2) .lp-quote-avatar { background: var(--accent); }
+.lp-quote b {
+  display: block;
+  color: var(--ink);
+  font-size: var(--fs-sm);
+}
+.lp-quote small {
+  color: var(--ink-faint);
+  font-size: var(--fs-xs);
+}
+
+/* ============================================================================
+   WAITLIST — a brand-world panel that overlaps into the footer
+   ========================================================================== */
+
+.lp-waitlist {
+  position: relative;
+  z-index: 2;
+  padding-top: var(--section-y);
+  margin-bottom: -96px; /* the footer slides underneath */
+}
+.lp-waitlist-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(48px, 7vw, 80px) clamp(24px, 5vw, 72px);
+  border-radius: 32px;
+  background: linear-gradient(160deg, #6b46a3, var(--brand-deeper));
+  color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 34px 80px rgba(67, 40, 95, 0.35);
+}
+.lp-waitlist-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(200deg, #000, transparent 70%);
+  mask-image: linear-gradient(200deg, #000, transparent 70%);
+  pointer-events: none;
+}
+.lp-waitlist-panel::after {
+  content: '';
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  left: 50%;
+  top: 100%;
+  translate: -50% -50%;
+  background:
+    radial-gradient(closest-side, rgba(255, 90, 95, 0.2), transparent 60%),
+    radial-gradient(closest-side, rgba(146, 78, 233, 0.55), transparent 70%);
+  filter: blur(50px);
+  animation: lp-aurora 10s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.lp-waitlist-panel > * {
+  position: relative;
+  z-index: 1;
+}
+/* the loader's stamp, reused as the panel's badge: same ink, same attitude */
+.lp-stamp {
+  display: inline-block;
+  padding: 0.5em 1.1em;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  rotate: -3deg;
+  transition: rotate 0.35s var(--ease-out), transform 0.35s var(--ease-out);
+}
+.lp-stamp:hover {
+  rotate: 2deg;
+  transform: scale(1.05);
+}
+.lp-waitlist-panel.in-view .lp-stamp {
+  animation: lp-stamp-in 0.5s var(--ease-snap) 0.35s both;
+}
+@keyframes lp-stamp-in {
+  0% {
+    opacity: 0;
+    transform: scale(2.2);
+    filter: blur(5px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.95);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.lp-waitlist-panel h2 {
+  margin-top: 22px;
+  max-width: 22ch;
+  color: #fff;
+  font-size: var(--fs-mega);
+  font-weight: 800;
+}
+.lp-waitlist-panel > p {
+  margin-top: 14px;
+  max-width: 52ch;
+  font-size: var(--fs-lg);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* pill form, same footprint as the old newsletter bar */
+.lp-waitlist-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(900px, 100%);
+  min-height: 92px;
+  margin-top: 40px;
+  padding: 10px 10px 10px 30px;
+  background: #fff;
+  /* the original newsletter bar's loud border, carried over */
+  border: 2.5px solid #d524f2;
+  border-radius: 999px;
+  box-shadow: 0 24px 60px rgba(20, 8, 36, 0.35);
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.lp-waitlist-form:hover,
+.lp-waitlist-form:focus-within {
+  border-color: #f0abff;
+  transform: translateY(-2px);
+  box-shadow: 0 30px 70px rgba(20, 8, 36, 0.45);
+}
+.lp-waitlist-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: var(--fs-lg);
+  color: var(--ink);
+}
+.lp-waitlist-form input::placeholder {
+  color: var(--ink-faint);
+}
+.lp-waitlist-form input:focus-visible {
+  outline: none;
+}
+/* the form's corners are round, so its button matches */
+.lp-waitlist-form .lp-btn {
+  border-radius: 999px;
+  padding: 18px 30px;
+  font-size: var(--fs-base);
+  flex-shrink: 0;
+}
+.lp-waitlist-error {
+  margin-top: 14px;
+  font-size: var(--fs-sm);
+  color: #ffc9cb;
+}
+
+/* joined state */
+.lp-waitlist-done {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 40px;
+  padding: 22px 32px;
+  border-radius: 999px;
+  background: rgba(126, 226, 192, 0.14);
+  border: 1px solid rgba(126, 226, 192, 0.45);
+  color: #d9f7ec;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.lp-waitlist-done i {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #7ee2c0;
+  color: var(--brand-deeper);
+  font-size: 1.2rem;
+}
+
+.lp-waitlist-perks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 22px;
+  margin-top: 26px;
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.72);
+}
+.lp-waitlist-perks span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lp-waitlist-perks i {
+  color: #7ee2c0;
+}
+
+/* the boat-captain illustration, pinned like a postcard sailing off the
+   panel's corner: the little blob is literally shipping invoices */
+.lp-waitlist-stage {
+  position: relative;
+}
+@media (max-width: 880px) {
+  .lp-waitlist-postcard {
+    display: none;
+  }
+}
+
+/* ambient glyphs drifting in the panel corners */
+.lp-waitlist-float {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.4rem;
+  animation: lp-float 7s ease-in-out infinite;
+  pointer-events: none;
+}
+.lp-waitlist-float--plane {
+  top: 14%;
+  left: 7%;
+  rotate: -8deg;
+}
+.lp-waitlist-float--coin {
+  top: 22%;
+  right: 8%;
+  rotate: 10deg;
+  animation-delay: -2.5s;
+}
+.lp-waitlist-float--bell {
+  bottom: 16%;
+  left: 12%;
+  rotate: 6deg;
+  animation-delay: -4.5s;
+}
+.lp-waitlist-float--check {
+  bottom: 12%;
+  right: 13%;
+  rotate: -10deg;
+  animation-delay: -1.2s;
+}
+
+@media (max-width: 640px) {
+  .lp-waitlist-form {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 28px;
+    min-height: 0;
+    padding: 14px;
+  }
+  .lp-waitlist-form input {
+    padding: 12px 16px;
+  }
+  .lp-waitlist-float {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   FOOTER — the brand world again (closes the loop with the loader)
+   ========================================================================== */
+
+.lp-footer {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 6vw, 72px);
+  margin-top: 0;
+  /* extra top room for the waitlist panel overlapping in */
+  padding: calc(clamp(64px, 9vw, 112px) + 96px) var(--gutter) 40px;
+  color: rgba(255, 255, 255, 0.78);
+  background: linear-gradient(170deg, #5d3e89, var(--brand-deeper));
+}
+.lp-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 60%);
+  mask-image: linear-gradient(180deg, #000, transparent 60%);
+  pointer-events: none;
+}
+.lp-footer > * {
+  position: relative;
+  z-index: 1;
+}
+.lp-footer-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-bottom: clamp(40px, 5vw, 56px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  text-align: center;
+}
+.lp-footer-cta h2 {
+  color: #fff;
+  font-size: var(--fs-mega);
+  font-weight: 800;
+  max-width: 18ch;
+}
+.lp-footer-cta p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: var(--fs-lg);
+}
+.lp-footer-cta .lp-btn {
+  margin-top: 8px;
+  background: #fff;
+  color: var(--brand-deep);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+.lp-footer-cta .lp-btn:hover {
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+}
+
+.lp-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 2fr;
+  gap: clamp(32px, 5vw, 64px);
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+.lp-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 24rem;
+}
+.lp-footer-brand .lp-logo {
+  color: #fff;
+}
+.lp-footer-brand p {
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.7);
+}
+.lp-social {
+  display: flex;
+  gap: 10px;
+}
+.lp-social a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 1.1rem;
+  transition: background 0.2s ease, transform 0.2s var(--ease-out);
+}
+.lp-social a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateY(-3px);
+}
+.lp-footer-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.lp-footer-col h4 {
+  color: #fff;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.lp-footer-col ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lp-footer-col a {
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.2s ease, padding-left 0.2s ease;
+}
+.lp-footer-col a:hover {
+  color: #fff;
+  padding-left: 4px;
+}
+.lp-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.lp-footer-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.2s ease;
+}
+.lp-footer-credit:hover {
+  color: #fff;
+}
+.lp-heart {
+  color: var(--accent);
+  font-size: 0.9em;
+  animation: lp-heartbeat 1.8s ease-in-out infinite;
+}
+.lp-footer-credit:hover .lp-heart {
+  animation-duration: 0.7s;
+}
+@keyframes lp-heartbeat {
+  0%,
+  30%,
+  100% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.25);
+  }
+  20% {
+    transform: scale(1.1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-heart {
+    animation: none;
+  }
+}
+
+.lp-wordmark {
+  position: relative;
+  z-index: 1;
+  margin: 8px auto calc(clamp(40px, 5vw, 56px) * -0.7);
+  font-size: clamp(4rem, 18vw, 16rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  text-align: center;
+  color: transparent;
+  background:
+    linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.14) 50%, transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+  background-size: 250% 100%, 100% 100%;
+  background-position: 120% 0, 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: lp-sheen 7s ease-in-out infinite;
+  pointer-events: none;
+  user-select: none;
+}
+@keyframes lp-sheen {
+  0%,
+  55% {
+    background-position: 120% 0, 0 0;
+  }
+  85%,
+  100% {
+    background-position: -120% 0, 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-wordmark {
+    animation: none;
+  }
+}
+.lp-wordmark.in-view {
+  animation: lp-wordmark-in 1.2s var(--ease-out);
+}
+@keyframes lp-wordmark-in {
+  from {
+    transform: translateY(0.18em);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1020px) {
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+  }
+  .lp-invoice-scene {
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  .lp-bento {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lp-card--wide {
+    grid-column: span 2;
+  }
+  .lp-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lp-pricing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .lp-flow-rail {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .lp-flow-rail::before,
+  .lp-flow-rail::after {
+    display: none;
+  }
+  .lp-quotes {
+    grid-template-columns: 1fr;
+  }
+  .lp-bento {
+    grid-template-columns: 1fr;
+  }
+  .lp-card--wide {
+    grid-column: auto;
+  }
+  .lp-footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .lp-toast--paid {
+    right: 0;
+  }
+  .lp-toast--remind {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .lp-stats {
+    grid-template-columns: 1fr;
+  }
+  .lp-footer-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ============================================================================
+   HERO ART v2 — big, tilting toward the cursor, with a moving glare
+   ========================================================================== */
+
+.lp-hero-art--big {
+  max-width: 640px;
+  margin-inline: auto;
+}
+.lp-hero-art-glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    440px circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, 0.4),
+    transparent 62%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.lp-invoice-scene:hover .lp-hero-art-glare {
+  opacity: 1;
+}
+/* scroll drift: background and art move at different speeds */
+.lp-hero-bg .blob {
+  translate: 0 calc(var(--sy, 0) * 70px);
+}
+.lp-hero-bg .grid {
+  translate: 0 calc(var(--sy, 0) * 30px);
+}
+.lp-invoice-scene {
+  translate: 0 calc(var(--sy, 0) * -26px);
+}
+
+/* the hero's tilt, rippled down the page */
+.lp [data-tilt] {
+  transform: perspective(900px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+/* ============================================================================
+   HOW IT WORKS PAGE
+   ========================================================================== */
+
+.lp-hiw-hero {
+  padding-bottom: clamp(24px, 4vw, 48px);
+}
+.lp-hiw-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.lp-hiw-intro h1 {
+  margin-top: 16px;
+  max-width: 18ch;
+  font-size: var(--fs-mega);
+  font-weight: 800;
+  line-height: 1.06;
+}
+.lp-hiw-intro .lp-hero-sub {
+  margin-top: 18px;
+  max-width: 52ch;
+}
+
+.lp-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+.lp-split-copy h2 {
+  margin-top: 14px;
+  font-size: var(--fs-h2);
+  font-weight: 800;
+}
+.lp-split-copy p {
+  margin-top: 14px;
+  max-width: 52ch;
+}
+.lp-split-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+.lp-split-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+.lp-split-list i {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.lp-hiw-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.lp-hiw-pair .lp-card,
+.lp-hiw-roadmap .lp-card {
+  justify-content: flex-start;
+}
+.lp-hiw-pair .lp-card-icon,
+.lp-hiw-roadmap .lp-card-icon {
+  margin-bottom: 14px;
+}
+
+/* the mini ledger visual */
+.lp-hiw-ledger {
+  max-width: 460px;
+  margin-inline: auto;
+  padding: 20px 22px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-variant-numeric: tabular-nums;
+}
+.lp-hiw-ledger-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px dashed var(--border);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+.lp-hiw-ledger-row b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.lp-hiw-ledger-row--head {
+  padding-top: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lp-hiw-ledger-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  color: var(--paid);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.lp-hiw-ledger-foot i {
+  font-size: 1.1rem;
+}
+
+.lp-hiw-roadmap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.lp-hiw-roadmap .lp-chip {
+  align-self: flex-start;
+  margin-bottom: 10px;
+  background: var(--brand-tint);
+  border-color: transparent;
+  color: var(--brand-600);
+}
+.lp-card--voyage {
+  padding-bottom: 0;
+}
+.lp-card--voyage img {
+  display: block;
+  width: calc(100% + 56px);
+  max-width: none;
+  margin: 16px -28px 0;
+}
+
+.lp-hiw-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.lp-hiw-cta h2 {
+  font-size: var(--fs-mega);
+  font-weight: 800;
+  max-width: 22ch;
+}
+.lp-hiw-cta p {
+  font-size: var(--fs-lg);
+}
+.lp-hiw-cta .lp-btn {
+  margin-top: 10px;
+}
+
+@media (max-width: 1020px) {
+  .lp-split,
+  .lp-hiw-pair {
+    grid-template-columns: 1fr;
+  }
+  .lp-split--flip .lp-split-media {
+    order: -1;
+  }
+  .lp-hiw-roadmap {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================================
+   HERO v3 — the boat bobs, the word glows, envelopes drift past
+   ========================================================================== */
+
+/* gallery mat: white inner frame around the illustration */
+.lp-hero-art--big {
+  padding: 12px;
+  background: #fff;
+  rotate: 1.8deg;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  animation: lp-bob 7s ease-in-out infinite;
+}
+.lp-hero-art--big img {
+  border-radius: 18px;
+}
+.lp-hero-art--big .lp-hero-art-strip {
+  left: 22px;
+  right: 22px;
+  bottom: 22px;
+}
+@keyframes lp-bob {
+  0%,
+  100% {
+    rotate: 1.8deg;
+    translate: 0 0;
+  }
+  50% {
+    rotate: 0.4deg;
+    translate: 0 -8px;
+  }
+}
+.lp-invoice-scene:hover .lp-hero-art--big {
+  box-shadow: 0 30px 70px rgba(29, 27, 46, 0.16);
+}
+
+/* the typewriter word: solid brand, no gradient */
+.lp-hero h1 .type-wrap {
+  color: var(--brand);
+}
+
+/* mail drifting past the boat */
+.lp-env {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  color: var(--brand-600);
+  font-size: 1.25rem;
+  animation: lp-float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+.lp-env--one {
+  top: 4%;
+  left: -3%;
+  rotate: -8deg;
+}
+.lp-env--two {
+  bottom: 12%;
+  right: -4%;
+  rotate: 10deg;
+  animation-delay: -3s;
+  color: var(--accent);
+}
+@media (max-width: 680px) {
+  .lp-env {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-art--big,
+  .lp-env {
+    animation: none;
+  }
+}
+
+/* the raised-hands wash behind the waitlist, as it was: white line-art,
+   glowing faintly, rising from the panel floor */
+.lp-waitlist-hands {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  bottom: -3%;
+  width: min(860px, 96%);
+  translate: -50%;
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 1.2s ease 0.4s, transform 1.2s var(--ease-out) 0.4s;
+  pointer-events: none;
+}
+.lp-waitlist-panel.in-view .lp-waitlist-hands {
+  opacity: 0.15;
+  transform: translateY(0);
+}
+.lp-waitlist-hands img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: brightness(0) invert(1) drop-shadow(0 0 26px rgba(255, 255, 255, 0.5));
+  -webkit-mask-image: linear-gradient(180deg, transparent 2%, #000 45%);
+  mask-image: linear-gradient(180deg, transparent 2%, #000 45%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-waitlist-hands {
+    opacity: 0.15;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   THE PAYMENT ORBIT — pinned stage, bursting icons, metrics that snap & fade
+   ========================================================================== */
+
+.lp-orbit {
+  position: relative;
+  height: 380vh;
+}
+.lp-orbit-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: clip;
+}
+.lp-orbit-cap {
+  position: absolute;
+  top: clamp(96px, 13vh, 128px);
+  left: 50%;
+  translate: -50%;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* the icon field: everything starts folded into the focal point */
+.lp-orbit-field {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.lp-orbit-icon {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  color: var(--oc, var(--brand));
+  font-size: 1.6rem;
+  opacity: 0;
+  transform: translate(0, 0) scale(0.2);
+  transition:
+    transform 1s cubic-bezier(0.34, 1.56, 0.64, 1) var(--od, 0s),
+    opacity 0.45s ease var(--od, 0s),
+    box-shadow 0.3s ease;
+  pointer-events: auto;
+  perspective: 500px;
+}
+.lp-orbit-stage.is-burst .lp-orbit-icon {
+  opacity: 1;
+  transform: translate(var(--ox), var(--oy)) scale(1);
+}
+/* sphere spin on hover: the tile stays put, the mark does a full turn */
+.lp-orbit-icon i {
+  display: block;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+}
+.lp-orbit-icon:hover {
+  box-shadow: var(--shadow-md);
+}
+.lp-orbit-icon:hover i {
+  animation: lp-coin 0.8s ease-in-out;
+}
+@keyframes lp-coin {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+/* the metric in the middle: light numerals, a snap in, a fade up and out */
+.lp-orbit-metrics {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(560px, 88vw);
+  min-height: 240px;
+}
+.lp-orbit-metric {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  opacity: 0;
+  translate: 0 56px;
+  transition: opacity 0.4s ease, translate 0.45s var(--ease-snap);
+  pointer-events: none;
+}
+.lp-orbit-metric.is-active {
+  opacity: 1;
+  translate: 0 0;
+}
+.lp-orbit-metric.is-passed {
+  opacity: 0;
+  translate: 0 -56px;
+}
+.lp-orbit-num {
+  font-size: clamp(3.6rem, 8vw, 6.4rem);
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lp-orbit-metric.is-active .lp-orbit-num {
+  animation: lp-twitch 0.5s var(--ease-snap) both;
+}
+@keyframes lp-twitch {
+  0% {
+    transform: scale(0.94) rotate(-1.2deg);
+  }
+  55% {
+    transform: scale(1.03) rotate(0.5deg);
+  }
+  80% {
+    transform: scale(0.99) rotate(-0.2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+.lp-orbit-metric p {
+  max-width: 34ch;
+  font-size: var(--fs-lg);
+  color: var(--ink-soft);
+}
+
+/* progress dots ride the right edge of the stage */
+.lp-orbit-dots {
+  position: absolute;
+  right: clamp(16px, 4vw, 48px);
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lp-orbit-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s ease, transform 0.3s var(--ease-out);
+}
+.lp-orbit-dots span.on {
+  background: var(--brand);
+  transform: scale(1.25);
+}
+
+/* calm fallback: small screens and reduced motion read it as a list */
+@media (max-width: 880px), (prefers-reduced-motion: reduce) {
+  .lp-orbit {
+    height: auto;
+    padding: var(--section-y) var(--gutter);
+  }
+  .lp-orbit-stage {
+    position: static;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    overflow: visible;
+  }
+  .lp-orbit-cap {
+    position: static;
+    translate: none;
+    text-align: center;
+    white-space: normal;
+  }
+  .lp-orbit-field {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .lp-orbit-icon {
+    position: static;
+    opacity: 1;
+    transform: none;
+    width: 46px;
+    height: 46px;
+    font-size: 1.3rem;
+  }
+  .lp-orbit-metrics {
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  .lp-orbit-metric {
+    position: static;
+    opacity: 1;
+    translate: none;
+    pointer-events: auto;
+  }
+  .lp-orbit-dots {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   HIERARCHY BALANCE — nothing shouts, nothing whispers
+   ========================================================================== */
+
+.lp-section-head h2 {
+  font-weight: 700;
+}
+.lp-card h3 {
+  font-weight: 600;
+}
+.lp-quote p {
+  font-weight: 400;
+}
+.lp-footer-cta h2 {
+  font-weight: 700;
+}
+.lp-pricing-copy h2 {
+  font-weight: 700;
+}
+.lp-hiw-cta h2 {
+  font-weight: 700;
+}
+
+/* pricing card assembles line by line once it arrives */
+.lp-price-card.in-view .lp-price-list li {
+  animation: lp-cascade 0.5s var(--ease-out) both;
+}
+.lp-price-card.in-view .lp-price-list li:nth-child(1) { animation-delay: 0.15s; }
+.lp-price-card.in-view .lp-price-list li:nth-child(2) { animation-delay: 0.25s; }
+.lp-price-card.in-view .lp-price-list li:nth-child(3) { animation-delay: 0.35s; }
+.lp-price-card.in-view .lp-price-list li:nth-child(4) { animation-delay: 0.45s; }
+.lp-price-card.in-view .lp-price-list li:nth-child(5) { animation-delay: 0.55s; }
+@keyframes lp-cascade {
+  from {
+    opacity: 0;
+    translate: -14px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-price-card.in-view .lp-price-list li {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   KINETIC TYPE BAND — giant outlined words bolted to the scroll
+   ========================================================================== */
+
+.lp-kinetic {
+  overflow: hidden;
+  padding: clamp(40px, 6vw, 72px) 0;
+}
+.lp-kinetic--dark {
+  background: linear-gradient(170deg, #5d3e89, var(--brand-deeper));
+}
+.lp-kinetic-track {
+  display: flex;
+  gap: 0.6em;
+  width: max-content;
+  white-space: nowrap;
+  font-size: clamp(3rem, 9vw, 7.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  transform: translateX(calc(-4% - var(--kx, 0) * 22%));
+  will-change: transform;
+}
+.lp-kinetic-track span {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(29, 27, 46, 0.28);
+}
+.lp-kinetic--dark .lp-kinetic-track span {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.42);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-kinetic-track {
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   THE PAPER TRAIL — pinned stage, documents slide by as you scroll
+   ========================================================================== */
+
+.lp-trail {
+  position: relative;
+  height: 300vh;
+}
+.lp-trail-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(32px, 6vh, 64px);
+  overflow: clip;
+}
+.lp-trail-head {
+  max-width: var(--content-max);
+}
+.lp-trail-head h2 {
+  margin-top: 12px;
+  max-width: 24ch;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+}
+.lp-trail-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 32px);
+  width: max-content;
+  padding-inline: var(--gutter);
+  transform: translateX(calc(var(--tp, 0) * -1 * (100% - 92vw)));
+  will-change: transform;
+}
+.lp-trail-arrow {
+  font-size: 1.6rem;
+  color: var(--brand);
+  flex-shrink: 0;
+}
+.lp-trail-doc {
+  width: clamp(250px, 24vw, 320px);
+  flex-shrink: 0;
+}
+.lp-trail-num {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+}
+.lp-trail-doc h4 {
+  margin: 4px 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.lp-trail-paper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s ease;
+}
+.lp-trail-paper:hover {
+  transform: translateY(-4px) rotate(-0.5deg);
+  box-shadow: var(--shadow-md);
+}
+.lp-trail-paper b {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+.lp-trail-paper .rule {
+  height: 1px;
+  background: var(--border);
+}
+.lp-trail-paper .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lp-trail-paper .row em {
+  font-style: normal;
+}
+.lp-trail-paper .row i {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.lp-trail-paper .row.total i {
+  font-weight: 700;
+}
+.lp-trail-paper .row.ok i {
+  color: var(--paid);
+  font-weight: 600;
+}
+.lp-trail-paper .stamp {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  padding: 3px 10px;
+  border: 2px solid rgba(12, 141, 111, 0.55);
+  border-radius: 6px;
+  color: var(--paid);
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  rotate: -8deg;
+}
+.lp-trail-paper--link {
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+.lp-trail-paper--link .paybtn {
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  box-shadow: var(--shadow-brand);
+}
+.lp-trail-paper--link small {
+  color: var(--ink-faint);
+}
+.lp-trail-paper--mono {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+.lp-trail-paper--pack {
+  border: 1.5px dashed rgba(146, 78, 233, 0.45);
+  background: linear-gradient(160deg, #fff, rgba(146, 78, 233, 0.05));
+}
+
+@media (max-width: 880px), (prefers-reduced-motion: reduce) {
+  .lp-trail {
+    height: auto;
+    padding: var(--section-y) 0;
+  }
+  .lp-trail-stage {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+  .lp-trail-head {
+    padding-inline: var(--gutter);
+  }
+  .lp-trail-track {
+    transform: none;
+    width: auto;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ============================================================================
+   FAQ — clean accordion, no drama
+   ========================================================================== */
+
+.lp-faq {
+  max-width: 780px;
+}
+.lp-faq-list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+.lp-faq-item {
+  border-bottom: 1px solid var(--border);
+}
+.lp-faq-item button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 4px;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.lp-faq-item button:hover {
+  color: var(--brand-600);
+}
+.lp-faq-item button i {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--brand-600);
+  transition: rotate 0.35s var(--ease-out);
+}
+.lp-faq-item.is-open button i {
+  rotate: 45deg;
+}
+.lp-faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s var(--ease-out);
+}
+.lp-faq-item.is-open .lp-faq-a {
+  grid-template-rows: 1fr;
+}
+.lp-faq-a p {
+  overflow: hidden;
+  max-width: 62ch;
+  padding: 0 4px;
+  color: var(--ink-soft);
+}
+.lp-faq-item.is-open .lp-faq-a p {
+  padding-bottom: 22px;
+}
+
+/* ============================================================================
+   BENTO v2 — one dark anchor card, mini visuals, nothing boring
+   ========================================================================== */
+
+.lp-card--dark {
+  position: relative;
+  background: linear-gradient(160deg, #5d3e89, var(--brand-deeper));
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+  overflow: hidden;
+}
+.lp-card--dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+  -webkit-mask-image: linear-gradient(210deg, #000, transparent 70%);
+  mask-image: linear-gradient(210deg, #000, transparent 70%);
+  opacity: 1;
+  pointer-events: none;
+}
+.lp-card--dark > * {
+  position: relative;
+}
+.lp-card--dark h3 {
+  color: #fff;
+  font-size: 1.35rem;
+}
+.lp-card--dark:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.lp-card-tag {
+  align-self: flex-start;
+  margin-bottom: auto;
+  padding: 5px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.lp-mini-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.25);
+  font-variant-numeric: tabular-nums;
+}
+.lp-mini-ledger span {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+  font-size: 0.78rem;
+}
+.lp-mini-ledger em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+.lp-mini-ledger b {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+.lp-mini-ledger i {
+  font-style: normal;
+  font-weight: 600;
+  color: #fff;
+}
+.lp-mini-stamp {
+  position: absolute;
+  right: 22px;
+  top: 24px;
+  padding: 4px 12px;
+  border: 2px solid rgba(12, 141, 111, 0.5);
+  border-radius: 6px;
+  color: var(--paid);
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  rotate: 8deg;
+  transition: rotate 0.3s var(--ease-out), transform 0.3s var(--ease-out);
+}
+.lp-card:hover .lp-mini-stamp {
+  rotate: -3deg;
+  transform: scale(1.08);
+}
+.lp-mini-range {
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  border: 1px dashed rgba(146, 78, 233, 0.45);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-600);
+}
+.lp-mini-range i {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ink-faint);
+  padding: 0 2px;
+}
+/* the dark card leans with the cursor like the hero */
+.lp-card--dark[data-tilt] {
+  transform: perspective(900px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+}
+
+/* ============================================================================
+   FAQ v2 — split layout, always visible, open item wears the brand
+   ========================================================================== */
+
+.lp-faq {
+  max-width: var(--content-max);
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+}
+.lp-faq-head {
+  position: sticky;
+  top: 120px;
+}
+.lp-faq-head h2 {
+  margin-top: 12px;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+}
+.lp-faq-head p {
+  margin-top: 12px;
+  color: var(--ink-soft);
+}
+.lp-faq-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--brand-600);
+}
+.lp-faq-more i {
+  transition: transform 0.2s var(--ease-out);
+}
+.lp-faq-more:hover i {
+  transform: translateX(4px);
+}
+
+.lp-faq-list {
+  border-top: 0;
+  gap: 10px;
+}
+.lp-faq-item {
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+.lp-faq-item button {
+  padding: 18px 20px;
+}
+.lp-faq-item .lp-faq-num {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  margin-right: 14px;
+  transition: color 0.25s ease;
+}
+.lp-faq-item.is-open {
+  border-color: rgba(146, 78, 233, 0.45);
+  background: linear-gradient(160deg, #fff, rgba(146, 78, 233, 0.05));
+  box-shadow: var(--shadow-sm);
+}
+.lp-faq-item.is-open .lp-faq-num {
+  color: var(--brand-600);
+}
+.lp-faq-a p {
+  padding: 0 20px 0 20px;
+}
+.lp-faq-item.is-open .lp-faq-a p {
+  padding-bottom: 20px;
+}
+
+@media (max-width: 880px) {
+  .lp-faq {
+    grid-template-columns: 1fr;
+  }
+  .lp-faq-head {
+    position: static;
+  }
+}
+
+/* hero art, bigger */
+.lp-hero-inner {
+  grid-template-columns: 1fr 1.1fr;
+}
+.lp-hero-art--big {
+  max-width: 720px;
+}
+@media (max-width: 1020px) {
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* question hugs its number; the plus keeps to the far edge */
+.lp-faq-item button {
+  justify-content: flex-start;
+}
+.lp-faq-item button i {
+  margin-left: auto;
+}
+
+/* hero art, actually larger: a wider hero shell, the art takes the bigger
+   share and bleeds past the content edge, the headline keeps its lane */
+@media (min-width: 1021px) {
+  .lp-hero .lp-shell {
+    max-width: 1400px;
+  }
+  .lp-hero-inner {
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(24px, 3vw, 48px);
+  }
+  .lp-invoice-scene {
+    width: calc(100% + clamp(24px, 4vw, 90px));
+    justify-self: end;
+    margin-right: clamp(-90px, -4vw, -24px);
+  }
+  .lp-hero-art--big {
+    max-width: none;
+  }
+}
+
+/* ============================================================================
+   THE STATEMENT — the sentence catches ink as you scroll
+   ========================================================================== */
+
+.lp-statement {
+  padding: clamp(64px, 10vw, 128px) 0;
+}
+.lp-statement-line {
+  margin-top: 18px;
+  max-width: 18ch;
+  font-size: clamp(2.2rem, 5.4vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.lp-statement-line span {
+  color: #ddd8ec;
+  transition: color 0.35s ease;
+}
+.lp-statement-line span.on {
+  color: var(--ink);
+}
+.lp-statement-line span.on:nth-last-child(3),
+.lp-statement-line span.on:nth-last-child(2),
+.lp-statement-line span.on:nth-last-child(1) {
+  color: var(--brand);
+}
+.lp-statement-sub {
+  margin-top: 20px;
+  max-width: 46ch;
+  font-size: var(--fs-lg);
+  color: var(--ink-soft);
+}
+
+/* bento spice: icons live a little */
+.lp-card-icon {
+  background: linear-gradient(150deg, rgba(146, 78, 233, 0.16), rgba(146, 78, 233, 0.06));
+  transition: transform 0.3s var(--ease-out), background 0.3s ease;
+}
+.lp-card:hover .lp-card-icon {
+  transform: rotate(-8deg) scale(1.08);
+  background: linear-gradient(150deg, var(--brand), var(--brand-deep));
+  color: #fff;
+}
