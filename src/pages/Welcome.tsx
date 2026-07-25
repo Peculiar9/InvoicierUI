@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
@@ -19,6 +19,7 @@ const PERSONAS: { key: Persona; icon: string; title: string; line: string }[] = 
 ];
 
 const SWATCHES = ['#924ee9', '#1d1b2e', '#ff5a5f', '#0c8d6f', '#357fff', '#b97d10'];
+const CONFETTI_COLORS = ['#924ee9', '#ff5a5f', '#0c8d6f', '#e0a008', '#357fff'];
 
 export const Welcome = () => {
   const navigate = useNavigate();
@@ -36,6 +37,20 @@ export const Welcome = () => {
   const [tin, setTin] = useState('');
   const [template, setTemplate] = useState<InvoiceTemplate>('classic');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // one burst per mount; each piece gets its own fall
+  const confetti = useMemo(
+    () =>
+      Array.from({ length: 70 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 1.1,
+        dur: 2.6 + Math.random() * 2.2,
+        tilt: Math.round(Math.random() * 360),
+        w: 6 + Math.round(Math.random() * 5),
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      })),
+    []
+  );
 
   const displayName = tradingName.trim() || name.trim() || 'Your name here';
   const firstName = name.trim().split(' ')[0] || 'friend';
@@ -66,6 +81,24 @@ export const Welcome = () => {
 
   return (
     <div className="ob iw">
+      {step === 6 && (
+        <div className="ob-confetti" aria-hidden="true">
+          {confetti.map((c, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${c.left}%`,
+                width: c.w,
+                height: c.w * 1.6,
+                background: c.color,
+                animationDelay: `${c.delay}s`,
+                animationDuration: `${c.dur}s`,
+                rotate: `${c.tilt}deg`,
+              }}
+            />
+          ))}
+        </div>
+      )}
       <div className="ob-card">
         <div className="ob-progress" aria-hidden="true">
           {[0, 1, 2, 3, 4, 5, 6].map((i) => (

@@ -3433,3 +3433,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* confetti: the ledger opens, the room celebrates */
+.ob-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.ob-confetti span {
+  position: absolute;
+  top: -24px;
+  border-radius: 2px;
+  animation: ob-fall linear forwards;
+  opacity: 0.95;
+}
+@keyframes ob-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(680deg);
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob-confetti {
+    display: none;
+  }
+}
