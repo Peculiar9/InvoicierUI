@@ -3129,3 +3129,69 @@
 .invoice-doc .invoice-doc-mark {
   color: var(--acc, #924ee9);
 }
+
+/* ============================================================================
+   HOME OVERHAUL — a working grid, not a stack of full-width cards
+   ========================================================================== */
+
+.iw .dash {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+.iw .iw-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas:
+    'rev attn'
+    'recent tiles'
+    'recent bands';
+  gap: 20px;
+  align-items: start;
+}
+.iw .iw-grid > .iw-attn {
+  grid-area: attn;
+  margin-bottom: 0;
+}
+.iw .iw-grid > .dash-revenue {
+  grid-area: rev;
+  margin-bottom: 0;
+}
+.iw .iw-grid > .dash-lower--single {
+  grid-area: recent;
+}
+.iw .iw-grid > .iw-tiles {
+  grid-area: tiles;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 0;
+}
+.iw .iw-grid > .iw-bands {
+  grid-area: bands;
+  margin-bottom: 0;
+}
+/* in the rail, attention rows can wrap to two lines instead of truncating */
+.iw .iw-grid .iw-attn li {
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: start;
+}
+.iw .iw-grid .iw-attn li p {
+  white-space: normal;
+  line-height: 1.45;
+}
+.iw .iw-grid .iw-attn li small {
+  display: none;
+}
+.iw .iw-grid .iw-attn-dot {
+  margin-top: 6px;
+}
+@media (max-width: 1080px) {
+  .iw .iw-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'attn'
+      'rev'
+      'recent'
+      'tiles'
+      'bands';
+  }
+}

@@ -346,31 +346,6 @@ export const Dashboard = () => {
           ))}
         </div>
 
-        {/* Needs attention first: what to DO, before what to admire */}
-        {attention.length > 0 && (
-          <section className="dash-card iw-attn">
-            <div className="iw-attn-head">
-              <h2>Needs attention</h2>
-              <span>
-                {attention.length} item{attention.length === 1 ? '' : 's'}
-              </span>
-            </div>
-            <ul>
-              {attention.slice(0, 4).map(({ inv, kind, text }) => (
-                <li key={`${kind}-${inv.id}`}>
-                  <span className={`iw-attn-dot is-${kind}`} aria-hidden="true" />
-                  <p>{text}</p>
-                  <small>#{inv.invoiceNumber}</small>
-                  <button type="button" className="iw-attn-go" onClick={() => openView(inv.id)}>
-                    {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
-                    <i className="bx bx-right-arrow-alt" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         {/* KPI cards */}
         <section className="dash-kpis">
           {kpis.map((kpi) => (
@@ -407,7 +382,92 @@ export const Dashboard = () => {
           <span className="iw-march-pct">{marchPct}%</span>
         </div>
 
-        {/* The ledger tiles: tax figures forming as payments land */}
+        {/* the working grid: money on the left, action rail on the right */}
+        <div className="iw-grid">
+        {/* Needs attention first: what to DO, before what to admire */}
+        {attention.length > 0 && (
+          <section className="dash-card iw-attn">
+            <div className="iw-attn-head">
+              <h2>Needs attention</h2>
+              <span>
+                {attention.length} item{attention.length === 1 ? '' : 's'}
+              </span>
+            </div>
+            <ul>
+              {attention.slice(0, 4).map(({ inv, kind, text }) => (
+                <li key={`${kind}-${inv.id}`}>
+                  <span className={`iw-attn-dot is-${kind}`} aria-hidden="true" />
+                  <p>{text}</p>
+                  <small>#{inv.invoiceNumber}</small>
+                  <button type="button" className="iw-attn-go" onClick={() => openView(inv.id)}>
+                    {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
+                    <i className="bx bx-right-arrow-alt" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Revenue, full width */}
+        <section className="dash-card dash-revenue">
+          <header className="dash-card-head">
+            <div>
+              <h2>Revenue</h2>
+              <p>Last 6 months</p>
+            </div>
+            <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
+          </header>
+          <div className="dash-chart">
+            <Line data={revenueData} options={revenueOptions} />
+          </div>
+        </section>
+
+        {/* Recent invoices, full width */}
+        <section className="dash-lower dash-lower--single">
+          <article className="dash-card dash-invoices">
+            <header className="dash-card-head">
+              <div>
+                <h2>Recent invoices</h2>
+                <p>{recentInvoices.length} latest</p>
+              </div>
+            </header>
+            <SwipeScroll className="dash-table-wrap">
+              <table className="dash-table dash-table--recent">
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentInvoices.map((inv: Invoice) => (
+                    <tr
+                      key={inv.id}
+                      className="dash-row-click"
+                      onClick={() => openView(inv.id)}
+                    >
+                      <td className="dash-mono">#{inv.invoiceNumber}</td>
+                      <td>{inv.client.name}</td>
+                      <td className="dash-muted">
+                        {formatDate(inv.issueDate, { month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
+                      <td>
+                        <span className={`dash-badge is-${inv.status}`}>
+                          {statusLabel[inv.status]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </SwipeScroll>
+          </article>
+        </section>        {/* The ledger tiles: tax figures forming as payments land */}
         <section className="iw-tiles">
           <article className="dash-card iw-tile">
             <span className="iw-tile-label">VAT collected</span>
@@ -491,65 +551,8 @@ export const Dashboard = () => {
           )}
         </section>
 
-        {/* Revenue, full width */}
-        <section className="dash-card dash-revenue">
-          <header className="dash-card-head">
-            <div>
-              <h2>Revenue</h2>
-              <p>Last 6 months</p>
-            </div>
-            <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
-          </header>
-          <div className="dash-chart">
-            <Line data={revenueData} options={revenueOptions} />
-          </div>
-        </section>
+        </div>
 
-        {/* Recent invoices, full width */}
-        <section className="dash-lower dash-lower--single">
-          <article className="dash-card dash-invoices">
-            <header className="dash-card-head">
-              <div>
-                <h2>Recent invoices</h2>
-                <p>{recentInvoices.length} latest</p>
-              </div>
-            </header>
-            <SwipeScroll className="dash-table-wrap">
-              <table className="dash-table dash-table--recent">
-                <thead>
-                  <tr>
-                    <th>Invoice</th>
-                    <th>Client</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentInvoices.map((inv: Invoice) => (
-                    <tr
-                      key={inv.id}
-                      className="dash-row-click"
-                      onClick={() => openView(inv.id)}
-                    >
-                      <td className="dash-mono">#{inv.invoiceNumber}</td>
-                      <td>{inv.client.name}</td>
-                      <td className="dash-muted">
-                        {formatDate(inv.issueDate, { month: 'short', day: 'numeric' })}
-                      </td>
-                      <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
-                      <td>
-                        <span className={`dash-badge is-${inv.status}`}>
-                          {statusLabel[inv.status]}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </SwipeScroll>
-          </article>
-        </section>
           </>
         )}
       </div>
