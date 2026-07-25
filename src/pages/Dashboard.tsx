@@ -119,6 +119,13 @@ export const Dashboard = () => {
     (sum, inv) => sum + (inv.amountReceived ?? inv.total),
     0
   );
+  // one total hides the FX reality: split what landed by currency
+  const byCurrency = Object.entries(
+    paidInPeriod.reduce<Record<string, number>>((acc, inv) => {
+      acc[inv.currency] = (acc[inv.currency] ?? 0) + (inv.amountReceived ?? inv.total);
+      return acc;
+    }, {})
+  );
   const issuedInPeriod = allInvoices.filter((inv) =>
     inPeriod(inv.issueDate, start)
   ).length;
@@ -297,6 +304,13 @@ export const Dashboard = () => {
                 <span className="dash-kpi-label">{kpi.label}</span>
                 <span className="dash-kpi-value">{kpi.value}</span>
                 <span className="dash-kpi-sub">{kpi.sub}</span>
+                {kpi.label === 'Collected' && byCurrency.length > 1 && (
+                  <span className="iw-currsplit">
+                    {byCurrency.map(([cur, amount]) => (
+                      <b key={cur}>{formatCurrency(amount, cur)}</b>
+                    ))}
+                  </span>
+                )}
               </div>
             </article>
           ))}

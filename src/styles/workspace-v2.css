@@ -2246,3 +2246,20 @@
   color: var(--ink-faint);
   font-size: 0.7rem;
 }
+
+/* per-currency split under the Collected figure */
+.iw .iw-currsplit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.iw .iw-currsplit b {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(12, 141, 111, 0.1);
+  color: var(--paid);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
