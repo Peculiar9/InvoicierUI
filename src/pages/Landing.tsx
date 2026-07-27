@@ -658,10 +658,12 @@ const STATEMENT_WORDS =
 const Statement = () => {
   const ref = useRef<HTMLElement>(null);
   const [lit, setLit] = useState(0);
+  const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setLit(STATEMENT_WORDS.length);
+      setFlipped(true);
       return;
     }
     let raf = 0;
@@ -675,6 +677,8 @@ const Statement = () => {
         // words light from when the section is 85% down the screen to 35%
         const p = Math.min(1, Math.max(0, (vh * 0.85 - rect.top) / (vh * 0.5)));
         setLit(Math.round(p * STATEMENT_WORDS.length));
+        // the card that followed you from pricing settles, then flips
+        setFlipped(rect.top < vh * 0.3);
       });
     };
     onScroll();
@@ -687,19 +691,47 @@ const Statement = () => {
 
   return (
     <section className="lp-statement" ref={ref}>
-      <div className="lp-shell">
-        <span className="lp-kicker">The point of all this</span>
-        <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
-          {STATEMENT_WORDS.map((word, i) => (
-            <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
-              {word}{' '}
-            </span>
-          ))}
-        </p>
-        <p className="lp-statement-sub">
-          Invoicier turns getting paid into keeping records, without you ever
-          noticing the second part happened.
-        </p>
+      <div className="lp-shell lp-statement-grid">
+        <div>
+          <span className="lp-kicker">The point of all this</span>
+          <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
+            {STATEMENT_WORDS.map((word, i) => (
+              <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
+                {word}{' '}
+              </span>
+            ))}
+          </p>
+          <p className="lp-statement-sub">
+            Invoicier turns getting paid into keeping records, without you ever
+            noticing the second part happened.
+          </p>
+        </div>
+
+        {/* the pricing card, arrived from the section above, flips into a
+            payment confirmation the moment the sentence lands */}
+        <div className={`lp-morph${flipped ? ' is-flipped' : ''}`} aria-hidden="true">
+          <div className="lp-morph-inner">
+            <div className="lp-morph-face lp-morph-front">
+              <span className="lp-morph-badge">Everything plan</span>
+              <b className="lp-morph-price">&#8358;0.00</b>
+              <small>uncapped, forever</small>
+              <ul>
+                <li><i className="bx bx-check" /> Unlimited invoices</li>
+                <li><i className="bx bx-check" /> Tax-grade ledger</li>
+                <li><i className="bx bx-check" /> Receipts on autopilot</li>
+              </ul>
+            </div>
+            <div className="lp-morph-face lp-morph-back">
+              <svg className="lp-morph-check" viewBox="0 0 72 72">
+                <circle cx="36" cy="36" r="32" fill="none" strokeWidth="4" />
+                <path d="M22 37 L32 47 L51 27" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <b>Payment successful</b>
+              <small>&#8358;0.00 · the wedge stays free</small>
+              <span className="lp-morph-ref">REF · INV-YOU-2026</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
