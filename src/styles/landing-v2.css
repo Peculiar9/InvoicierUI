@@ -4143,3 +4143,77 @@
     display: none;
   }
 }
+
+/* ============================================================================
+   CALLOUTS ON THE APP — the cards land on the dashboard, not under it
+   ========================================================================== */
+
+@media (min-width: 1021px) {
+  /* anchor at the docked dashboard's center; cards fan out from it */
+  .lp-saga-feats {
+    left: auto;
+    right: auto;
+    bottom: auto;
+    top: 58%;
+    left: 73%;
+    width: 0;
+    height: 0;
+    overflow: visible;
+  }
+  .lp-feat {
+    width: 290px;
+    inset: auto;
+    left: 0;
+    top: 0;
+    transform: translate(calc(-50% + var(--fx, 0px)), calc(-50% + var(--fy, 0px) + 70px))
+      rotate(var(--fr, 0deg));
+    box-shadow: 0 18px 48px rgba(29, 27, 46, 0.16);
+  }
+  .lp-feat.is-active {
+    transform: translate(calc(-50% + var(--fx, 0px)), calc(-50% + var(--fy, 0px)))
+      rotate(var(--fr, 0deg));
+  }
+  .lp-feat.is-passed {
+    transform: translate(calc(-50% + var(--fx, 0px)), calc(-50% + var(--fy, 0px) - 48px))
+      rotate(var(--fr, 0deg));
+  }
+}
+
+/* the dashboard region each callout points at lights up */
+.lp-td-kpis,
+.lp-td-rows,
+.lp-td-march,
+.lp-sd-main .lp-td-top {
+  transition: box-shadow 0.4s ease;
+  border-radius: 12px;
+}
+.lp-trail-stage.is-feat-0 .lp-td-kpis {
+  box-shadow: 0 0 0 3px rgba(146, 78, 233, 0.4);
+}
+.lp-trail-stage.is-feat-1 .lp-td-rows {
+  box-shadow: 0 0 0 3px rgba(12, 141, 111, 0.4);
+}
+.lp-trail-stage.is-feat-2 .lp-sd-main .lp-td-top {
+  box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.35);
+}
+.lp-trail-stage.is-feat-3 .lp-td-march {
+  box-shadow: 0 0 0 3px rgba(146, 78, 233, 0.4);
+}
+
+/* the resolution: a real, browsable card section */
+.lp-featgrid-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.lp-featgrid .lp-card {
+  justify-content: flex-start;
+}
+.lp-featgrid .lp-card-icon {
+  margin-bottom: 12px;
+}
+@media (max-width: 680px) {
+  .lp-featgrid-grid {
+    grid-template-columns: 1fr;
+  }
+}

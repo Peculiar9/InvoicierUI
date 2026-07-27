@@ -499,7 +499,7 @@ const PaperTrail = () => {
   const stageClass = `lp-trail-stage${phase !== 'scrub' ? ' is-stack' : ''}${
     phase === 'pulse' || phase === 'voila' ? ' is-pulse' : ''
   }${phase === 'voila' ? ' is-voila' : ''}${docked ? ' is-docked' : ''}${
-    featIdx >= 0 ? ' is-story' : ''
+    featIdx >= 0 ? ` is-story is-feat-${featIdx}` : ''
   }`;
 
   const title =
@@ -597,35 +597,40 @@ const PaperTrail = () => {
           </div>
         </div>
 
-        {/* the receipts, snapping bottom to top beside the docked app */}
+        {/* callouts that land on the dashboard itself, each pointing at the
+            part of the app that proves it */}
         <div className="lp-saga-feats" aria-hidden="true">
-          <div className={`lp-feat${featIdx === 0 ? ' is-active' : featIdx > 0 ? ' is-passed' : ''}`}>
+          <div
+            className={`lp-feat${featIdx === 0 ? ' is-active' : featIdx > 0 ? ' is-passed' : ''}`}
+            style={{ '--fx': '-215px', '--fy': '-165px', '--fr': '-3deg' } as CSSProperties}
+          >
             <span className="lp-card-icon"><i className="bx bx-wallet" /></span>
             <h3>Paid from anywhere</h3>
-            <p>Paystack for naira, your own accounts for dollars, euros and pounds.</p>
-            <div className="lp-chiprow">
-              <span className="lp-chip">Paystack</span>
-              <span className="lp-chip">NGN</span>
-              <span className="lp-chip">USD</span>
-              <span className="lp-chip">EUR</span>
-              <span className="lp-chip">GBP</span>
-            </div>
+            <p>Paystack for naira, your own accounts for the rest. Collected, counted.</p>
           </div>
-          <div className={`lp-feat${featIdx === 1 ? ' is-active' : featIdx > 1 ? ' is-passed' : ''}`}>
+          <div
+            className={`lp-feat${featIdx === 1 ? ' is-active' : featIdx > 1 ? ' is-passed' : ''}`}
+            style={{ '--fx': '55px', '--fy': '160px', '--fr': '2deg' } as CSSProperties}
+          >
             <span className="lp-card-icon"><i className="bx bx-badge-check" /></span>
             <h3>Receipts on autopilot</h3>
-            <p>The moment an invoice is paid, receipt PDFs go to both of you. Zero clicks.</p>
+            <p>Paid rows grow receipts on their own. Both parties, zero clicks.</p>
           </div>
-          <div className={`lp-feat${featIdx === 2 ? ' is-active' : featIdx > 2 ? ' is-passed' : ''}`}>
+          <div
+            className={`lp-feat${featIdx === 2 ? ' is-active' : featIdx > 2 ? ' is-passed' : ''}`}
+            style={{ '--fx': '205px', '--fy': '-150px', '--fr': '3deg' } as CSSProperties}
+          >
             <span className="lp-card-icon"><i className="bx bx-printer" /></span>
             <h3>Print-perfect PDFs</h3>
-            <p>Invoices that survive the accountant, the auditor and the office printer.</p>
+            <p>One tap on New invoice, one PDF that survives any printer.</p>
           </div>
-          <div className={`lp-feat${featIdx === 3 ? ' is-active' : ''}`}>
+          <div
+            className={`lp-feat${featIdx === 3 ? ' is-active' : ''}`}
+            style={{ '--fx': '-225px', '--fy': '65px', '--fr': '-2deg' } as CSSProperties}
+          >
             <span className="lp-card-icon"><i className="bx bx-calculator" /></span>
             <h3>The estimator, next</h3>
-            <p>Your liability as an honest range beside the &#8358;100k penalty.</p>
-            <span className="lp-mini-range">&#8358;480k <i>to</i> &#8358;610k</span>
+            <p>That readiness bar becomes your liability, as an honest range.</p>
           </div>
         </div>
 
@@ -1148,6 +1153,58 @@ export const Landing = () => {
 
         {/* ----------------------------------------------- THE PAPER TRAIL */}
         <PaperTrail />
+
+        {/* the same four, resolved into their own section */}
+        <section className="lp-section lp-featgrid">
+          <div className="lp-shell">
+            <div className="lp-section-head" data-reveal>
+              <span className="lp-kicker lp-kicker--warm">For the record</span>
+              <h2>The receipts, in plain sight.</h2>
+            </div>
+            <div className="lp-featgrid-grid">
+              <article className="lp-card" data-tilt data-reveal data-delay="1">
+                <span className="lp-card-icon"><i className="bx bx-wallet" /></span>
+                <h3>Paid from anywhere</h3>
+                <p>
+                  Paystack for naira, your own accounts for dollars, euros and
+                  pounds. Your client pays the way they already pay.
+                </p>
+                <div className="lp-chiprow" aria-hidden="true">
+                  <span className="lp-chip">Paystack</span>
+                  <span className="lp-chip">NGN</span>
+                  <span className="lp-chip">USD</span>
+                  <span className="lp-chip">EUR</span>
+                  <span className="lp-chip">GBP</span>
+                </div>
+              </article>
+              <article className="lp-card" data-tilt data-reveal data-delay="2">
+                <span className="lp-card-icon"><i className="bx bx-badge-check" /></span>
+                <h3>Receipts on autopilot</h3>
+                <p>
+                  The moment an invoice is paid, receipt PDFs go to both of you.
+                  Two brand touchpoints, zero clicks.
+                </p>
+              </article>
+              <article className="lp-card" data-tilt data-reveal data-delay="3">
+                <span className="lp-card-icon"><i className="bx bx-printer" /></span>
+                <h3>Print-perfect PDFs</h3>
+                <p>
+                  Invoices and receipts that survive the accountant, the auditor
+                  and the office printer.
+                </p>
+              </article>
+              <article className="lp-card" data-tilt data-reveal data-delay="4">
+                <span className="lp-card-icon"><i className="bx bx-calculator" /></span>
+                <h3>The estimator, next</h3>
+                <p>
+                  Answer a few questions and see your liability as an honest
+                  range beside the &#8358;100k penalty.
+                </p>
+                <span className="lp-mini-range" aria-hidden="true">&#8358;480k <i>to</i> &#8358;610k</span>
+              </article>
+            </div>
+          </div>
+        </section>
 
         {/* the lifecycle, shouted quietly */}
         <KineticBand
