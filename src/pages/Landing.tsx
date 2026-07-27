@@ -504,10 +504,10 @@ const PaperTrail = () => {
 
   const title =
     phase === 'voila'
-      ? 'Voila. One clean dashboard.'
+      ? 'And just like that, it is one clean dashboard.'
       : phase === 'scrub'
         ? 'One invoice becomes five documents. You touch it once.'
-        : 'Now watch them come together.';
+        : 'Watch what happens when they meet.';
 
   return (
     <section className="lp-trail" id="features" ref={ref}>
@@ -518,6 +518,13 @@ const PaperTrail = () => {
             {title}
           </h2>
         </div>
+
+        {/* the flash of the trick landing */}
+        <span className="lp-saga-burst" aria-hidden="true">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <i key={i} style={{ '--a': `${i * 45}deg` } as CSSProperties} />
+          ))}
+        </span>
 
         {/* the app itself, waiting behind the curtain */}
         <div className="lp-trail-dash" aria-hidden="true">
