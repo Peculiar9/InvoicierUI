@@ -757,17 +757,90 @@ const STATEMENT_WORDS =
  * Manifesto moment: the sentence assembles itself as you scroll, one word
  * catching ink at a time.
  */
-const PricingSaga = () => {
+/** True when the card can fly: fine pointer, wide screen, motion allowed. */
+const useTravelOk = () => {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    const wide = window.matchMedia('(min-width: 1021px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setOk(wide.matches && !reduced.matches);
+    update();
+    wide.addEventListener('change', update);
+    reduced.addEventListener('change', update);
+    return () => {
+      wide.removeEventListener('change', update);
+      reduced.removeEventListener('change', update);
+    };
+  }, []);
+  return ok;
+};
+
+/** The one pricing card, front and back. Rendered exactly once per viewport. */
+const PriceCardFaces = () => (
+  <>
+    <div className="lp-morph-face lp-morph-front lp-price-card">
+      <span className="lp-price-badge">Beta</span>
+      <h4>Everything plan</h4>
+      <div className="lp-price">
+        <strong>&#8358;0.00</strong>
+        <span>/ uncapped, forever</span>
+      </div>
+      <ul className="lp-price-list">
+        <li><i className="bx bx-check" />Unlimited invoices &amp; clients</li>
+        <li><i className="bx bx-check" />Payment links in USD, EUR, GBP &amp; NGN</li>
+        <li><i className="bx bx-check" />Automatic, well-mannered reminders</li>
+        <li><i className="bx bx-check" />Dashboard, insights &amp; exports</li>
+        <li><i className="bx bx-check" />SSL security, PDF downloads</li>
+      </ul>
+      <a href="/#waitlist" className="lp-btn">
+        Join the waitlist <i className="bx bx-right-arrow-alt" />
+      </a>
+      <p className="lp-price-note">Free for waitlist members during beta. No card, no gotchas.</p>
+    </div>
+    <div className="lp-morph-face lp-morph-back">
+      <svg className="lp-morph-check" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="32" fill="none" strokeWidth="4" />
+        <path d="M22 37 L32 47 L51 27" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <b>Payment successful</b>
+      <small>&#8358;0.00 · the wedge stays free</small>
+      <span className="lp-morph-ref">REF · INV-YOU-2026</span>
+    </div>
+  </>
+);
+
+const PricingSection = ({ travel }: { travel: boolean }) => (
+  <section className="lp-section lp-pricing" id="pricing">
+    <div className="lp-shell lp-pricing-grid">
+      <div className="lp-pricing-copy" data-reveal="left">
+        <span className="lp-kicker lp-kicker--warm">Pricing</span>
+        <h2>Pricing that isn't.</h2>
+        <p>
+          Every feature, every invoice. Free while we're in beta. And free
+          means free, not “free until you need it.”
+        </p>
+      </div>
+      <div className="lp-ps-slot" id="ps-slot-a" data-reveal="right">
+        {/* on small screens the card stays home; on desktop the fixed layer flies it */}
+        {!travel && (
+          <div className="lp-morph">
+            <div className="lp-morph-inner">
+              <PriceCardFaces />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+);
+
+const StatementSection = () => {
   const ref = useRef<HTMLElement>(null);
   const [lit, setLit] = useState(0);
-  const [story, setStory] = useState(false);
-  const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setLit(STATEMENT_WORDS.length);
-      setStory(true);
-      setFlipped(true);
       return;
     }
     let raf = 0;
@@ -777,14 +850,9 @@ const PricingSaga = () => {
         const el = ref.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const total = rect.height - window.innerHeight;
-        if (total <= 0) return;
-        const p = Math.min(1, Math.max(0, -rect.top / total));
-        // one card the whole way: pricing first, then the statement takes the
-        // floor, the card rides along and flips at the landing
-        setStory(p >= 0.38);
-        setFlipped(p >= 0.62);
-        setLit(Math.round(Math.min(1, Math.max(0, (p - 0.36) / 0.28)) * STATEMENT_WORDS.length));
+        const vh = window.innerHeight;
+        const p = Math.min(1, Math.max(0, (vh * 0.85 - rect.top) / (vh * 0.5)));
+        setLit(Math.round(p * STATEMENT_WORDS.length));
       });
     };
     onScroll();
@@ -796,72 +864,81 @@ const PricingSaga = () => {
   }, []);
 
   return (
-    <section className="lp-pricesaga" id="pricing" ref={ref}>
-      <div className={`lp-pricesaga-stage${story ? ' is-story' : ''}`}>
-        <div className="lp-shell lp-pricesaga-grid">
-          <div className="lp-ps-left">
-            <div className="lp-ps-pricing">
-              <span className="lp-kicker">Pricing</span>
-              <h2>Pricing that isn't.</h2>
-              <p>
-                Every feature, every invoice. Free while we're in beta. And free
-                means free, not “free until you need it.”
-              </p>
-            </div>
-            <div className="lp-ps-statement">
-              <span className="lp-kicker">The point of all this</span>
-              <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
-                {STATEMENT_WORDS.map((word, i) => (
-                  <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
-                    {word}{' '}
-                  </span>
-                ))}
-              </p>
-              <p className="lp-statement-sub">
-                Invoicier turns getting paid into keeping records, without you
-                ever noticing the second part happened.
-              </p>
-            </div>
-          </div>
-
-          {/* the one and only pricing card: it travels, then it flips */}
-          <div className={`lp-morph${flipped ? ' is-flipped' : ''}`}>
-            <div className="lp-morph-inner">
-              <div className="lp-morph-face lp-morph-front lp-price-card">
-                <span className="lp-price-badge">Beta</span>
-                <h4>Everything plan</h4>
-                <div className="lp-price">
-                  <strong>&#8358;0.00</strong>
-                  <span>/ uncapped, forever</span>
-                </div>
-                <ul className="lp-price-list">
-                  <li><i className="bx bx-check" />Unlimited invoices &amp; clients</li>
-                  <li><i className="bx bx-check" />Payment links in USD, EUR, GBP &amp; NGN</li>
-                  <li><i className="bx bx-check" />Automatic, well-mannered reminders</li>
-                  <li><i className="bx bx-check" />Dashboard, insights &amp; exports</li>
-                  <li><i className="bx bx-check" />SSL security, PDF downloads</li>
-                </ul>
-                <a href="/#waitlist" className="lp-btn">
-                  Join the waitlist <i className="bx bx-right-arrow-alt" />
-                </a>
-                <p className="lp-price-note">
-                  Free for waitlist members during beta. No card, no gotchas.
-                </p>
-              </div>
-              <div className="lp-morph-face lp-morph-back">
-                <svg className="lp-morph-check" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="32" fill="none" strokeWidth="4" />
-                  <path d="M22 37 L32 47 L51 27" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <b>Payment successful</b>
-                <small>&#8358;0.00 · the wedge stays free</small>
-                <span className="lp-morph-ref">REF · INV-YOU-2026</span>
-              </div>
-            </div>
-          </div>
+    <section className="lp-statement" ref={ref}>
+      <div className="lp-shell lp-statement-grid">
+        <div>
+          <span className="lp-kicker">The point of all this</span>
+          <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
+            {STATEMENT_WORDS.map((word, i) => (
+              <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
+                {word}{' '}
+              </span>
+            ))}
+          </p>
+          <p className="lp-statement-sub">
+            Invoicier turns getting paid into keeping records, without you ever
+            noticing the second part happened.
+          </p>
         </div>
+        <div className="lp-ps-slot" id="ps-slot-b" aria-hidden="true" />
       </div>
     </section>
+  );
+};
+
+/**
+ * The flight itself: a fixed layer measures both slots every frame and
+ * carries the card from pricing to the statement with an arc and a tilt,
+ * flipping it to "payment successful" on landing. Hand-rolled FLIP, no
+ * library required.
+ */
+const CardTravel = () => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [flipped, setFlipped] = useState(false);
+
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const a = document.getElementById('ps-slot-a');
+      const b = document.getElementById('ps-slot-b');
+      const card = cardRef.current;
+      if (!a || !b || !card) return;
+      const ar = a.getBoundingClientRect();
+      const br = b.getBoundingClientRect();
+      const dist = br.top - ar.top;
+      if (dist <= 0) return;
+      const s = Math.min(1, Math.max(0, (window.innerHeight * 0.55 - ar.top) / dist));
+      const e = s < 0.5 ? 2 * s * s : 1 - Math.pow(-2 * s + 2, 2) / 2;
+      const drift = Math.sin(e * Math.PI) * -52;
+      const rot = Math.sin(e * Math.PI) * -5;
+      card.style.width = `${ar.width}px`;
+      card.style.transform = `translate3d(${ar.left + e * (br.left - ar.left) + drift}px, ${
+        ar.top + e * dist
+      }px, 0) rotate(${rot}deg)`;
+      setFlipped(s >= 0.985);
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
+  return (
+    <div className="lp-cardtravel" ref={cardRef}>
+      <div className={`lp-morph${flipped ? ' is-flipped' : ''}`}>
+        <div className="lp-morph-inner">
+          <PriceCardFaces />
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -943,6 +1020,7 @@ export const Landing = () => {
   useGatedReveal(rootRef, !loading);
   useTiltRipple(rootRef, !loading);
   useScrollDrift(rootRef);
+  const travelOk = useTravelOk();
 
   const finishIntro = () => {
     sessionStorage.setItem(INTRO_KEY, '1');
@@ -1069,8 +1147,10 @@ export const Landing = () => {
           words={['SEND', 'GET PAID', 'RECEIPTED', 'LEDGERED', 'FILED']}
         />
 
-        {/* ---------------------------------------- PRICING, THEN THE POINT */}
-        <PricingSaga />
+        {/* -------------------------------- PRICING, then THE POINT, apart */}
+        <PricingSection travel={travelOk} />
+        <StatementSection />
+        {travelOk && <CardTravel />}
 
         {/* ------------------------------------------------------------ QUOTES */}
         <section className="lp-section">

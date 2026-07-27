@@ -4081,3 +4081,56 @@
     animation: none;
   }
 }
+
+/* ============================================================================
+   THE CARD FLIGHT — one pricing card, physically travelling between sections
+   ========================================================================== */
+
+.lp-pricing {
+  background: linear-gradient(180deg, rgba(255, 90, 95, 0.05), rgba(255, 90, 95, 0));
+}
+.lp-statement {
+  background: #f8f6fc;
+}
+.lp-ps-slot {
+  width: 100%;
+  max-width: 350px;
+  min-height: 480px;
+  justify-self: center;
+}
+.lp-cardtravel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  will-change: transform;
+  pointer-events: none;
+}
+.lp-cardtravel .lp-morph,
+.lp-ps-slot .lp-morph {
+  max-width: none;
+  pointer-events: auto;
+}
+.lp-cardtravel .lp-morph-face,
+.lp-ps-slot .lp-morph-face {
+  width: 100%;
+  min-height: 470px;
+}
+.lp-cardtravel .lp-morph-face.lp-price-card,
+.lp-ps-slot .lp-morph-face.lp-price-card {
+  position: relative;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+@media (max-width: 1020px) {
+  .lp-ps-slot {
+    min-height: 0;
+    justify-self: start;
+  }
+  #ps-slot-b {
+    display: none;
+  }
+  .lp-statement-grid {
+    grid-template-columns: 1fr;
+  }
+}
