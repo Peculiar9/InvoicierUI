@@ -40,6 +40,8 @@ export const Welcome = () => {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [tradingName, setTradingName] = useState('');
+  const [email, setEmail] = useState(() => useAuthStore.getState().user?.email ?? '');
+  const [emailError, setEmailError] = useState('');
   const [persona, setPersona] = useState<Persona | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [color, setColor] = useState('#924ee9');
@@ -68,6 +70,14 @@ export const Welcome = () => {
 
   const displayName = tradingName.trim() || name.trim() || 'Your name here';
   const firstName = name.trim().split(' ')[0] || 'friend';
+
+  const goFromEmail = () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setEmailError('We need a working address to send invoices from');
+      return;
+    }
+    setStep(3);
+  };
   const monogram = (displayName.charAt(0) || 'i').toUpperCase();
 
   const onLogoPick = (event: ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +110,7 @@ export const Welcome = () => {
       persona: persona ?? undefined,
       vatRegistered: vat,
       whtUsual: wht,
+      email: email.trim(),
       template,
       currency,
       tin: tin.trim() || undefined,
@@ -109,7 +120,7 @@ export const Welcome = () => {
 
   return (
     <div className="ob iw">
-      {step === 6 && (
+      {step === 7 && (
         <div className="ob-confetti" aria-hidden="true">
           {confetti.map((c, i) => (
             <span
@@ -143,7 +154,7 @@ export const Welcome = () => {
       )}
       <div className="ob-card">
         <div className="ob-progress" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
             <span key={i} className={step >= i ? 'on' : ''} />
           ))}
         </div>
@@ -209,8 +220,45 @@ export const Welcome = () => {
           </div>
         )}
 
-        {/* --------------------------------------------- step 3: the hat */}
+        {/* ------------------------------------------ step 3: the address */}
         {step === 2 && (
+          <div className="ob-step">
+            <span className="ob-kicker">One detail that matters</span>
+            <h1>Where should the money talk happen?</h1>
+            <p>
+              This is the address your invoices are sent from and the one your
+              clients hit reply to. We will send a link to confirm it.
+            </p>
+            <label className="cinv-field">
+              <span>Email</span>
+              <input
+                type="email"
+                autoFocus
+                autoComplete="email"
+                value={email}
+                className={emailError ? 'is-invalid' : ''}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError('');
+                }}
+                placeholder="you@yourbusiness.com"
+                onKeyDown={(e) => e.key === 'Enter' && goFromEmail()}
+              />
+              {emailError && <small className="field-error">{emailError}</small>}
+            </label>
+            <div className="ob-nav">
+              <button type="button" className="ob-back" onClick={() => setStep(1)}>
+                <i className="bx bx-left-arrow-alt" /> Back
+              </button>
+              <button type="button" className="iw-btn" onClick={goFromEmail}>
+                That is the one <i className="bx bx-right-arrow-alt" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------------------------------- step 3: the hat */}
+        {step === 3 && (
           <div className="ob-step">
             <span className="ob-kicker">Getting to know you</span>
             <h1>Which hat fits, {firstName}?</h1>
@@ -230,10 +278,10 @@ export const Welcome = () => {
               ))}
             </div>
             <div className="ob-nav">
-              <button type="button" className="ob-back" onClick={() => setStep(1)}>
+              <button type="button" className="ob-back" onClick={() => setStep(2)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={() => setStep(3)}>
+              <button type="button" className="iw-btn" onClick={() => setStep(4)}>
                 {persona ? 'Wears well' : 'No hat today'}{' '}
                 <i className="bx bx-right-arrow-alt" />
               </button>
@@ -242,7 +290,7 @@ export const Welcome = () => {
         )}
 
         {/* --------------------------------------------- step 2: the brand */}
-        {step === 3 && (
+        {step === 4 && (
           <div className="ob-step">
             <span className="ob-kicker">Make it yours</span>
             <h1>Dress your invoice.</h1>
@@ -317,10 +365,10 @@ export const Welcome = () => {
               </div>
             </div>
             <div className="ob-nav">
-              <button type="button" className="ob-back" onClick={() => setStep(2)}>
+              <button type="button" className="ob-back" onClick={() => setStep(3)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={() => setStep(4)}>
+              <button type="button" className="iw-btn" onClick={() => setStep(5)}>
                 Next <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
@@ -328,7 +376,7 @@ export const Welcome = () => {
         )}
 
         {/* ------------------------------------------ step 5: pick the paper */}
-        {step === 4 && (
+        {step === 5 && (
           <div className="ob-step">
             <span className="ob-kicker">Pick your paper</span>
             <h1>Which one should your clients open?</h1>
@@ -342,10 +390,10 @@ export const Welcome = () => {
               brand={{ name: displayName, color, logo }}
             />
             <div className="ob-nav">
-              <button type="button" className="ob-back" onClick={() => setStep(3)}>
+              <button type="button" className="ob-back" onClick={() => setStep(4)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={() => setStep(5)}>
+              <button type="button" className="iw-btn" onClick={() => setStep(6)}>
                 That is the one <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
@@ -353,7 +401,7 @@ export const Welcome = () => {
         )}
 
         {/* ----------------------------------------------- step 3: the tax */}
-        {step === 5 && (
+        {step === 6 && (
           <div className="ob-step">
             <span className="ob-kicker">The boring part, kept short</span>
             <h1>Two questions now, zero questions in March.</h1>
@@ -392,10 +440,10 @@ export const Welcome = () => {
               </label>
             </div>
             <div className="ob-nav">
-              <button type="button" className="ob-back" onClick={() => setStep(4)}>
+              <button type="button" className="ob-back" onClick={() => setStep(5)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={() => setStep(6)}>
+              <button type="button" className="iw-btn" onClick={() => setStep(7)}>
                 Almost there <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
@@ -403,7 +451,7 @@ export const Welcome = () => {
         )}
 
         {/* --------------------------------------------------- the stamp */}
-        {step === 6 && (
+        {step === 7 && (
           <div className="ob-step ob-step--done">
             <div className="ob-stamp-wrap">
               <span className="ob-stamp">Open for business</span>
@@ -426,8 +474,8 @@ export const Welcome = () => {
           </div>
         )}
 
-        {step < 6 && (
-          <button type="button" className="ob-skip" onClick={() => setStep(6)}>
+        {step < 7 && (
+          <button type="button" className="ob-skip" onClick={() => setStep(7)}>
             Skip the dressing room
           </button>
         )}
