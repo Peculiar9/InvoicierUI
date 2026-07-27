@@ -444,10 +444,14 @@ const PaperTrail = () => {
   const stageRef = useRef<HTMLDivElement>(null);
   const measured = useRef(false);
   const [phase, setPhase] = useState<'scrub' | 'stack' | 'pulse' | 'voila'>('scrub');
+  const [docked, setDocked] = useState(false);
+  const [featIdx, setFeatIdx] = useState(-1);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setPhase('voila');
+      setDocked(true);
+      setFeatIdx(3);
       return;
     }
     let raf = 0;
@@ -461,10 +465,12 @@ const PaperTrail = () => {
         const total = rect.height - window.innerHeight;
         if (total <= 0) return;
         const p = Math.min(1, Math.max(0, -rect.top / total));
-        // documents scrub through the first 28%, then the magic starts
-        el.style.setProperty('--tp', String(Math.min(1, p / 0.28)));
+        // documents scrub through the first 22%, then the magic starts
+        el.style.setProperty('--tp', String(Math.min(1, p / 0.22)));
         const next =
-          p >= 0.42 ? 'voila' : p >= 0.36 ? 'pulse' : p >= 0.28 ? 'stack' : 'scrub';
+          p >= 0.36 ? 'voila' : p >= 0.3 ? 'pulse' : p >= 0.22 ? 'stack' : 'scrub';
+        setDocked(p >= 0.46);
+        setFeatIdx(p < 0.52 ? -1 : Math.min(3, Math.floor((p - 0.52) / 0.12)));
         if (next !== 'scrub' && !measured.current) {
           // each paper learns its own route to the center of the stage
           const sr = stage.getBoundingClientRect();
@@ -492,7 +498,9 @@ const PaperTrail = () => {
 
   const stageClass = `lp-trail-stage${phase !== 'scrub' ? ' is-stack' : ''}${
     phase === 'pulse' || phase === 'voila' ? ' is-pulse' : ''
-  }${phase === 'voila' ? ' is-voila' : ''}`;
+  }${phase === 'voila' ? ' is-voila' : ''}${docked ? ' is-docked' : ''}${
+    featIdx >= 0 ? ' is-story' : ''
+  }`;
 
   const title =
     phase === 'voila'
@@ -502,7 +510,7 @@ const PaperTrail = () => {
         : 'Now watch them come together.';
 
   return (
-    <section className="lp-trail" ref={ref}>
+    <section className="lp-trail" id="features" ref={ref}>
       <div className={stageClass} ref={stageRef}>
         <div className="lp-shell lp-trail-head">
           <span className="lp-kicker">The paper trail</span>
@@ -560,6 +568,57 @@ const PaperTrail = () => {
               <span><em>IV2047</em> Otto Holdings <b>Paid</b></span>
               <span><em>IV2048</em> Bird Studios <b className="sent">Sent</b></span>
             </div>
+          </div>
+        </div>
+
+        {/* the left story: static while the app shows its receipts */}
+        <div className="lp-saga-story">
+          <span className="lp-kicker">Why Invoicier</span>
+          <h2>The invoice is the easy part. We built everything after it.</h2>
+          <p className="lp-saga-sub">
+            Getting paid is a link. Staying filed is a system. Invoicier is
+            both, wearing one clean interface.
+          </p>
+          <div className="lp-card lp-card--dark lp-card--mini">
+            <span className="lp-card-tag">The core</span>
+            <h3>A ledger that writes itself</h3>
+            <div className="lp-mini-ledger" aria-hidden="true">
+              <span><em>Mar 3</em><b>Otto Holdings</b><i>&#8358;3,816,250</i></span>
+              <span><em>Mar 9</em><b>Bird Studios</b><i>$2,150.00</i></span>
+              <span><em>Mar 14</em><b>Thornton &amp; Co</b><i>&#8358;980,000</i></span>
+            </div>
+          </div>
+        </div>
+
+        {/* the receipts, snapping bottom to top beside the docked app */}
+        <div className="lp-saga-feats" aria-hidden="true">
+          <div className={`lp-feat${featIdx === 0 ? ' is-active' : featIdx > 0 ? ' is-passed' : ''}`}>
+            <span className="lp-card-icon"><i className="bx bx-wallet" /></span>
+            <h3>Paid from anywhere</h3>
+            <p>Paystack for naira, your own accounts for dollars, euros and pounds.</p>
+            <div className="lp-chiprow">
+              <span className="lp-chip">Paystack</span>
+              <span className="lp-chip">NGN</span>
+              <span className="lp-chip">USD</span>
+              <span className="lp-chip">EUR</span>
+              <span className="lp-chip">GBP</span>
+            </div>
+          </div>
+          <div className={`lp-feat${featIdx === 1 ? ' is-active' : featIdx > 1 ? ' is-passed' : ''}`}>
+            <span className="lp-card-icon"><i className="bx bx-badge-check" /></span>
+            <h3>Receipts on autopilot</h3>
+            <p>The moment an invoice is paid, receipt PDFs go to both of you. Zero clicks.</p>
+          </div>
+          <div className={`lp-feat${featIdx === 2 ? ' is-active' : featIdx > 2 ? ' is-passed' : ''}`}>
+            <span className="lp-card-icon"><i className="bx bx-printer" /></span>
+            <h3>Print-perfect PDFs</h3>
+            <p>Invoices that survive the accountant, the auditor and the office printer.</p>
+          </div>
+          <div className={`lp-feat${featIdx === 3 ? ' is-active' : ''}`}>
+            <span className="lp-card-icon"><i className="bx bx-calculator" /></span>
+            <h3>The estimator, next</h3>
+            <p>Your liability as an honest range beside the &#8358;100k penalty.</p>
+            <span className="lp-mini-range">&#8358;480k <i>to</i> &#8358;610k</span>
           </div>
         </div>
 
@@ -811,13 +870,6 @@ const TempOnboardingButton = () => {
   );
 };
 
-/* feeds the bento cards' cursor spotlight */
-const spotlight = (event: ReactMouseEvent<HTMLElement>) => {
-  const rect = event.currentTarget.getBoundingClientRect();
-  event.currentTarget.style.setProperty('--mx', `${event.clientX - rect.left}px`);
-  event.currentTarget.style.setProperty('--my', `${event.clientY - rect.top}px`);
-};
-
 /** Scroll parallax: the hero background drifts as the page moves. */
 const useScrollDrift = (rootRef: RefObject<HTMLElement>) => {
   useEffect(() => {
@@ -985,94 +1037,6 @@ export const Landing = () => {
 
         {/* ----------------------------------------------- THE PAPER TRAIL */}
         <PaperTrail />
-
-        {/* -------------------------------------------------------- FEATURES */}
-        <section className="lp-section" id="features">
-          <div className="lp-shell">
-            <div className="lp-section-head" data-reveal>
-              <span className="lp-kicker">Why Invoicier</span>
-              <h2>The invoice is the easy part. We built everything after it.</h2>
-              <p>
-                Getting paid is a link. Staying filed is a system. Invoicier is
-                both, wearing one clean interface.
-              </p>
-            </div>
-            <div className="lp-bento">
-              <article
-                className="lp-card lp-card--wide lp-card--dark"
-                data-tilt
-                data-reveal
-                data-delay="1"
-              >
-                <span className="lp-card-tag">The core</span>
-                <h3>A ledger that writes itself</h3>
-                <p>
-                  Every payment lands as a row on the date the money arrived:
-                  amount, currency, VAT, withholding. March reads it like a
-                  book, not a shoebox of screenshots.
-                </p>
-                <div className="lp-mini-ledger" aria-hidden="true">
-                  <span><em>Mar 3</em><b>Otto Holdings</b><i>₦3,816,250</i></span>
-                  <span><em>Mar 9</em><b>Bird Studios</b><i>$2,150.00</i></span>
-                  <span><em>Mar 14</em><b>Thornton &amp; Co</b><i>₦980,000</i></span>
-                </div>
-              </article>
-              <article className="lp-card" data-reveal data-delay="2" onMouseMove={spotlight}>
-                <span className="lp-card-icon">
-                  <i className="bx bx-wallet" />
-                </span>
-                <h3>Paid from anywhere</h3>
-                <p>
-                  Paystack for naira, your own accounts for dollars, euros and
-                  pounds. Your client pays the way they already pay.
-                </p>
-                <div className="lp-chiprow" aria-hidden="true">
-                  <span className="lp-chip">Paystack</span>
-                  <span className="lp-chip">NGN</span>
-                  <span className="lp-chip">USD</span>
-                  <span className="lp-chip">EUR</span>
-                  <span className="lp-chip">GBP</span>
-                </div>
-              </article>
-              <article className="lp-card" data-reveal data-delay="3" onMouseMove={spotlight}>
-                <span className="lp-card-icon">
-                  <i className="bx bx-badge-check" />
-                </span>
-                <h3>Receipts on autopilot</h3>
-                <p>
-                  The moment an invoice is paid, receipt PDFs go to both of you.
-                  Two brand touchpoints, zero clicks.
-                </p>
-                <span className="lp-mini-stamp" aria-hidden="true">
-                  Paid
-                </span>
-              </article>
-              <article className="lp-card lp-card--sheet" data-reveal data-delay="4" onMouseMove={spotlight}>
-                <span className="lp-card-icon">
-                  <i className="bx bx-printer" />
-                </span>
-                <h3>Print-perfect PDFs</h3>
-                <p>
-                  Invoices and receipts that survive the accountant, the auditor
-                  and the office printer.
-                </p>
-              </article>
-              <article className="lp-card" data-reveal data-delay="5" onMouseMove={spotlight}>
-                <span className="lp-card-icon">
-                  <i className="bx bx-calculator" />
-                </span>
-                <h3>The estimator, next</h3>
-                <p>
-                  Answer a few questions and see your liability as an honest
-                  range beside the ₦100k penalty. Knowledge first, panic never.
-                </p>
-                <span className="lp-mini-range" aria-hidden="true">
-                  ₦480k <i>to</i> ₦610k
-                </span>
-              </article>
-            </div>
-          </div>
-        </section>
 
         {/* the lifecycle, shouted quietly */}
         <KineticBand
