@@ -757,14 +757,16 @@ const STATEMENT_WORDS =
  * Manifesto moment: the sentence assembles itself as you scroll, one word
  * catching ink at a time.
  */
-const Statement = () => {
+const PricingSaga = () => {
   const ref = useRef<HTMLElement>(null);
   const [lit, setLit] = useState(0);
+  const [story, setStory] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setLit(STATEMENT_WORDS.length);
+      setStory(true);
       setFlipped(true);
       return;
     }
@@ -775,12 +777,14 @@ const Statement = () => {
         const el = ref.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const vh = window.innerHeight;
-        // words light from when the section is 85% down the screen to 35%
-        const p = Math.min(1, Math.max(0, (vh * 0.85 - rect.top) / (vh * 0.5)));
-        setLit(Math.round(p * STATEMENT_WORDS.length));
-        // the card that followed you from pricing settles, then flips
-        setFlipped(rect.top < vh * 0.3);
+        const total = rect.height - window.innerHeight;
+        if (total <= 0) return;
+        const p = Math.min(1, Math.max(0, -rect.top / total));
+        // one card the whole way: pricing first, then the statement takes the
+        // floor, the card rides along and flips at the landing
+        setStory(p >= 0.38);
+        setFlipped(p >= 0.62);
+        setLit(Math.round(Math.min(1, Math.max(0, (p - 0.36) / 0.28)) * STATEMENT_WORDS.length));
       });
     };
     onScroll();
@@ -792,45 +796,67 @@ const Statement = () => {
   }, []);
 
   return (
-    <section className="lp-statement" ref={ref}>
-      <div className="lp-shell lp-statement-grid">
-        <div>
-          <span className="lp-kicker">The point of all this</span>
-          <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
-            {STATEMENT_WORDS.map((word, i) => (
-              <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
-                {word}{' '}
-              </span>
-            ))}
-          </p>
-          <p className="lp-statement-sub">
-            Invoicier turns getting paid into keeping records, without you ever
-            noticing the second part happened.
-          </p>
-        </div>
-
-        {/* the pricing card, arrived from the section above, flips into a
-            payment confirmation the moment the sentence lands */}
-        <div className={`lp-morph${flipped ? ' is-flipped' : ''}`} aria-hidden="true">
-          <div className="lp-morph-inner">
-            <div className="lp-morph-face lp-morph-front">
-              <span className="lp-morph-badge">Everything plan</span>
-              <b className="lp-morph-price">&#8358;0.00</b>
-              <small>uncapped, forever</small>
-              <ul>
-                <li><i className="bx bx-check" /> Unlimited invoices</li>
-                <li><i className="bx bx-check" /> Tax-grade ledger</li>
-                <li><i className="bx bx-check" /> Receipts on autopilot</li>
-              </ul>
+    <section className="lp-pricesaga" id="pricing" ref={ref}>
+      <div className={`lp-pricesaga-stage${story ? ' is-story' : ''}`}>
+        <div className="lp-shell lp-pricesaga-grid">
+          <div className="lp-ps-left">
+            <div className="lp-ps-pricing">
+              <span className="lp-kicker">Pricing</span>
+              <h2>Pricing that isn't.</h2>
+              <p>
+                Every feature, every invoice. Free while we're in beta. And free
+                means free, not “free until you need it.”
+              </p>
             </div>
-            <div className="lp-morph-face lp-morph-back">
-              <svg className="lp-morph-check" viewBox="0 0 72 72">
-                <circle cx="36" cy="36" r="32" fill="none" strokeWidth="4" />
-                <path d="M22 37 L32 47 L51 27" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <b>Payment successful</b>
-              <small>&#8358;0.00 · the wedge stays free</small>
-              <span className="lp-morph-ref">REF · INV-YOU-2026</span>
+            <div className="lp-ps-statement">
+              <span className="lp-kicker">The point of all this</span>
+              <p className="lp-statement-line" aria-label={STATEMENT_WORDS.join(' ')}>
+                {STATEMENT_WORDS.map((word, i) => (
+                  <span key={i} className={i < lit ? 'on' : ''} aria-hidden="true">
+                    {word}{' '}
+                  </span>
+                ))}
+              </p>
+              <p className="lp-statement-sub">
+                Invoicier turns getting paid into keeping records, without you
+                ever noticing the second part happened.
+              </p>
+            </div>
+          </div>
+
+          {/* the one and only pricing card: it travels, then it flips */}
+          <div className={`lp-morph${flipped ? ' is-flipped' : ''}`}>
+            <div className="lp-morph-inner">
+              <div className="lp-morph-face lp-morph-front lp-price-card">
+                <span className="lp-price-badge">Beta</span>
+                <h4>Everything plan</h4>
+                <div className="lp-price">
+                  <strong>&#8358;0.00</strong>
+                  <span>/ uncapped, forever</span>
+                </div>
+                <ul className="lp-price-list">
+                  <li><i className="bx bx-check" />Unlimited invoices &amp; clients</li>
+                  <li><i className="bx bx-check" />Payment links in USD, EUR, GBP &amp; NGN</li>
+                  <li><i className="bx bx-check" />Automatic, well-mannered reminders</li>
+                  <li><i className="bx bx-check" />Dashboard, insights &amp; exports</li>
+                  <li><i className="bx bx-check" />SSL security, PDF downloads</li>
+                </ul>
+                <a href="/#waitlist" className="lp-btn">
+                  Join the waitlist <i className="bx bx-right-arrow-alt" />
+                </a>
+                <p className="lp-price-note">
+                  Free for waitlist members during beta. No card, no gotchas.
+                </p>
+              </div>
+              <div className="lp-morph-face lp-morph-back">
+                <svg className="lp-morph-check" viewBox="0 0 72 72">
+                  <circle cx="36" cy="36" r="32" fill="none" strokeWidth="4" />
+                  <path d="M22 37 L32 47 L51 27" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <b>Payment successful</b>
+                <small>&#8358;0.00 · the wedge stays free</small>
+                <span className="lp-morph-ref">REF · INV-YOU-2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1043,46 +1069,8 @@ export const Landing = () => {
           words={['SEND', 'GET PAID', 'RECEIPTED', 'LEDGERED', 'FILED']}
         />
 
-        {/* --------------------------------------------------------- PRICING */}
-        <section className="lp-section" id="pricing">
-          <div className="lp-shell lp-pricing-grid">
-            <div className="lp-pricing-copy" data-reveal="left">
-              <span className="lp-kicker">Pricing</span>
-              <h2>Pricing that isn't.</h2>
-              <p>
-                Invoicing is free and stays free. It's the wedge, not the trial.
-                When filing season lands, the filing pack shows up next to your
-                estimated liability and the ₦100k penalty for not filing, and it
-                will read like a bargain.
-              </p>
-            </div>
-            <div className="lp-price-card" data-tilt data-reveal="right" data-delay="2">
-              <span className="lp-price-badge">Free forever</span>
-              <h4>Invoicing</h4>
-              <div className="lp-price">
-                <strong>₦0</strong>
-                <span>/ uncapped, no trial clock</span>
-              </div>
-              <ul className="lp-price-list">
-                <li><i className="bx bx-check" />Unlimited invoices &amp; clients</li>
-                <li><i className="bx bx-check" />Paystack for NGN, your account details for USD, EUR &amp; GBP</li>
-                <li><i className="bx bx-check" />VAT &amp; withholding captured on every invoice</li>
-                <li><i className="bx bx-check" />PDF invoices &amp; receipts, sent for you</li>
-                <li><i className="bx bx-check" />A tax-grade ledger from day one</li>
-              </ul>
-              <a href="#waitlist" className="lp-btn">
-                Join the waitlist <i className="bx bx-right-arrow-alt" />
-              </a>
-              <p className="lp-price-note">
-                The filing pack arrives before March. Waitlist members get the
-                early-bird price.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* --------------------------------------------------------- STATEMENT */}
-        <Statement />
+        {/* ---------------------------------------- PRICING, THEN THE POINT */}
+        <PricingSaga />
 
         {/* ------------------------------------------------------------ QUOTES */}
         <section className="lp-section">
@@ -1149,122 +1137,6 @@ export const Landing = () => {
                   </blockquote>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* --------------------------------------------------------- STATEMENT */}
-        <Statement />
-
-        {/* ------------------------------------------------------------ QUOTES */}
-        <section className="lp-section">
-          <div className="lp-shell">
-            <div className="lp-section-head" data-reveal>
-              <span className="lp-kicker">Early users</span>
-              <h2>Kind words from the beta.</h2>
-              <p>Real workflows from the people testing Invoicier right now.</p>
-            </div>
-            <div className="lp-quotes-drift">
-              <div className="lp-quotes-track">
-                {[0, 1].map((copy) => (
-                  <div className="lp-quotes-set" key={copy} aria-hidden={copy === 1}>
-                    <blockquote className="lp-quote">
-                      <p>
-                        Invoicier chases so I don't have to. My awkward “just
-                        following up on this” emails are officially extinct.
-                      </p>
-                      <footer>
-                        <span className="lp-quote-avatar">AO</span>
-                        <div>
-                          <b>Amara O.</b>
-                          <small>Studio lead, Lagos</small>
-                        </div>
-                      </footer>
-                    </blockquote>
-                    <blockquote className="lp-quote">
-                      <p>
-                        I invoice from my phone between commits. The money shows
-                        up. That's the whole review.
-                      </p>
-                      <footer>
-                        <span className="lp-quote-avatar">TA</span>
-                        <div>
-                          <b>Tobi A.</b>
-                          <small>Product designer, billing US clients from Lagos</small>
-                        </div>
-                      </footer>
-                    </blockquote>
-                    <blockquote className="lp-quote">
-                      <p>
-                        The ledger part is sneaky. I came for the invoices and
-                        stayed because March stopped being scary.
-                      </p>
-                      <footer>
-                        <span className="lp-quote-avatar">CN</span>
-                        <div>
-                          <b>Chidi N.</b>
-                          <small>Photographer, Abuja</small>
-                        </div>
-                      </footer>
-                    </blockquote>
-                    <blockquote className="lp-quote">
-                      <p>
-                        Sent my first invoice from the bus. It was paid before I
-                        got home.
-                      </p>
-                      <footer>
-                        <span className="lp-quote-avatar">SK</span>
-                        <div>
-                          <b>Sade K.</b>
-                          <small>Copywriter, Ibadan</small>
-                        </div>
-                      </footer>
-                    </blockquote>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* --------------------------------------------------------- STATEMENT */}
-        <Statement />
-
-        {/* ------------------------------------------------------------ QUOTES */}
-        <section className="lp-section">
-          <div className="lp-shell">
-            <div className="lp-section-head" data-reveal>
-              <span className="lp-kicker">Early users</span>
-              <h2>Kind words from the beta.</h2>
-              <p>Real workflows from the people testing Invoicier right now.</p>
-            </div>
-            <div className="lp-quotes">
-              <blockquote className="lp-quote" data-tilt data-reveal="left" data-delay="1">
-                <p>
-                  Invoicier chases so I don't have to. My awkward “just following
-                  up on this” emails are officially extinct.
-                </p>
-                <footer>
-                  <span className="lp-quote-avatar">AO</span>
-                  <div>
-                    <b>Amara O.</b>
-                    <small>Studio lead, Lagos</small>
-                  </div>
-                </footer>
-              </blockquote>
-              <blockquote className="lp-quote" data-tilt data-reveal="right" data-delay="2">
-                <p>
-                  The dollars land in my domiciliary account and the ledger keeps
-                  the naira story straight. March-me is finally covered.
-                </p>
-                <footer>
-                  <span className="lp-quote-avatar">TA</span>
-                  <div>
-                    <b>Tobi A.</b>
-                    <small>Product designer, billing US clients from Lagos</small>
-                  </div>
-                </footer>
-              </blockquote>
             </div>
           </div>
         </section>

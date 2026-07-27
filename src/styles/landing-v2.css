@@ -3960,3 +3960,123 @@
     margin-bottom: 12px;
   }
 }
+
+/* ============================================================================
+   PRICING SAGA — one card: priced, travelled, flipped
+   ========================================================================== */
+
+.lp-pricesaga {
+  height: 300vh;
+}
+.lp-pricesaga-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  align-items: center;
+  overflow: clip;
+}
+.lp-pricesaga-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
+}
+.lp-ps-left {
+  position: relative;
+}
+.lp-ps-pricing,
+.lp-ps-statement {
+  transition: opacity 0.5s ease, transform 0.6s var(--ease-out);
+}
+.lp-ps-pricing h2 {
+  margin-top: 12px;
+  font-size: var(--fs-mega);
+  font-weight: 700;
+}
+.lp-ps-pricing p {
+  margin-top: 16px;
+  font-size: var(--fs-lg);
+  max-width: 42ch;
+}
+.lp-ps-statement {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(28px);
+  pointer-events: none;
+}
+.lp-pricesaga-stage.is-story .lp-ps-pricing {
+  opacity: 0;
+  transform: translateY(-28px);
+  pointer-events: none;
+}
+.lp-pricesaga-stage.is-story .lp-ps-statement {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* the card rides into the second act with momentum, then settles */
+.lp-pricesaga .lp-morph {
+  max-width: 340px;
+  justify-self: center;
+}
+.lp-pricesaga-stage.is-story .lp-morph {
+  animation: lp-price-travel 1s var(--ease-snap);
+}
+@keyframes lp-price-travel {
+  0% {
+    transform: translateY(-16vh);
+  }
+  55% {
+    transform: translateY(2.5vh);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+/* the front face is the real pricing card; give the face what it needs */
+.lp-pricesaga .lp-morph-face.lp-price-card {
+  position: relative;
+  width: 320px;
+  min-height: 430px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.lp-pricesaga .lp-morph-back {
+  min-height: 430px;
+}
+
+@media (max-width: 1020px), (prefers-reduced-motion: reduce) {
+  .lp-pricesaga {
+    height: auto;
+    padding: var(--section-y) 0;
+  }
+  .lp-pricesaga-stage {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+  .lp-pricesaga-grid {
+    grid-template-columns: 1fr;
+  }
+  .lp-ps-statement {
+    position: static;
+    opacity: 1;
+    transform: none;
+    margin-top: 40px;
+    pointer-events: auto;
+  }
+  .lp-pricesaga-stage.is-story .lp-ps-pricing {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .lp-pricesaga-stage.is-story .lp-morph {
+    animation: none;
+  }
+}
