@@ -3636,7 +3636,7 @@
 .lp-quotes-track {
   display: flex;
   width: max-content;
-  animation: lp-quotes-drift 46s linear infinite;
+  animation: lp-quotes-drift 26s ease-in-out infinite alternate;
 }
 .lp-quotes-drift:hover .lp-quotes-track {
   animation-play-state: paused;
@@ -3650,10 +3650,10 @@
   width: clamp(280px, 30vw, 400px);
   flex-shrink: 0;
 }
-/* left to right: start shifted a full set back, drift forward */
+/* one set, drifting left to right and easing back, no duplicates */
 @keyframes lp-quotes-drift {
   from {
-    transform: translateX(-50%);
+    transform: translateX(min(0px, calc(100vw - 100% - 2 * var(--gutter))));
   }
   to {
     transform: translateX(0);
@@ -3664,9 +3664,6 @@
     animation: none;
     width: auto;
     flex-wrap: wrap;
-  }
-  .lp-quotes-set[aria-hidden='true'] {
-    display: none;
   }
   .lp-quotes-drift {
     -webkit-mask-image: none;

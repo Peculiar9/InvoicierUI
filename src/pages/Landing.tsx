@@ -1087,6 +1087,78 @@ export const Landing = () => {
             </div>
             <div className="lp-quotes-drift">
               <div className="lp-quotes-track">
+                <div className="lp-quotes-set">
+                  <blockquote className="lp-quote">
+                    <p>
+                      Invoicier chases so I don't have to. My awkward “just
+                      following up on this” emails are officially extinct.
+                    </p>
+                    <footer>
+                      <span className="lp-quote-avatar">AO</span>
+                      <div>
+                        <b>Amara O.</b>
+                        <small>Studio lead, Lagos</small>
+                      </div>
+                    </footer>
+                  </blockquote>
+                  <blockquote className="lp-quote">
+                    <p>
+                      I invoice from my phone between commits. The money shows
+                      up. That's the whole review.
+                    </p>
+                    <footer>
+                      <span className="lp-quote-avatar">TA</span>
+                      <div>
+                        <b>Tobi A.</b>
+                        <small>Product designer, billing US clients from Lagos</small>
+                      </div>
+                    </footer>
+                  </blockquote>
+                  <blockquote className="lp-quote">
+                    <p>
+                      The ledger part is sneaky. I came for the invoices and
+                      stayed because March stopped being scary.
+                    </p>
+                    <footer>
+                      <span className="lp-quote-avatar">CN</span>
+                      <div>
+                        <b>Chidi N.</b>
+                        <small>Photographer, Abuja</small>
+                      </div>
+                    </footer>
+                  </blockquote>
+                  <blockquote className="lp-quote">
+                    <p>
+                      Sent my first invoice from the bus. It was paid before I
+                      got home.
+                    </p>
+                    <footer>
+                      <span className="lp-quote-avatar">SK</span>
+                      <div>
+                        <b>Sade K.</b>
+                        <small>Copywriter, Ibadan</small>
+                      </div>
+                    </footer>
+                  </blockquote>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* --------------------------------------------------------- STATEMENT */}
+        <Statement />
+
+        {/* ------------------------------------------------------------ QUOTES */}
+        <section className="lp-section">
+          <div className="lp-shell">
+            <div className="lp-section-head" data-reveal>
+              <span className="lp-kicker">Early users</span>
+              <h2>Kind words from the beta.</h2>
+              <p>Real workflows from the people testing Invoicier right now.</p>
+            </div>
+            <div className="lp-quotes-drift">
+              <div className="lp-quotes-track">
                 {[0, 1].map((copy) => (
                   <div className="lp-quotes-set" key={copy} aria-hidden={copy === 1}>
                     <blockquote className="lp-quote">
