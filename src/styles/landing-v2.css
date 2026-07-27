@@ -3623,3 +3623,53 @@
     animation: none;
   }
 }
+
+/* ============================================================================
+   QUOTES ON THE MOVE — a slow drift, left to right
+   ========================================================================== */
+
+.lp-quotes-drift {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.lp-quotes-track {
+  display: flex;
+  width: max-content;
+  animation: lp-quotes-drift 46s linear infinite;
+}
+.lp-quotes-drift:hover .lp-quotes-track {
+  animation-play-state: paused;
+}
+.lp-quotes-set {
+  display: flex;
+  gap: 18px;
+  padding-right: 18px;
+}
+.lp-quotes-set .lp-quote {
+  width: clamp(280px, 30vw, 400px);
+  flex-shrink: 0;
+}
+/* left to right: start shifted a full set back, drift forward */
+@keyframes lp-quotes-drift {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-quotes-track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+  }
+  .lp-quotes-set[aria-hidden='true'] {
+    display: none;
+  }
+  .lp-quotes-drift {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
