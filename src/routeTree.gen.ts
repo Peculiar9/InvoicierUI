@@ -14,12 +14,15 @@ import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CompanyRouteImport } from './routes/company'
 import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 
@@ -48,6 +51,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvoicesRoute = InvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
@@ -73,9 +81,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyRoute = CompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientsRoute = ClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -91,12 +109,15 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/clients': typeof ClientsRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -106,12 +127,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/clients': typeof ClientsRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -122,12 +146,15 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/clients': typeof ClientsRoute
+  '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -139,12 +166,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/blog'
     | '/clients'
+    | '/company'
     | '/dashboard'
     | '/docs'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/legal'
     | '/login'
     | '/services'
     | '/settings'
@@ -154,12 +184,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blog'
     | '/clients'
+    | '/company'
     | '/dashboard'
     | '/docs'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/legal'
     | '/login'
     | '/services'
     | '/settings'
@@ -169,12 +202,15 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/blog'
     | '/clients'
+    | '/company'
     | '/dashboard'
     | '/docs'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/legal'
     | '/login'
     | '/services'
     | '/settings'
@@ -185,12 +221,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BlogRoute: typeof BlogRoute
   ClientsRoute: typeof ClientsRoute
+  CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
   DocsRoute: typeof DocsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   InvoicesRoute: typeof InvoicesRoute
+  LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
@@ -236,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invoices': {
       id: '/invoices'
       path: '/invoices'
@@ -271,11 +317,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/company': {
+      id: '/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof CompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/clients': {
       id: '/clients'
       path: '/clients'
       fullPath: '/clients'
       preLoaderRoute: typeof ClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -297,12 +357,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BlogRoute: BlogRoute,
   ClientsRoute: ClientsRoute,
+  CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
   DocsRoute: DocsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   InvoicesRoute: InvoicesRoute,
+  LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,

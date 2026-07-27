@@ -1514,10 +1514,10 @@ export const MarketingFooter = () => (
         <div className="lp-footer-col">
           <h4>Company</h4>
           <ul>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><Link to="/company">About</Link></li>
+            <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/company">Careers</Link></li>
+            <li><a href="mailto:hello@invoicier.app">Contact</a></li>
           </ul>
         </div>
         <div className="lp-footer-col">
@@ -1526,7 +1526,7 @@ export const MarketingFooter = () => (
             <li><Link to="/docs">Help center</Link></li>
             <li><Link to="/docs">Guides</Link></li>
             <li><Link to="/login">Sign in</Link></li>
-            <li><a href="#">Terms &amp; Privacy</a></li>
+            <li><Link to="/legal">Terms &amp; Privacy</Link></li>
           </ul>
         </div>
       </div>
