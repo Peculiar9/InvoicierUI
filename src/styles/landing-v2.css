@@ -3670,3 +3670,134 @@
     mask-image: none;
   }
 }
+
+/* ============================================================================
+   SAGA v2 — stack, pulse, voila
+   ========================================================================== */
+
+/* stack: every paper flies to its measured spot at center, fanned like a pile */
+.lp-trail-stage.is-stack .lp-trail-doc {
+  transform: translate(var(--dx, 0px), var(--dy, 0px)) rotate(var(--sr, 0deg)) scale(0.92);
+  transition: transform 0.75s var(--ease-snap) var(--sd, 0s), opacity 0.3s ease;
+}
+.lp-trail-stage.is-stack .lp-trail-arrow {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.lp-trail-stage.is-stack .lp-trail-doc h4,
+.lp-trail-stage.is-stack .lp-trail-doc .lp-trail-num {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+/* pulse: the pile breathes, twice */
+.lp-trail-stage.is-pulse .lp-trail-track {
+  animation: lp-pile-pulse 0.85s ease-in-out;
+}
+@keyframes lp-pile-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+  35% {
+    scale: 1.07;
+  }
+  70% {
+    scale: 0.96;
+  }
+}
+/* voila: papers vanish, the app pops out of the pile */
+.lp-trail-stage.is-voila .lp-trail-track {
+  opacity: 0;
+  scale: 0.8;
+  transition: opacity 0.35s ease, scale 0.45s var(--ease-snap);
+  pointer-events: none;
+}
+.lp-trail-stage .lp-trail-dash {
+  opacity: 0;
+  pointer-events: none;
+}
+.lp-trail-stage.is-voila .lp-trail-dash {
+  opacity: 1;
+  animation: lp-voila 0.75s var(--ease-snap) 0.18s both;
+}
+@keyframes lp-voila {
+  0% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.05;
+  }
+  82% {
+    scale: 0.98;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* the dashboard grows an app shell: rail, topbar, the works */
+.lp-trail-dash {
+  top: 58%;
+  width: min(720px, 92vw);
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+  transition: none;
+}
+.lp-sd-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 10px;
+  background: linear-gradient(175deg, #5d3e89, var(--brand-deeper));
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.05rem;
+}
+.lp-sd-rail i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.lp-sd-rail i.is-here {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+.lp-sd-main {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 20px 18px;
+}
+.lp-sd-new {
+  margin-left: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+@media (max-width: 880px), (prefers-reduced-motion: reduce) {
+  .lp-trail-stage .lp-trail-dash {
+    opacity: 1;
+    animation: none;
+  }
+  .lp-trail-stage.is-stack .lp-trail-doc {
+    transform: none;
+  }
+  .lp-trail-stage.is-stack .lp-trail-doc h4,
+  .lp-trail-stage.is-stack .lp-trail-doc .lp-trail-num {
+    opacity: 1;
+  }
+  .lp-trail-stage.is-voila .lp-trail-track {
+    opacity: 1;
+    scale: 1;
+  }
+}

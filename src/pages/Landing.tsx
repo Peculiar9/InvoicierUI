@@ -441,23 +441,45 @@ const InvoiceScene = () => {
  */
 const PaperTrail = () => {
   const ref = useRef<HTMLElement>(null);
-  const [merged, setMerged] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const measured = useRef(false);
+  const [phase, setPhase] = useState<'scrub' | 'stack' | 'pulse' | 'voila'>('scrub');
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setPhase('voila');
+      return;
+    }
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const el = ref.current;
-        if (!el) return;
+        const stage = stageRef.current;
+        if (!el || !stage) return;
         const rect = el.getBoundingClientRect();
         const total = rect.height - window.innerHeight;
         if (total <= 0) return;
         const p = Math.min(1, Math.max(0, -rect.top / total));
-        // documents scrub through the first 55% of the pin, then assemble
-        el.style.setProperty('--tp', String(Math.min(1, p / 0.55)));
-        setMerged(p > 0.6);
+        // documents scrub through the first 28%, then the magic starts
+        el.style.setProperty('--tp', String(Math.min(1, p / 0.28)));
+        const next =
+          p >= 0.42 ? 'voila' : p >= 0.36 ? 'pulse' : p >= 0.28 ? 'stack' : 'scrub';
+        if (next !== 'scrub' && !measured.current) {
+          // each paper learns its own route to the center of the stage
+          const sr = stage.getBoundingClientRect();
+          const cx = sr.left + sr.width / 2;
+          const cy = sr.top + sr.height * 0.55;
+          stage.querySelectorAll<HTMLElement>('.lp-trail-doc').forEach((doc, i) => {
+            const r = doc.getBoundingClientRect();
+            doc.style.setProperty('--dx', `${Math.round(cx - (r.left + r.width / 2))}px`);
+            doc.style.setProperty('--dy', `${Math.round(cy - (r.top + r.height / 2))}px`);
+            doc.style.setProperty('--sr', `${(i - 2) * 4}deg`);
+            doc.style.setProperty('--sd', `${i * 70}ms`);
+          });
+          measured.current = true;
+        }
+        setPhase(next);
       });
     };
     onScroll();
@@ -468,70 +490,91 @@ const PaperTrail = () => {
     };
   }, []);
 
+  const stageClass = `lp-trail-stage${phase !== 'scrub' ? ' is-stack' : ''}${
+    phase === 'pulse' || phase === 'voila' ? ' is-pulse' : ''
+  }${phase === 'voila' ? ' is-voila' : ''}`;
+
+  const title =
+    phase === 'voila'
+      ? 'Voila. One clean dashboard.'
+      : phase === 'scrub'
+        ? 'One invoice becomes five documents. You touch it once.'
+        : 'Now watch them come together.';
+
   return (
     <section className="lp-trail" ref={ref}>
-      <div className={`lp-trail-stage${merged ? ' is-merge' : ''}`}>
+      <div className={stageClass} ref={stageRef}>
         <div className="lp-shell lp-trail-head">
           <span className="lp-kicker">The paper trail</span>
-          <h2 key={merged ? 'b' : 'a'} className="lp-trail-title">
-            {merged
-              ? 'Then the five file themselves into one clean dashboard.'
-              : 'One invoice becomes five documents. You touch it once.'}
+          <h2 key={phase === 'scrub' ? 'a' : phase === 'voila' ? 'c' : 'b'} className="lp-trail-title">
+            {title}
           </h2>
         </div>
+
+        {/* the app itself, waiting behind the curtain */}
         <div className="lp-trail-dash" aria-hidden="true">
-          <div className="lp-td-top">
-            <span className="lp-td-dot" />
-            Dashboard
-            <small>this tax year</small>
-          </div>
-          <div className="lp-td-kpis">
-            <div>
-              <small>Collected</small>
-              <b>&#8358;21.4m</b>
+          <span className="lp-sd-rail">
+            <i className="bx bx-grid-alt is-here" />
+            <i className="bx bx-receipt" />
+            <i className="bx bx-user" />
+            <i className="bx bx-cog" />
+          </span>
+          <div className="lp-sd-main">
+            <div className="lp-td-top">
+              <span className="lp-td-dot" />
+              Dashboard
+              <small>this tax year</small>
+              <b className="lp-sd-new">+ New invoice</b>
             </div>
-            <div>
-              <small>Outstanding</small>
-              <b>&#8358;11.5m</b>
+            <div className="lp-td-kpis">
+              <div>
+                <small>Collected</small>
+                <b>&#8358;21.4m</b>
+              </div>
+              <div>
+                <small>Outstanding</small>
+                <b>&#8358;11.5m</b>
+              </div>
+              <div>
+                <small>VAT set aside</small>
+                <b>&#8358;1.49m</b>
+              </div>
             </div>
-            <div>
-              <small>VAT set aside</small>
-              <b>&#8358;1.49m</b>
+            <div className="lp-td-march">
+              <small>March readiness</small>
+              <span className="track">
+                <span className="fill" />
+              </span>
+              <b>100%</b>
             </div>
-          </div>
-          <div className="lp-td-march">
-            <small>March readiness</small>
-            <span className="track">
-              <span className="fill" />
-            </span>
-            <b>100%</b>
-          </div>
-          <svg className="lp-td-chart" viewBox="0 0 300 60" preserveAspectRatio="none">
-            <path
-              d="M0 50 C40 44 60 46 90 38 C120 30 150 34 180 24 C210 16 240 20 300 6"
-              fill="none"
-              stroke="#924ee9"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="lp-td-rows">
-            <span><em>IV2047</em> Otto Holdings <b>Paid</b></span>
-            <span><em>IV2048</em> Bird Studios <b className="sent">Sent</b></span>
+            <svg className="lp-td-chart" viewBox="0 0 300 60" preserveAspectRatio="none">
+              <path
+                d="M0 50 C40 44 60 46 90 38 C120 30 150 34 180 24 C210 16 240 20 300 6"
+                fill="none"
+                stroke="#924ee9"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="lp-td-rows">
+              <span><em>IV2047</em> Otto Holdings <b>Paid</b></span>
+              <span><em>IV2048</em> Bird Studios <b className="sent">Sent</b></span>
+            </div>
           </div>
         </div>
+
         <div className="lp-trail-track" aria-hidden="true">
           <article className="lp-trail-doc">
             <span className="lp-trail-num">01</span>
             <h4>The invoice</h4>
             <div className="lp-trail-paper">
-              <b>INVOICE · IV2047</b>
+              <b>INVOICE &#183; IV2047</b>
               <span className="rule" />
-              <span className="row"><em>Brand identity</em><i>₦2,400,000</i></span>
-              <span className="row"><em>Motion design</em><i>₦1,150,000</i></span>
-              <span className="row"><em>VAT 7.5%</em><i>₦266,250</i></span>
+              <span className="row"><em>Brand identity</em><i>&#8358;2,400,000</i></span>
+              <span className="row"><em>Motion design</em><i>&#8358;1,150,000</i></span>
+              <span className="row"><em>VAT 7.5%</em><i>&#8358;266,250</i></span>
               <span className="rule" />
-              <span className="row total"><em>Total</em><i>₦3,816,250</i></span>
+              <span className="row total"><em>Total</em><i>&#8358;3,816,250</i></span>
             </div>
           </article>
           <i className="bx bx-right-arrow-alt lp-trail-arrow" />
@@ -540,7 +583,7 @@ const PaperTrail = () => {
             <h4>The pay link</h4>
             <div className="lp-trail-paper lp-trail-paper--link">
               <b>pay.invoicier.app/otto-2047</b>
-              <span className="paybtn">Pay ₦3,816,250</span>
+              <span className="paybtn">Pay &#8358;3,816,250</span>
               <small>No account needed</small>
             </div>
           </article>
@@ -549,7 +592,7 @@ const PaperTrail = () => {
             <span className="lp-trail-num">03</span>
             <h4>The receipt</h4>
             <div className="lp-trail-paper">
-              <b>RECEIPT · IV2047</b>
+              <b>RECEIPT &#183; IV2047</b>
               <span className="rule" />
               <span className="row"><em>Received</em><i>Mar 3, 2027</i></span>
               <span className="row"><em>Via</em><i>Paystack</i></span>
@@ -562,7 +605,7 @@ const PaperTrail = () => {
             <h4>The ledger row</h4>
             <div className="lp-trail-paper lp-trail-paper--mono">
               <span className="row"><em>2027-03-03</em><i>Otto Holdings</i></span>
-              <span className="row"><em>₦3,816,250</em><i>VAT ₦266,250</i></span>
+              <span className="row"><em>&#8358;3,816,250</em><i>VAT &#8358;266,250</i></span>
               <span className="row ok"><em>Cash basis</em><i>recorded</i></span>
             </div>
           </article>
