@@ -1250,17 +1250,6 @@
   font-size: var(--fs-sm);
   color: var(--ink-faint);
 }
-
-/* ============================================================================
-   FEATURES — bento
-   ========================================================================== */
-
-.lp-bento {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: minmax(210px, auto);
-  gap: 18px;
-}
 .lp-card {
   position: relative;
   display: flex;
@@ -1296,9 +1285,6 @@
   border-color: rgba(146, 78, 233, 0.35);
   box-shadow: var(--shadow-md);
 }
-.lp-card--wide {
-  grid-column: span 2;
-}
 .lp-card h3 {
   font-size: var(--fs-h3);
   font-weight: 700;
@@ -1332,27 +1318,6 @@
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--ink-soft);
-}
-.lp-card--sheet::after {
-  /* a tiny paper invoice peeking from the corner */
-  content: '';
-  position: absolute;
-  right: -22px;
-  top: -22px;
-  width: 120px;
-  height: 150px;
-  border-radius: 10px;
-  background:
-    linear-gradient(#fff, #fff) padding-box,
-    repeating-linear-gradient(180deg, var(--border) 0 2px, transparent 2px 18px) 14px 40px / 70% 60% no-repeat padding-box;
-  background-color: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  transform: rotate(10deg);
-  transition: transform 0.3s var(--ease-out);
-}
-.lp-card--sheet:hover::after {
-  transform: rotate(5deg) translateY(4px);
 }
 
 /* ============================================================================
@@ -3026,25 +2991,6 @@
   font-weight: 600;
   color: #fff;
 }
-.lp-mini-stamp {
-  position: absolute;
-  right: 22px;
-  top: 24px;
-  padding: 4px 12px;
-  border: 2px solid rgba(12, 141, 111, 0.5);
-  border-radius: 6px;
-  color: var(--paid);
-  font-weight: 800;
-  font-size: 0.7rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  rotate: 8deg;
-  transition: rotate 0.3s var(--ease-out), transform 0.3s var(--ease-out);
-}
-.lp-card:hover .lp-mini-stamp {
-  rotate: -3deg;
-  transform: scale(1.08);
-}
 .lp-mini-range {
   align-self: flex-start;
   margin-top: 12px;
@@ -3300,12 +3246,6 @@
   transition: opacity 0.7s ease, scale 0.8s var(--ease-snap), filter 0.7s ease;
   transform-origin: 50% 50%;
 }
-.lp-trail-stage.is-merge .lp-trail-track {
-  opacity: 0;
-  scale: 0.55;
-  filter: blur(6px);
-  pointer-events: none;
-}
 .lp-trail-dash {
   position: absolute;
   left: 50%;
@@ -3321,10 +3261,6 @@
   scale: 0.85;
   transition: opacity 0.6s ease 0.25s, scale 0.8s var(--ease-snap) 0.25s;
   pointer-events: none;
-}
-.lp-trail-stage.is-merge .lp-trail-dash {
-  opacity: 1;
-  scale: 1;
 }
 .lp-td-top {
   display: flex;
@@ -3403,9 +3339,6 @@
   border-radius: 999px;
   background: linear-gradient(90deg, var(--brand), var(--paid));
   transition: width 1.2s var(--ease-out) 0.6s;
-}
-.lp-trail-stage.is-merge .lp-td-march .fill {
-  width: 100%;
 }
 .lp-td-march b {
   font-size: 0.75rem;
@@ -3510,26 +3443,6 @@
     linear-gradient(140deg, var(--brand), rgba(255, 90, 95, 0.65), var(--brand)) border-box;
   border: 2px solid transparent;
   box-shadow: var(--shadow-md);
-}
-.lp-morph-badge {
-  align-self: flex-start;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--brand-tint);
-  color: var(--brand-600);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-.lp-morph-price {
-  margin-top: 8px;
-  font-size: 2.6rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
 }
 .lp-morph-front small {
   color: var(--ink-faint);
@@ -3961,73 +3874,8 @@
     margin-bottom: 12px;
   }
 }
-
-/* ============================================================================
-   PRICING SAGA — one card: priced, travelled, flipped
-   ========================================================================== */
-
-.lp-pricesaga {
-  height: 300vh;
-}
-.lp-pricesaga-stage {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: grid;
-  align-items: center;
-  overflow: clip;
-}
-.lp-pricesaga-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: clamp(32px, 5vw, 80px);
-  align-items: center;
-}
 .lp-ps-left {
   position: relative;
-}
-.lp-ps-pricing,
-.lp-ps-statement {
-  transition: opacity 0.5s ease, transform 0.6s var(--ease-out);
-}
-.lp-ps-pricing h2 {
-  margin-top: 12px;
-  font-size: var(--fs-mega);
-  font-weight: 700;
-}
-.lp-ps-pricing p {
-  margin-top: 16px;
-  font-size: var(--fs-lg);
-  max-width: 42ch;
-}
-.lp-ps-statement {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  opacity: 0;
-  transform: translateY(28px);
-  pointer-events: none;
-}
-.lp-pricesaga-stage.is-story .lp-ps-pricing {
-  opacity: 0;
-  transform: translateY(-28px);
-  pointer-events: none;
-}
-.lp-pricesaga-stage.is-story .lp-ps-statement {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* the card rides into the second act with momentum, then settles */
-.lp-pricesaga .lp-morph {
-  max-width: 340px;
-  justify-self: center;
-}
-.lp-pricesaga-stage.is-story .lp-morph {
-  animation: lp-price-travel 1s var(--ease-snap);
 }
 @keyframes lp-price-travel {
   0% {
@@ -4039,17 +3887,6 @@
   100% {
     transform: translateY(0);
   }
-}
-/* the front face is the real pricing card; give the face what it needs */
-.lp-pricesaga .lp-morph-face.lp-price-card {
-  position: relative;
-  width: 320px;
-  min-height: 430px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-.lp-pricesaga .lp-morph-back {
-  min-height: 430px;
 }
 
 @media (max-width: 1020px), (prefers-reduced-motion: reduce) {
