@@ -3308,10 +3308,10 @@
 .lp-trail-dash {
   position: absolute;
   left: 50%;
-  top: 54%;
+  top: 61%;
   translate: -50% -50%;
-  width: min(560px, 90vw);
-  padding: 20px 22px;
+  width: min(530px, 88vw);
+  padding: 18px 20px;
   border-radius: 22px;
   background: #fff;
   border: 1px solid var(--border);
