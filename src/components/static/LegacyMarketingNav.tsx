@@ -46,9 +46,9 @@ export const LegacyMarketingNav = ({
             </Link>
           </li>
           <li>
-            <Link to="/signup" className="signup">
-              Sign Up
-            </Link>
+            <a href="/#waitlist" className="signup">
+              Join waitlist
+            </a>
           </li>
         </ul>
       </nav>

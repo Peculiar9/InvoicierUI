@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
-import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as LoginRouteImport } from './routes/login'
@@ -31,11 +30,6 @@ const WelcomeRoute = WelcomeRouteImport.update({
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -99,7 +93,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
-  '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
@@ -114,7 +107,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
-  '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
@@ -130,7 +122,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
-  '/signup': typeof SignupRoute
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
@@ -147,7 +138,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/services'
     | '/settings'
-    | '/signup'
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
@@ -162,7 +152,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/services'
     | '/settings'
-    | '/signup'
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
@@ -177,7 +166,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/services'
     | '/settings'
-    | '/signup'
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
@@ -193,7 +181,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
-  SignupRoute: typeof SignupRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   WelcomeRoute: typeof WelcomeRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
@@ -213,13 +200,6 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -305,7 +285,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,
-  SignupRoute: SignupRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   WelcomeRoute: WelcomeRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,

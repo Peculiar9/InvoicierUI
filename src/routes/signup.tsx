@@ -1,8 +1,0 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { Signup } from '@/pages';
-import { requireGuest } from '@/lib/guards';
-
-export const Route = createFileRoute('/signup')({
-  beforeLoad: requireGuest,
-  component: Signup,
-});
