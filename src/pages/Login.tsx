@@ -2,16 +2,21 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from '@tanstack/react-router';
-import { AuthShell } from '@/components/static';
 import { useLogin } from '@/hooks';
+import '@/styles/workspace-v2.css';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email('That email does not look right'),
+  password: z.string().min(8, 'Passwords are at least 8 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+/**
+ * Sign in, wearing the welcome journey's room. The promise the marketing
+ * page makes is ease, so the door into the product is one card, two fields
+ * and nothing else asking for attention.
+ */
 export const Login = () => {
   const { mutate: login, isPending, error } = useLogin();
   const {
@@ -21,40 +26,78 @@ export const Login = () => {
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   return (
-    <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to pick up where you left off."
-      footer={
-        <>
-          Don&apos;t have an account? <Link to="/signup">Create one</Link>
-        </>
-      }
-    >
-      <form className="auth-form" onSubmit={handleSubmit((data) => login(data))}>
-        {error && (
-          <p className="form-banner-error">
-            {error instanceof Error ? error.message : 'Login failed. Please try again.'}
+    <div className="ob iw ob--auth">
+      <div className="ob-card ob-card--auth">
+        <Link to="/" className="ob-auth-brand">
+          invoicier<b>.</b>
+        </Link>
+
+        <div className="ob-step">
+          <span className="ob-kicker">Welcome back</span>
+          <h1>Let's get you to your money.</h1>
+          <p>Two fields and you're in. Your ledger kept everything warm.</p>
+
+          <form className="ob-auth-form" onSubmit={handleSubmit((data) => login(data))}>
+            {error && (
+              <p className="ob-auth-banner">
+                {error instanceof Error
+                  ? error.message
+                  : 'That did not work. Give it another go.'}
+              </p>
+            )}
+
+            <label className="cinv-field">
+              <span>Email</span>
+              <input
+                type="email"
+                autoFocus
+                autoComplete="email"
+                placeholder="you@yourbusiness.com"
+                className={errors.email ? 'is-invalid' : ''}
+                {...register('email')}
+              />
+              {errors.email && <small className="field-error">{errors.email.message}</small>}
+            </label>
+
+            <label className="cinv-field">
+              <span>
+                Password
+                <Link to="/forgot-password" className="ob-auth-aux">
+                  Forgot it?
+                </Link>
+              </span>
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className={errors.password ? 'is-invalid' : ''}
+                {...register('password')}
+              />
+              {errors.password && (
+                <small className="field-error">{errors.password.message}</small>
+              )}
+            </label>
+
+            <button type="submit" className="iw-btn iw-btn--lg ob-auth-submit" disabled={isPending}>
+              {isPending ? (
+                <>
+                  <span className="iw-spin" aria-hidden="true" />
+                  Opening the books
+                </>
+              ) : (
+                <>
+                  Sign in <i className="bx bx-right-arrow-alt" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="ob-auth-foot">
+            Not in yet? <a href="/#waitlist">Join the waitlist</a> and we'll send
+            your invite.
           </p>
-        )}
-        <div className="form-group">
-          <label className="form-text">Email</label>
-          <input type="email" className="form-input" placeholder="you@example.com" {...register('email')} />
-          {errors.email && <small className="form-field-error">{errors.email.message}</small>}
         </div>
-        <div className="form-group">
-          <div className="form-label-row">
-            <label className="form-text">Password</label>
-            <Link to="/forgot-password" className="form-aux-link">
-              Forgot password?
-            </Link>
-          </div>
-          <input type="password" className="form-input" placeholder="••••••••" {...register('password')} />
-          {errors.password && <small className="form-field-error">{errors.password.message}</small>}
-        </div>
-        <button type="submit" className="auth-submit" disabled={isPending}>
-          {isPending ? 'Signing in…' : 'Sign In'}
-        </button>
-      </form>
-    </AuthShell>
+      </div>
+    </div>
   );
 };

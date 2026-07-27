@@ -3702,3 +3702,84 @@
   outline-offset: 2px;
   border-radius: 6px;
 }
+
+/* ============================================================================
+   SIGN IN — the welcome journey's room, one card, no friction
+   ========================================================================== */
+
+.ob--auth {
+  place-items: center;
+}
+.ob-card--auth {
+  position: relative;
+  width: min(460px, 100%);
+  padding-top: 30px;
+}
+.ob-auth-brand {
+  display: inline-block;
+  margin-bottom: 22px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  transition: transform 0.4s var(--smooth);
+}
+.ob-auth-brand b {
+  color: var(--accent);
+}
+.ob-auth-brand:hover {
+  transform: translateY(-1px);
+}
+.ob-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 26px;
+}
+.ob-auth-form .cinv-field span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ob-auth-aux {
+  font-family: var(--font);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--brand-600);
+  transition: color 0.3s var(--swift);
+}
+.ob-auth-aux:hover {
+  color: var(--accent);
+}
+.ob-auth-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+}
+.ob-auth-banner {
+  padding: 11px 15px;
+  border-radius: 12px;
+  background: rgba(212, 69, 60, 0.08);
+  border: 1px solid rgba(212, 69, 60, 0.25);
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+.ob-auth-foot {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.ob-auth-foot a {
+  color: var(--brand-600);
+  font-weight: 600;
+  transition: color 0.3s var(--swift);
+}
+.ob-auth-foot a:hover {
+  color: var(--accent);
+}
