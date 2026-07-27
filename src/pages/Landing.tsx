@@ -176,7 +176,7 @@ export const MarketingNav = () => {
           <li><a href="/#features">Product</a></li>
           <li><Link to="/how-it-works">How it works</Link></li>
           <li><a href="/#pricing">Pricing</a></li>
-          <li><a href="#">Docs</a></li>
+          <li><Link to="/docs">Docs</Link></li>
         </ul>
         <div className="lp-nav-actions">
           <Link to="/login" className="lp-nav-login">
@@ -199,6 +199,7 @@ export const MarketingNav = () => {
           <a href="/#features" onClick={() => setOpen(false)}>Product</a>
           <Link to="/how-it-works">How it works</Link>
           <a href="/#pricing" onClick={() => setOpen(false)}>Pricing</a>
+          <Link to="/docs">Docs</Link>
           <a href="#waitlist" onClick={() => setOpen(false)}>Join waitlist</a>
           <Link to="/login">Log in</Link>
         </div>
@@ -954,14 +955,19 @@ const CardTravel = () => {
   );
 };
 
-/* TEMPORARY: dev shortcut into the onboarding journey. Self-authenticates
-   against the mock backend and jumps to /welcome. Delete before launch. */
-const TempOnboardingButton = () => {
+/* Dev-only previews. These render exclusively under `import.meta.env.DEV`,
+   so a production build never ships them. The onboarding shortcut
+   self-authenticates against the mock backend. */
+const DEV_INVOICE_ID = 'inv_4'; // seeded, status: sent, ready to be paid
+
+const DevPreviewBar = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setUser = useAuthStore((s) => s.setUser);
 
-  const go = () => {
+  if (!import.meta.env.DEV) return null;
+
+  const goOnboarding = () => {
     if (!isAuthenticated) {
       setUser(
         {
@@ -977,11 +983,21 @@ const TempOnboardingButton = () => {
   };
 
   return (
-    <button type="button" className="lp-temp-ob" onClick={go}>
-      <b>Temp</b>
-      <i className="bx bx-test-tube" aria-hidden="true" />
-      Test the onboarding
-    </button>
+    <div className="lp-devbar">
+      <span className="lp-devbar-tag">Dev</span>
+      <button type="button" className="lp-devbar-item" onClick={goOnboarding}>
+        <i className="bx bx-test-tube" aria-hidden="true" />
+        Onboarding
+      </button>
+      <Link
+        to="/pay/$invoiceId"
+        params={{ invoiceId: DEV_INVOICE_ID }}
+        className="lp-devbar-item"
+      >
+        <i className="bx bx-credit-card" aria-hidden="true" />
+        What your client sees
+      </Link>
+    </div>
   );
 };
 
@@ -1075,7 +1091,7 @@ export const Landing = () => {
 
       <main className="lp" ref={rootRef}>
         <MarketingNav />
-        <TempOnboardingButton />
+        <DevPreviewBar />
 
         {/* ------------------------------------------------------------ HERO */}
         <section className="lp-hero">
@@ -1502,8 +1518,8 @@ export const MarketingFooter = () => (
         <div className="lp-footer-col">
           <h4>Resources</h4>
           <ul>
-            <li><a href="#">Help center</a></li>
-            <li><a href="#">Guides</a></li>
+            <li><Link to="/docs">Help center</Link></li>
+            <li><Link to="/docs">Guides</Link></li>
             <li><Link to="/login">Sign in</Link></li>
             <li><a href="#">Terms &amp; Privacy</a></li>
           </ul>
