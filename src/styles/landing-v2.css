@@ -4134,3 +4134,65 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================================
+   THE CORAL DOUSE — the logo's warm dot, rationed across the page
+   ========================================================================== */
+
+.lp-kicker--warm {
+  color: var(--accent);
+}
+/* the orbit's caption goes warm */
+.lp-orbit-cap {
+  color: var(--accent);
+  opacity: 0.75;
+}
+/* marquee separators alternate purple and coral */
+.lp-marquee-item:nth-child(even)::after {
+  color: var(--accent);
+}
+/* kinetic band: every other word carries the warm stroke, dots go coral */
+.lp-kinetic-track .kb-line {
+  display: flex;
+  gap: 0;
+}
+.lp-kinetic-track .kb-w {
+  display: inline-flex;
+  align-items: baseline;
+}
+.lp-kinetic-track .kb-w i {
+  font-style: normal;
+  margin: 0 0.32em;
+  -webkit-text-stroke: 0;
+  color: rgba(255, 90, 95, 0.55);
+}
+.lp-kinetic--dark .lp-kinetic-track .kb-w.alt {
+  -webkit-text-stroke-color: rgba(255, 150, 153, 0.5);
+}
+.lp-kinetic:not(.lp-kinetic--dark) .lp-kinetic-track .kb-w.alt {
+  -webkit-text-stroke-color: rgba(255, 90, 95, 0.4);
+}
+/* alternating receipt-card icons in the saga */
+.lp-saga-feats .lp-feat:nth-child(even) .lp-card-icon {
+  background: linear-gradient(150deg, rgba(255, 90, 95, 0.16), rgba(255, 90, 95, 0.06));
+  color: var(--accent);
+}
+.lp-saga-feats .lp-feat:nth-child(even):hover .lp-card-icon {
+  background: linear-gradient(150deg, var(--accent), #d94348);
+  color: #fff;
+}
+/* FAQ sits on a faint warm wash; its marks go coral */
+.lp-faq-wrap {
+  background: linear-gradient(180deg, rgba(255, 90, 95, 0), rgba(255, 90, 95, 0.045));
+}
+.lp-faq-item button i {
+  color: var(--accent);
+}
+/* trail arrows alternate too */
+.lp-trail-arrow:nth-of-type(even) {
+  color: var(--accent);
+}
+/* hero eyebrow arrow leans warm */
+.lp-eyebrow i {
+  color: var(--accent);
+}

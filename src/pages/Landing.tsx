@@ -714,7 +714,7 @@ const Faq = () => {
   const [openIdx, setOpenIdx] = useState(0);
 
   return (
-    <section className="lp-section">
+    <section className="lp-section lp-faq-wrap">
       <div className="lp-shell lp-faq">
         <div className="lp-faq-head">
           <span className="lp-kicker">The straight answers</span>
@@ -1156,7 +1156,7 @@ export const Landing = () => {
         <section className="lp-section">
           <div className="lp-shell">
             <div className="lp-section-head" data-reveal>
-              <span className="lp-kicker">Early users</span>
+              <span className="lp-kicker lp-kicker--warm">Early users</span>
               <h2>Kind words from the beta.</h2>
               <p>Real workflows from the people testing Invoicier right now.</p>
             </div>

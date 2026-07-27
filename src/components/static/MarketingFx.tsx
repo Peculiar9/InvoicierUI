@@ -37,13 +37,22 @@ export const KineticBand = ({ words, dark = true }: KineticBandProps) => {
     };
   }, []);
 
-  const line = words.join('  ·  ');
+  const line = (copy: number) => (
+    <span className="kb-line" key={copy}>
+      {words.map((word, i) => (
+        <span key={i} className={`kb-w${i % 2 ? ' alt' : ''}`}>
+          {word}
+          <i>·</i>
+        </span>
+      ))}
+    </span>
+  );
 
   return (
     <div className={`lp-kinetic${dark ? ' lp-kinetic--dark' : ''}`} ref={ref} aria-hidden="true">
       <div className="lp-kinetic-track">
-        <span>{line}</span>
-        <span>{line}</span>
+        {line(0)}
+        {line(1)}
       </div>
     </div>
   );

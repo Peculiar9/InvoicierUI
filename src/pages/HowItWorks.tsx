@@ -131,7 +131,7 @@ export const HowItWorks = () => {
             </div>
           </div>
           <div className="lp-split-copy" data-reveal="right">
-            <span className="lp-kicker">Sending</span>
+            <span className="lp-kicker lp-kicker--warm">Sending</span>
             <h2>Your invoice travels well.</h2>
             <p>
               Every invoice becomes a beautiful page with its own link. Your
@@ -262,7 +262,7 @@ export const HowItWorks = () => {
       <section className="lp-section lp-flow">
         <div className="lp-shell">
           <div className="lp-section-head" data-reveal>
-            <span className="lp-kicker">Where this boat is sailing</span>
+            <span className="lp-kicker lp-kicker--warm">Where this boat is sailing</span>
             <h2>We ship weekly. Here is what docks next.</h2>
           </div>
           <div className="lp-hiw-roadmap">
