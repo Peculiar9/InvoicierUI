@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { Typewriter } from '@/components/static';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
+import { useCmsFaqs, useCmsTestimonials, useSiteSettings } from '@/hooks/useCms';
+import { cms } from '@/lib/cms';
 import '@/styles/landing-v2.css';
 
 /* ----------------------------------------------------------------- loader */
@@ -700,31 +702,62 @@ const PaperTrail = () => {
 
 /* ------------------------------------------------------------------ faq */
 
+const QUOTES = [
+  {
+    quote:
+      "Invoicier chases so I don't have to. My awkward \u201cjust following up on this\u201d emails are officially extinct.",
+    name: 'Amara O.',
+    role: 'Studio lead, Lagos',
+    initials: 'AO',
+  },
+  {
+    quote:
+      "I invoice from my phone between commits. The money shows up. That's the whole review.",
+    name: 'Tobi A.',
+    role: 'Product designer, billing US clients from Lagos',
+    initials: 'TA',
+  },
+  {
+    quote:
+      'The ledger part is sneaky. I came for the invoices and stayed because March stopped being scary.',
+    name: 'Chidi N.',
+    role: 'Photographer, Abuja',
+    initials: 'CN',
+  },
+  {
+    quote: 'Sent my first invoice from the bus. It was paid before I got home.',
+    name: 'Sade K.',
+    role: 'Copywriter, Ibadan',
+    initials: 'SK',
+  },
+];
+
 const FAQS = [
   {
-    q: 'Is it actually free, or free like a gym trial?',
-    a: 'Free like air, not like a trial. Invoicing stays free after launch too. The filing pack is what we sell, and it shows up priced beside the ₦100k penalty, not beside an accountant’s retainer.',
+    question: 'Is it actually free, or free like a gym trial?',
+    answer: 'Free like air, not like a trial. Invoicing stays free after launch too. The filing pack is what we sell, and it shows up priced beside the ₦100k penalty, not beside an accountant’s retainer.',
   },
   {
-    q: 'Does my client need to download anything?',
-    a: 'Nothing. They tap a link, see a clean invoice, pay, and get a thank-you receipt. Some of them will ask what you are using. That is the plan.',
+    question: 'Does my client need to download anything?',
+    answer: 'Nothing. They tap a link, see a clean invoice, pay, and get a thank-you receipt. Some of them will ask what you are using. That is the plan.',
   },
   {
-    q: 'What happens when a dollar payment lands?',
-    a: 'You answer three questions: the date it arrived, the amount after fees, and any tax withheld. That is all filing season ever wanted from you.',
+    question: 'What happens when a dollar payment lands?',
+    answer: 'You answer three questions: the date it arrived, the amount after fees, and any tax withheld. That is all filing season ever wanted from you.',
   },
   {
-    q: 'What does tax-grade actually mean?',
-    a: 'Income recorded on the day the money landed, the way individuals are actually taxed. VAT per invoice. Withholding tax saved as credit records. When March comes, the homework is already done.',
+    question: 'What does tax-grade actually mean?',
+    answer: 'Income recorded on the day the money landed, the way individuals are actually taxed. VAT per invoice. Withholding tax saved as credit records. When March comes, the homework is already done.',
   },
   {
-    q: 'When does the filing pack arrive?',
-    a: 'Before March does. The waitlist gets it first and cheapest.',
+    question: 'When does the filing pack arrive?',
+    answer: 'Before March does. The waitlist gets it first and cheapest.',
   },
 ];
 
 const Faq = () => {
   const [openIdx, setOpenIdx] = useState(0);
+  const faqs = useCmsFaqs(FAQS);
 
   return (
     <section className="lp-section lp-faq-wrap">
@@ -739,19 +772,19 @@ const Faq = () => {
           </a>
         </div>
         <div className="lp-faq-list">
-          {FAQS.map((item, i) => (
-            <div key={item.q} className={`lp-faq-item${openIdx === i ? ' is-open' : ''}`}>
+          {faqs.map((item, i) => (
+            <div key={item.question} className={`lp-faq-item${openIdx === i ? ' is-open' : ''}`}>
               <button
                 type="button"
                 onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
                 aria-expanded={openIdx === i}
               >
                 <span className="lp-faq-num">{String(i + 1).padStart(2, '0')}</span>
-                {item.q}
+                {item.question}
                 <i className="bx bx-plus" aria-hidden="true" />
               </button>
               <div className="lp-faq-a">
-                <p>{item.a}</p>
+                <p>{item.answer}</p>
               </div>
             </div>
           ))}
@@ -1049,6 +1082,8 @@ export const Landing = () => {
   useTiltRipple(rootRef, !loading);
   useScrollDrift(rootRef);
   const travelOk = useTravelOk();
+  const quotes = useCmsTestimonials(QUOTES);
+  const site = useSiteSettings({});
 
   const finishIntro = () => {
     sessionStorage.setItem(INTRO_KEY, '1');
@@ -1074,6 +1109,8 @@ export const Landing = () => {
     entries.push({ email, at: new Date().toISOString() });
     localStorage.setItem(WAITLIST_KEY, JSON.stringify(entries));
     setWaitlisted(true);
+    // the CMS is the real list; local storage just keeps the demo honest
+    void cms.joinWaitlist(email, 'landing');
   };
 
   useEffect(() => {
@@ -1117,10 +1154,8 @@ export const Landing = () => {
                 />
               </h1>
               <p className="lp-hero-sub" data-reveal data-delay="3">
-                Invoicier drafts it in thirty seconds, sends it as a link your
-                client can pay in naira or dollars, then quietly files every
-                payment into a tax-grade ledger. By the time March asks
-                questions, your books already have the answers.
+                {site.heroSubline ??
+                  `Invoicier drafts it in thirty seconds, sends it as a link your client can pay in naira or dollars, then quietly files every payment into a tax-grade ledger. By the time March asks questions, your books already have the answers.`}
               </p>
               <div className="lp-hero-actions" data-reveal data-delay="4">
                 <a href="#waitlist" className="lp-btn lp-btn--lg">
@@ -1326,58 +1361,25 @@ export const Landing = () => {
             <div className="lp-quotes-drift">
               <div className="lp-quotes-track">
                 <div className="lp-quotes-set">
-                  <blockquote className="lp-quote">
-                    <p>
-                      Invoicier chases so I don't have to. My awkward “just
-                      following up on this” emails are officially extinct.
-                    </p>
-                    <footer>
-                      <span className="lp-quote-avatar">AO</span>
-                      <div>
-                        <b>Amara O.</b>
-                        <small>Studio lead, Lagos</small>
-                      </div>
-                    </footer>
-                  </blockquote>
-                  <blockquote className="lp-quote">
-                    <p>
-                      I invoice from my phone between commits. The money shows
-                      up. That's the whole review.
-                    </p>
-                    <footer>
-                      <span className="lp-quote-avatar">TA</span>
-                      <div>
-                        <b>Tobi A.</b>
-                        <small>Product designer, billing US clients from Lagos</small>
-                      </div>
-                    </footer>
-                  </blockquote>
-                  <blockquote className="lp-quote">
-                    <p>
-                      The ledger part is sneaky. I came for the invoices and
-                      stayed because March stopped being scary.
-                    </p>
-                    <footer>
-                      <span className="lp-quote-avatar">CN</span>
-                      <div>
-                        <b>Chidi N.</b>
-                        <small>Photographer, Abuja</small>
-                      </div>
-                    </footer>
-                  </blockquote>
-                  <blockquote className="lp-quote">
-                    <p>
-                      Sent my first invoice from the bus. It was paid before I
-                      got home.
-                    </p>
-                    <footer>
-                      <span className="lp-quote-avatar">SK</span>
-                      <div>
-                        <b>Sade K.</b>
-                        <small>Copywriter, Ibadan</small>
-                      </div>
-                    </footer>
-                  </blockquote>
+                  {quotes.map((q) => (
+                    <blockquote className="lp-quote" key={q.name + q.quote.slice(0, 10)}>
+                      <p>{q.quote}</p>
+                      <footer>
+                        <span className="lp-quote-avatar">
+                          {q.initials ||
+                            q.name
+                              .split(' ')
+                              .map((p) => p[0])
+                              .join('')
+                              .slice(0, 2)}
+                        </span>
+                        <div>
+                          <b>{q.name}</b>
+                          <small>{q.role}</small>
+                        </div>
+                      </footer>
+                    </blockquote>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1408,7 +1410,10 @@ export const Landing = () => {
               </span>
 
               <span className="lp-stamp">Early access</span>
-              <h2>Stay in the loop. Be first in line when Invoicier opens up.</h2>
+              <h2>
+                {site.waitlistHeadline ??
+                  'Stay in the loop. Be first in line when Invoicier opens up.'}
+              </h2>
               <p>
                 We're letting people in as we go. Drop your email and you'll get
                 your invite before anyone else, plus the early-bird price when
