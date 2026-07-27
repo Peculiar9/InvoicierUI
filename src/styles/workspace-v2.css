@@ -4294,3 +4294,55 @@
     padding: 0;
   }
 }
+
+/* ============================================================================
+   INVOICE DOCUMENT — narrow screens
+   The parties row is a rigid three-column grid (bill from / bill to / dates),
+   which pushed past the viewport on phones wherever the document renders:
+   the payment page, the invoice panel and print. It stacks now.
+   ========================================================================== */
+
+/* Scoped through .invoice-doc so these win on specificity rather than source
+   order: component-level CSS imports get hoisted ahead of main.tsx's, so
+   "later file wins" is not something this project can rely on. */
+@media (max-width: 620px) {
+  .invoice-doc .invoice-doc-parties {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .invoice-doc .invoice-doc-meta {
+    text-align: left;
+  }
+  .invoice-doc .invoice-doc-meta div {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .invoice-doc .invoice-doc-table {
+    font-size: 0.8rem;
+  }
+}
+
+/* Grid children default to min-width:auto, so the invoice table's min-content
+   width was forcing the column wider than the page on phones. Let them shrink,
+   and give the document its own scroll if a wide table genuinely cannot. */
+.pay-grid > * {
+  min-width: 0;
+}
+.pay-doc {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pay-doc::-webkit-scrollbar {
+  display: none;
+}
+.pay-receipt-row b {
+  min-width: 0;
+  word-break: break-word;
+}
+
+.ob-auth-banner--ok {
+  background: rgba(12, 141, 111, 0.08);
+  border-color: rgba(12, 141, 111, 0.3);
+  color: var(--paid);
+}
