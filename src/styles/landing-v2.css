@@ -3278,3 +3278,193 @@
   color: var(--accent);
   font-size: 1rem;
 }
+
+/* ============================================================================
+   TRAIL FINALE — the five documents assemble into one dashboard
+   ========================================================================== */
+
+.lp-trail {
+  height: 420vh;
+}
+.lp-trail-title {
+  animation: lp-rise-soft 0.6s var(--ease-out);
+}
+@keyframes lp-rise-soft {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.lp-trail-track {
+  transition: opacity 0.7s ease, scale 0.8s var(--ease-snap), filter 0.7s ease;
+  transform-origin: 50% 50%;
+}
+.lp-trail-stage.is-merge .lp-trail-track {
+  opacity: 0;
+  scale: 0.55;
+  filter: blur(6px);
+  pointer-events: none;
+}
+.lp-trail-dash {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  translate: -50% -50%;
+  width: min(560px, 90vw);
+  padding: 20px 22px;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  scale: 0.85;
+  transition: opacity 0.6s ease 0.25s, scale 0.8s var(--ease-snap) 0.25s;
+  pointer-events: none;
+}
+.lp-trail-stage.is-merge .lp-trail-dash {
+  opacity: 1;
+  scale: 1;
+}
+.lp-td-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.lp-td-top small {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lp-td-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.lp-td-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+.lp-td-kpis div {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.lp-td-kpis small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lp-td-kpis b {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lp-td-march {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(146, 78, 233, 0.4);
+  background: var(--brand-tint);
+}
+.lp-td-march small {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  white-space: nowrap;
+}
+.lp-td-march .track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(146, 78, 233, 0.15);
+  overflow: hidden;
+}
+.lp-td-march .fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--paid));
+  transition: width 1.2s var(--ease-out) 0.6s;
+}
+.lp-trail-stage.is-merge .lp-td-march .fill {
+  width: 100%;
+}
+.lp-td-march b {
+  font-size: 0.75rem;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lp-td-chart {
+  width: 100%;
+  height: 52px;
+  margin-top: 12px;
+}
+.lp-td-rows {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+.lp-td-rows span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+.lp-td-rows em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+}
+.lp-td-rows b {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--paid);
+}
+.lp-td-rows b.sent {
+  color: var(--brand-600);
+}
+@media (max-width: 880px), (prefers-reduced-motion: reduce) {
+  .lp-trail {
+    height: auto;
+  }
+  .lp-trail-dash {
+    position: static;
+    translate: none;
+    opacity: 1;
+    scale: 1;
+    margin: 24px auto 0;
+  }
+  .lp-trail-stage.is-merge .lp-trail-track,
+  .lp-trail-track {
+    opacity: 1;
+    scale: 1;
+    filter: none;
+  }
+  .lp-td-march .fill {
+    width: 100%;
+  }
+}
