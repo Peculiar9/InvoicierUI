@@ -3631,3 +3631,74 @@
 .ob-mail b {
   color: var(--ink);
 }
+
+/* ============================================================================
+   MOTION SYSTEM — the app moves on the same curves as the marketing pages
+   ========================================================================== */
+
+.iw {
+  --smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --swift: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.iw .ws-create-btn,
+.iw .btn,
+.iw .iw-btn {
+  transition:
+    transform 0.4s var(--smooth),
+    box-shadow 0.4s var(--smooth),
+    opacity 0.3s var(--swift),
+    background 0.3s var(--swift),
+    color 0.3s var(--swift),
+    border-color 0.3s var(--swift);
+}
+.iw .ws-create-btn:active,
+.iw .btn:active,
+.iw .iw-btn:active {
+  transform: translateY(-1px) scale(0.985);
+  transition-duration: 0.12s;
+}
+
+.iw .dash-kpi,
+.iw .client-card,
+.iw .dash-card {
+  transition:
+    transform 0.5s var(--smooth),
+    box-shadow 0.5s var(--smooth),
+    border-color 0.4s var(--swift),
+    background 0.4s var(--swift);
+}
+
+.iw .ws-rail-item,
+.iw .ws-action,
+.iw .view-tab,
+.iw .view-switch button,
+.iw .settings-tabs button {
+  transition:
+    transform 0.4s var(--smooth),
+    background 0.3s var(--swift),
+    color 0.3s var(--swift),
+    box-shadow 0.4s var(--smooth);
+}
+
+.iw .cinv-field input,
+.iw .cinv-field select,
+.iw .cinv-field textarea,
+.iw .view-search,
+.iw .iw-select {
+  transition:
+    border-color 0.3s var(--swift),
+    box-shadow 0.35s var(--smooth),
+    background 0.3s var(--swift);
+}
+
+/* rows settle instead of flashing */
+.iw .dash-row-click {
+  transition: background 0.25s var(--swift);
+}
+
+.iw :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

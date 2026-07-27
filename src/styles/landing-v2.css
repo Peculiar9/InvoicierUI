@@ -4695,3 +4695,119 @@
     grid-column: auto;
   }
 }
+
+/* ============================================================================
+   THE MOTION SYSTEM — one set of curves, used everywhere
+   Every interactive surface breathes on the same timing so the whole page
+   feels like one machine rather than a pile of components.
+   ========================================================================== */
+
+.lp {
+  --smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --swift: cubic-bezier(0.4, 0, 0.2, 1);
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp {
+    scroll-behavior: auto;
+  }
+}
+
+/* buttons: settle rather than snap, and press with intent */
+.lp .lp-btn {
+  transition:
+    transform 0.4s var(--smooth),
+    box-shadow 0.4s var(--smooth),
+    opacity 0.3s var(--swift),
+    background 0.3s var(--swift),
+    color 0.3s var(--swift),
+    border-color 0.3s var(--swift);
+}
+.lp .lp-btn i {
+  transition: transform 0.4s var(--smooth);
+}
+.lp .lp-btn:active {
+  transform: translateY(-1px) scale(0.985);
+  transition-duration: 0.12s;
+}
+
+/* nav: the underline draws rather than appears */
+.lp .lp-nav-links a::after {
+  transition: right 0.45s var(--smooth);
+}
+.lp .lp-nav {
+  transition:
+    background 0.5s var(--swift),
+    border-color 0.5s var(--swift),
+    box-shadow 0.5s var(--swift),
+    backdrop-filter 0.5s var(--swift);
+}
+.lp .lp-nav-login {
+  transition: background 0.3s var(--swift), color 0.3s var(--swift);
+}
+
+/* cards and chips share the card curve */
+.lp .lp-card,
+.lp .lp-quote,
+.lp .lp-price-card,
+.lp .lp-hiw-ledger {
+  transition:
+    transform 0.5s var(--smooth),
+    box-shadow 0.5s var(--smooth),
+    border-color 0.4s var(--swift);
+}
+.lp .lp-chip {
+  transition:
+    transform 0.35s var(--smooth),
+    background 0.3s var(--swift),
+    border-color 0.3s var(--swift),
+    color 0.3s var(--swift);
+}
+.lp .lp-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(146, 78, 233, 0.35);
+  color: var(--brand-600);
+}
+
+/* reveals ease with the same curve, slightly longer for calm */
+.lp [data-reveal] {
+  transition:
+    opacity 0.85s var(--smooth),
+    transform 0.85s var(--smooth);
+  transition-delay: calc(var(--d, 0) * 90ms);
+}
+
+/* links and social buttons */
+.lp .lp-footer-col a,
+.lp .lp-footer-credit,
+.lp .lp-social a {
+  transition:
+    color 0.3s var(--swift),
+    background 0.3s var(--swift),
+    padding-left 0.35s var(--smooth),
+    transform 0.4s var(--smooth);
+}
+
+/* focus that matches the motion language */
+.lp :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+  border-radius: 6px;
+  transition: outline-offset 0.2s var(--swift);
+}
+
+/* images fade in as they decode instead of popping */
+.lp img {
+  transition: opacity 0.6s var(--swift);
+}
+
+/* the FAQ opens on the smooth curve */
+.lp .lp-faq-a {
+  transition: grid-template-rows 0.55s var(--smooth);
+}
+.lp .lp-faq-item button i {
+  transition: rotate 0.5s var(--smooth), color 0.3s var(--swift);
+}
+.lp .lp-faq-item button {
+  transition: color 0.3s var(--swift);
+}
