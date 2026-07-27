@@ -4199,21 +4199,497 @@
 .lp-trail-stage.is-feat-3 .lp-td-march {
   box-shadow: 0 0 0 3px rgba(146, 78, 233, 0.4);
 }
+@media (max-width: 680px) {
+  .lp-featgrid-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-/* the resolution: a real, browsable card section */
+/* ============================================================================
+   THE RECEIPTS — four tinted worlds, each with its own working visual
+   ========================================================================== */
+
 .lp-featgrid-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
-.lp-featgrid .lp-card {
-  justify-content: flex-start;
+
+.lp-fcard {
+  --tint: rgba(146, 78, 233, 0.08);
+  --tint-deep: rgba(146, 78, 233, 0.16);
+  --ink-accent: var(--brand-600);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 420px;
+  padding: 28px 28px 0;
+  border-radius: 26px;
+  background: linear-gradient(170deg, var(--tint), rgba(255, 255, 255, 0.4) 62%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.lp-featgrid .lp-card-icon {
-  margin-bottom: 12px;
+.lp-fcard::after {
+  /* a soft pool of the card's own tint, pooling at the base */
+  content: '';
+  position: absolute;
+  inset: 45% -10% -25% -10%;
+  z-index: -1;
+  background: radial-gradient(60% 60% at 50% 40%, var(--tint-deep), transparent 70%);
+  opacity: 0.7;
+  transition: opacity 0.55s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 26px 60px rgba(29, 27, 46, 0.1);
+}
+.lp-fcard:hover::after {
+  opacity: 1;
+  transform: translateY(-8px);
+}
+
+.lp-fcard--rose {
+  --tint: rgba(255, 90, 95, 0.1);
+  --tint-deep: rgba(255, 90, 95, 0.2);
+  --ink-accent: #d94348;
+}
+.lp-fcard--mint {
+  --tint: rgba(12, 141, 111, 0.09);
+  --tint-deep: rgba(12, 141, 111, 0.18);
+  --ink-accent: var(--paid);
+}
+.lp-fcard--slate {
+  --tint: rgba(29, 27, 46, 0.06);
+  --tint-deep: rgba(29, 27, 46, 0.12);
+  --ink-accent: var(--ink);
+}
+.lp-fcard--violet {
+  --tint: rgba(146, 78, 233, 0.1);
+  --tint-deep: rgba(146, 78, 233, 0.2);
+}
+
+.lp-fcard-eyebrow {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-accent);
+  opacity: 0.85;
+}
+.lp-fcard h3 {
+  margin-top: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.lp-fcard-copy p {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.lp-fcard-art {
+  position: relative;
+  flex: 1;
+  min-height: 168px;
+  margin: 0 -28px;
+  padding: 0 28px;
+}
+
+/* ---- coins: currencies that rise on hover ---- */
+.lp-coins {
+  display: flex;
+  gap: 8px;
+  padding-top: 6px;
+}
+.lp-coin {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(29, 27, 46, 0.1);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-coin--ngn { color: var(--brand-600); }
+.lp-coin--usd { color: var(--paid); }
+.lp-coin--eur { color: #357fff; }
+.lp-coin--gbp { color: var(--accent); }
+.lp-coin--more {
+  background: transparent;
+  border: 1.5px dashed rgba(29, 27, 46, 0.2);
+  box-shadow: none;
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.lp-fcard:hover .lp-coin {
+  transform: translateY(-7px);
+}
+.lp-fcard:hover .lp-coin:nth-child(2) { transition-delay: 0.05s; }
+.lp-fcard:hover .lp-coin:nth-child(3) { transition-delay: 0.1s; }
+.lp-fcard:hover .lp-coin:nth-child(4) { transition-delay: 0.15s; }
+.lp-fcard:hover .lp-coin:nth-child(5) { transition-delay: 0.2s; }
+
+.lp-fcard-toast {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 26px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 30px rgba(29, 27, 46, 0.12);
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcard:hover .lp-fcard-toast {
+  transform: translateY(-5px);
+}
+.lp-fcard-toast .tick {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.14);
+  color: var(--paid);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.lp-fcard-toast b {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+.lp-fcard-toast small {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+/* ---- receipts: two sheets that fan apart ---- */
+.lp-receipts {
+  position: relative;
+  height: 132px;
+}
+.lp-receipt {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 152px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(29, 27, 46, 0.1);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-receipt b {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.lp-receipt i {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: #eee9f7;
+}
+.lp-receipt i:nth-of-type(2) { width: 78%; }
+.lp-receipt i:nth-of-type(3) { width: 56%; }
+.lp-receipt em {
+  position: absolute;
+  right: 12px;
+  bottom: 11px;
+  padding: 2px 9px;
+  border: 1.5px solid rgba(12, 141, 111, 0.5);
+  border-radius: 5px;
+  color: var(--paid);
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  rotate: -7deg;
+}
+.lp-receipt--back {
+  left: 8px;
+  top: 6px;
+  rotate: -5deg;
+  opacity: 0.75;
+}
+.lp-receipt--front {
+  left: 48px;
+  top: 20px;
+  rotate: 3deg;
+}
+.lp-fcard:hover .lp-receipt--back {
+  transform: translate(-12px, -6px) rotate(-9deg);
+}
+.lp-fcard:hover .lp-receipt--front {
+  transform: translate(10px, 4px) rotate(6deg);
+}
+.lp-receipts-to {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+.lp-receipts-to span {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(29, 27, 46, 0.07);
+}
+.lp-receipts-to i {
+  color: var(--paid);
+  font-size: 1.05rem;
+}
+
+/* ---- the pdf sheet ---- */
+.lp-pdf {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 168px;
+  margin: 8px auto 0;
+  padding: 20px 18px 44px;
+  border-radius: 12px 12px 0 0;
+  background: #fff;
+  box-shadow: 0 -2px 40px rgba(29, 27, 46, 0.1);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcard:hover .lp-pdf {
+  transform: translateY(-10px) rotate(-1.5deg);
+}
+.lp-pdf-tag {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--brand-600);
+}
+.lp-pdf-line {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: #eee9f7;
+}
+.lp-pdf-rule {
+  display: block;
+  height: 1px;
+  margin: 3px 0;
+  background: #e4dff1;
+}
+.lp-pdf-total {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- the estimator gauge ---- */
+.lp-gauge {
+  padding-top: 14px;
+}
+.lp-gauge-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(29, 27, 46, 0.07);
+  margin-bottom: 46px;
+}
+.lp-gauge-band {
+  position: absolute;
+  left: 22%;
+  width: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  transition: width 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+}
+.lp-fcard[data-reveal].in-view .lp-gauge-band {
+  width: 46%;
+}
+.lp-gauge-pin {
+  position: absolute;
+  top: 20px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(29, 27, 46, 0.12);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-gauge-pin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  translate: -50%;
+  width: 2px;
+  height: 14px;
+  background: rgba(29, 27, 46, 0.18);
+}
+.lp-gauge-pin--a {
+  left: 8%;
+}
+.lp-gauge-pin--b {
+  right: 8%;
+}
+.lp-fcard:hover .lp-gauge-pin--a {
+  transform: translateY(-4px);
+}
+.lp-fcard:hover .lp-gauge-pin--b {
+  transform: translateY(-4px);
+  transition-delay: 0.06s;
+}
+.lp-gauge-foot {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 26px rgba(29, 27, 46, 0.08);
+}
+.lp-gauge-foot span {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lp-gauge-foot b {
+  font-size: 0.82rem;
+  color: var(--brand-600);
+}
+
+/* ---- the payoff tile ---- */
+.lp-fcta {
+  grid-column: span 2;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 420px;
+  padding: 32px;
+  border-radius: 26px;
+  background: linear-gradient(150deg, var(--brand), var(--brand-deeper));
+  color: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcta:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 70px rgba(67, 40, 95, 0.35);
+}
+.lp-fcta-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(200deg, #000, transparent 72%);
+  mask-image: linear-gradient(200deg, #000, transparent 72%);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcta:hover .lp-fcta-dots {
+  transform: translate(6px, -6px);
+}
+.lp-fcta > div,
+.lp-fcta-btn {
+  position: relative;
+}
+.lp-fcta h3 {
+  max-width: 12ch;
+  color: #fff;
+  font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.lp-fcta p {
+  margin-top: 12px;
+  max-width: 34ch;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.92rem;
+}
+.lp-fcta-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 26px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand-deep);
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.lp-fcta-btn i {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lp-fcta-btn:hover {
+  transform: translateX(4px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+.lp-fcta-btn:hover i {
+  transform: translateX(4px);
+}
+
+@media (max-width: 1020px) {
+  .lp-featgrid-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .lp-fcta {
+    grid-column: span 2;
+    min-height: 0;
+  }
 }
 @media (max-width: 680px) {
   .lp-featgrid-grid {
     grid-template-columns: 1fr;
+  }
+  .lp-fcard {
+    min-height: 0;
+  }
+  .lp-fcta {
+    grid-column: auto;
   }
 }

@@ -1154,53 +1154,136 @@ export const Landing = () => {
         {/* ----------------------------------------------- THE PAPER TRAIL */}
         <PaperTrail />
 
-        {/* the same four, resolved into their own section */}
+        {/* the same four, resolved into their own tinted world */}
         <section className="lp-section lp-featgrid">
           <div className="lp-shell">
             <div className="lp-section-head" data-reveal>
               <span className="lp-kicker lp-kicker--warm">For the record</span>
               <h2>The receipts, in plain sight.</h2>
+              <p>
+                Four things that happen whether you remember them or not.
+              </p>
             </div>
+
             <div className="lp-featgrid-grid">
-              <article className="lp-card" data-tilt data-reveal data-delay="1">
-                <span className="lp-card-icon"><i className="bx bx-wallet" /></span>
-                <h3>Paid from anywhere</h3>
-                <p>
-                  Paystack for naira, your own accounts for dollars, euros and
-                  pounds. Your client pays the way they already pay.
-                </p>
-                <div className="lp-chiprow" aria-hidden="true">
-                  <span className="lp-chip">Paystack</span>
-                  <span className="lp-chip">NGN</span>
-                  <span className="lp-chip">USD</span>
-                  <span className="lp-chip">EUR</span>
-                  <span className="lp-chip">GBP</span>
+              {/* ---- collected, in any currency ---- */}
+              <article className="lp-fcard lp-fcard--rose" data-reveal data-delay="1">
+                <div className="lp-fcard-copy">
+                  <span className="lp-fcard-eyebrow">Collected</span>
+                  <h3>Paid from anywhere</h3>
+                  <p>
+                    Paystack for naira, your own accounts for dollars, euros and
+                    pounds. Your client pays the way they already pay.
+                  </p>
+                </div>
+                <div className="lp-fcard-art" aria-hidden="true">
+                  <div className="lp-coins">
+                    <span className="lp-coin lp-coin--ngn">&#8358;</span>
+                    <span className="lp-coin lp-coin--usd">$</span>
+                    <span className="lp-coin lp-coin--eur">&#8364;</span>
+                    <span className="lp-coin lp-coin--gbp">&#163;</span>
+                    <span className="lp-coin lp-coin--more">+</span>
+                  </div>
+                  <div className="lp-fcard-toast">
+                    <span className="tick"><i className="bx bx-check" /></span>
+                    <div>
+                      <b>Payment received</b>
+                      <small>&#8358;3,816,250 via Paystack</small>
+                    </div>
+                  </div>
                 </div>
               </article>
-              <article className="lp-card" data-tilt data-reveal data-delay="2">
-                <span className="lp-card-icon"><i className="bx bx-badge-check" /></span>
-                <h3>Receipts on autopilot</h3>
-                <p>
-                  The moment an invoice is paid, receipt PDFs go to both of you.
-                  Two brand touchpoints, zero clicks.
-                </p>
+
+              {/* ---- receipts ---- */}
+              <article className="lp-fcard lp-fcard--mint" data-reveal data-delay="2">
+                <div className="lp-fcard-copy">
+                  <span className="lp-fcard-eyebrow">Receipted</span>
+                  <h3>Receipts on autopilot</h3>
+                  <p>
+                    The moment an invoice is paid, receipt PDFs go to both of
+                    you. Two brand touchpoints, zero clicks.
+                  </p>
+                </div>
+                <div className="lp-fcard-art" aria-hidden="true">
+                  <div className="lp-receipts">
+                    <span className="lp-receipt lp-receipt--back">
+                      <b>RECEIPT</b>
+                      <i /><i /><i />
+                    </span>
+                    <span className="lp-receipt lp-receipt--front">
+                      <b>RECEIPT &#183; IV2047</b>
+                      <i /><i /><i />
+                      <em>Paid</em>
+                    </span>
+                  </div>
+                  <div className="lp-receipts-to">
+                    <span>You</span>
+                    <i className="bx bx-git-compare" />
+                    <span>Your client</span>
+                  </div>
+                </div>
               </article>
-              <article className="lp-card" data-tilt data-reveal data-delay="3">
-                <span className="lp-card-icon"><i className="bx bx-printer" /></span>
-                <h3>Print-perfect PDFs</h3>
-                <p>
-                  Invoices and receipts that survive the accountant, the auditor
-                  and the office printer.
-                </p>
+
+              {/* ---- pdfs ---- */}
+              <article className="lp-fcard lp-fcard--slate" data-reveal data-delay="3">
+                <div className="lp-fcard-copy">
+                  <span className="lp-fcard-eyebrow">Filed</span>
+                  <h3>Print-perfect PDFs</h3>
+                  <p>
+                    Invoices and receipts that survive the accountant, the
+                    auditor and the office printer.
+                  </p>
+                </div>
+                <div className="lp-fcard-art" aria-hidden="true">
+                  <div className="lp-pdf">
+                    <span className="lp-pdf-tag">.pdf</span>
+                    <span className="lp-pdf-line" style={{ width: '70%' }} />
+                    <span className="lp-pdf-line" style={{ width: '86%' }} />
+                    <span className="lp-pdf-line" style={{ width: '54%' }} />
+                    <span className="lp-pdf-rule" />
+                    <span className="lp-pdf-line" style={{ width: '78%' }} />
+                    <span className="lp-pdf-line" style={{ width: '40%' }} />
+                    <span className="lp-pdf-total">&#8358;3,816,250</span>
+                  </div>
+                </div>
               </article>
-              <article className="lp-card" data-tilt data-reveal data-delay="4">
-                <span className="lp-card-icon"><i className="bx bx-calculator" /></span>
-                <h3>The estimator, next</h3>
-                <p>
-                  Answer a few questions and see your liability as an honest
-                  range beside the &#8358;100k penalty.
-                </p>
-                <span className="lp-mini-range" aria-hidden="true">&#8358;480k <i>to</i> &#8358;610k</span>
+
+              {/* ---- estimator ---- */}
+              <article className="lp-fcard lp-fcard--violet" data-reveal data-delay="4">
+                <div className="lp-fcard-copy">
+                  <span className="lp-fcard-eyebrow">Coming next</span>
+                  <h3>The estimator</h3>
+                  <p>
+                    Answer a few questions and see your liability as an honest
+                    range, beside the penalty for skipping it.
+                  </p>
+                </div>
+                <div className="lp-fcard-art" aria-hidden="true">
+                  <div className="lp-gauge">
+                    <div className="lp-gauge-track">
+                      <span className="lp-gauge-band" />
+                      <span className="lp-gauge-pin lp-gauge-pin--a">&#8358;480k</span>
+                      <span className="lp-gauge-pin lp-gauge-pin--b">&#8358;610k</span>
+                    </div>
+                    <div className="lp-gauge-foot">
+                      <span>Your estimate</span>
+                      <b>&#8358;100k+ penalty avoided</b>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              {/* ---- the payoff ---- */}
+              <article className="lp-fcta" data-reveal data-delay="5">
+                <span className="lp-fcta-dots" aria-hidden="true" />
+                <div>
+                  <h3>Ready to send one?</h3>
+                  <p>Free while we are in beta. Your invite takes thirty seconds.</p>
+                </div>
+                <a href="#waitlist" className="lp-fcta-btn">
+                  Join the waitlist
+                  <i className="bx bx-right-arrow-alt" />
+                </a>
               </article>
             </div>
           </div>
