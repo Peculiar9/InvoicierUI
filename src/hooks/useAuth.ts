@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginCredentials, SignupCredentials } from '@/types';
 
@@ -14,7 +15,10 @@ export const useLogin = () => {
     onSuccess: (data) => {
       setUser(data.user, data.token);
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      navigate({ to: '/dashboard' });
+      // first time in goes through the welcome journey, everyone else
+      // lands straight in the workspace
+      const onboarded = useSettingsStore.getState().onboarded;
+      navigate({ to: onboarded ? '/dashboard' : '/welcome' });
     },
   });
 };
