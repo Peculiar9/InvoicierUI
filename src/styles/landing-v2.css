@@ -4226,31 +4226,37 @@
   min-height: 420px;
   padding: 28px 28px 0;
   border-radius: 26px;
-  background: linear-gradient(170deg, var(--tint), rgba(255, 255, 255, 0.4) 62%);
+  background: linear-gradient(165deg, var(--tint), rgba(255, 255, 255, 0.45) 58%);
   border: 1px solid rgba(255, 255, 255, 0.9);
   overflow: hidden;
   isolation: isolate;
+  will-change: transform;
+  box-shadow: 0 2px 10px rgba(29, 27, 46, 0.03);
   transition:
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.6s var(--smooth),
+    box-shadow 0.6s var(--smooth);
 }
 .lp-fcard::after {
-  /* a soft pool of the card's own tint, pooling at the base */
+  /* one restrained pool of the card's own tint, low at the base */
   content: '';
   position: absolute;
-  inset: 45% -10% -25% -10%;
+  inset: 52% -8% -22% -8%;
   z-index: -1;
-  background: radial-gradient(60% 60% at 50% 40%, var(--tint-deep), transparent 70%);
-  opacity: 0.7;
-  transition: opacity 0.55s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  background: radial-gradient(58% 58% at 50% 45%, var(--tint-deep), transparent 72%);
+  opacity: 0.55;
+  transition:
+    opacity 0.6s var(--smooth),
+    transform 0.7s var(--smooth);
 }
+/* the element's own box-shadow is never clipped by its own overflow, so it
+   lives here: a whisper at rest, a full swell on hover, one curve both ways */
 .lp-fcard:hover {
   transform: translateY(-6px);
-  box-shadow: 0 26px 60px rgba(29, 27, 46, 0.1);
+  box-shadow: 0 26px 58px rgba(29, 27, 46, 0.13);
 }
 .lp-fcard:hover::after {
-  opacity: 1;
-  transform: translateY(-8px);
+  opacity: 0.85;
+  transform: translateY(-6px);
 }
 
 .lp-fcard--rose {
@@ -4612,13 +4618,16 @@
   background: linear-gradient(150deg, var(--brand), var(--brand-deeper));
   color: rgba(255, 255, 255, 0.8);
   overflow: hidden;
+  isolation: isolate;
+  will-change: transform;
+  box-shadow: 0 4px 14px rgba(67, 40, 95, 0.1);
   transition:
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.6s var(--smooth),
+    box-shadow 0.6s var(--smooth);
 }
 .lp-fcta:hover {
   transform: translateY(-6px);
-  box-shadow: 0 28px 70px rgba(67, 40, 95, 0.35);
+  box-shadow: 0 28px 70px rgba(67, 40, 95, 0.38);
 }
 .lp-fcta-dots {
   position: absolute;
@@ -4810,4 +4819,23 @@
 }
 .lp .lp-faq-item button {
   transition: color 0.3s var(--swift);
+}
+
+/* every hovering surface rests on a whisper of shadow and swells to a full
+   one, both directions on the same curve so it eases evenly in and out */
+.lp .lp-card,
+.lp .lp-quote {
+  will-change: transform;
+  box-shadow: 0 2px 10px rgba(29, 27, 46, 0.03);
+  transition:
+    transform 0.55s var(--smooth),
+    box-shadow 0.55s var(--smooth),
+    border-color 0.4s var(--swift);
+}
+.lp .lp-card:hover,
+.lp .lp-quote:hover {
+  box-shadow: 0 22px 52px rgba(29, 27, 46, 0.12);
+}
+.lp .lp-card--dark:hover {
+  box-shadow: 0 24px 58px rgba(67, 40, 95, 0.32);
 }
