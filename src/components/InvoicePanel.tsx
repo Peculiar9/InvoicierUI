@@ -11,6 +11,7 @@ import {
   useMarkInvoicePaid,
   useSendInvoice,
   useUpdateInvoice,
+  useCreateClient,
 } from '@/hooks';
 import { useAuthStore } from '@/stores/authStore';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
@@ -57,8 +58,12 @@ export const InvoicePanel = () => {
   const markPaid = useMarkInvoicePaid();
   const duplicate = useDuplicateInvoice();
   const remove = useDeleteInvoice();
+  const createClient = useCreateClient();
 
   const [clientId, setClientId] = useState('');
+  // billing someone who is not in the address book yet
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [currency, setCurrency] = useState(profile.currency || 'NGN');
   const [dueDate, setDueDate] = useState('');
   const [vatEnabled, setVatEnabled] = useState(true);
@@ -86,6 +91,8 @@ export const InvoicePanel = () => {
     if (!open) return;
     if (mode === 'create') {
       setClientId(prefillClientId ?? '');
+      setRecipientName('');
+      setRecipientEmail('');
       setCurrency(profile.currency || 'NGN');
       setDueDate('');
       // onboarding answers set the defaults; every invoice can still differ
@@ -97,6 +104,8 @@ export const InvoicePanel = () => {
       setSavedId(null);
     } else if (mode === 'edit' && invoice) {
       setClientId(invoice.client.id);
+      setRecipientName(invoice.client.id ? '' : invoice.client.name);
+      setRecipientEmail(invoice.client.id ? '' : (invoice.client.email ?? ''));
       setCurrency(invoice.currency);
       setDueDate(invoice.dueDate ? invoice.dueDate.slice(0, 10) : '');
       setVatEnabled(invoice.vatEnabled ?? invoice.taxRate > 0);
@@ -117,6 +126,9 @@ export const InvoicePanel = () => {
   }, [open, mode, invoice?.id, prefillClientId]);
 
   const client = clients.find((c) => c.id === clientId) ?? null;
+  // either a saved client, or a name typed straight onto the invoice
+  const billToName = client?.name ?? recipientName.trim();
+  const billToEmail = client?.email ?? recipientEmail.trim();
   const lines = items.map((it) => ({ ...it, total: it.quantity * it.unitPrice }));
   const subtotal = lines.reduce((s, l) => s + l.total, 0);
   const taxRate = vatEnabled ? 0.075 : 0;
@@ -128,9 +140,11 @@ export const InvoicePanel = () => {
   const hasValidItem = items.some(
     (it) => it.description.trim() && it.quantity > 0 && it.unitPrice >= 0
   );
-  const formReady = Boolean(clientId) && hasValidItem && subtotal > 0;
-  const flowHint = !clientId
-    ? { step: '1 of 2', text: 'Pick a client to get started' }
+  const formReady = Boolean(billToName) && hasValidItem && subtotal > 0;
+  // sending needs somewhere to send it; saving and printing do not
+  const canSend = formReady && Boolean(billToEmail);
+  const flowHint = !billToName
+    ? { step: '1 of 2', text: 'Who is this invoice for?' }
     : !formReady
       ? { step: '2 of 2', text: 'Add at least one item with a price' }
       : null;
@@ -138,7 +152,11 @@ export const InvoicePanel = () => {
   const draftDoc: InvoiceDocData = {
     invoiceNumber: invoice?.invoiceNumber ?? 'DRAFT',
     status: 'draft',
-    client,
+    client:
+      client ??
+      (billToName
+        ? { id: '', name: billToName, email: billToEmail, createdAt: '' }
+        : null),
     items: lines,
     subtotal,
     tax,
@@ -167,7 +185,9 @@ export const InvoicePanel = () => {
   };
 
   const buildDto = () => ({
-    clientId,
+    ...(clientId
+      ? { clientId }
+      : { recipientName: recipientName.trim(), recipientEmail: recipientEmail.trim() }),
     currency,
     dueDate: dueDate || new Date().toISOString().slice(0, 10),
     taxRate,
@@ -218,7 +238,7 @@ export const InvoicePanel = () => {
 
   const validate = (): boolean => {
     const next: { client?: string; items?: string } = {};
-    if (!clientId) next.client = 'Select a client';
+    if (!billToName) next.client = 'Pick a client or type who this is for';
     const hasValidItem = items.some(
       (it) => it.description.trim() && it.quantity > 0 && it.unitPrice >= 0
     );
@@ -318,14 +338,22 @@ export const InvoicePanel = () => {
   };
 
   const editActions = [
-    { label: 'Save', bx: 'bx-save', primary: true, needsReady: true, onClick: handleSave },
-    { label: 'Send', bx: 'bx-send', primary: false, needsReady: true, onClick: handleSend },
-    { label: 'Copy Link', bx: 'bx-link', primary: false, needsReady: true, onClick: handleCopy },
+    { label: 'Save', bx: 'bx-save', primary: true, needsReady: true, needsEmail: false, onClick: handleSave },
+    {
+      label: 'Send',
+      bx: 'bx-send',
+      primary: false,
+      needsReady: true,
+      needsEmail: true,
+      onClick: handleSend,
+    },
+    { label: 'Copy Link', bx: 'bx-link', primary: false, needsReady: true, needsEmail: false, onClick: handleCopy },
     {
       label: 'Download',
       bx: 'bx-download',
       primary: false,
       needsReady: true,
+      needsEmail: false,
       onClick: handleDownload,
     },
     {
@@ -333,6 +361,7 @@ export const InvoicePanel = () => {
       bx: 'bx-show',
       primary: false,
       needsReady: false,
+      needsEmail: false,
       onClick: () => setPreviewOpen(true),
     },
   ];
@@ -488,6 +517,50 @@ export const InvoicePanel = () => {
                       )}
                     </ol>
                   ) : null}
+                  {invoice &&
+                    !invoice.client?.id &&
+                    (invoice.status === 'paid' || invoice.status === 'receipted') && (
+                      <div className="iw-savelead">
+                        <div>
+                          <b>{invoice.client?.name} paid you.</b>
+                          <small>
+                            Add them to your clients and they will be one tap away
+                            next time.
+                          </small>
+                        </div>
+                        <button
+                          type="button"
+                          className="iw-btn"
+                          disabled={createClient.isPending}
+                          onClick={() =>
+                            createClient.mutate(
+                              {
+                                name: invoice.client.name,
+                                email: invoice.client.email,
+                              },
+                              {
+                                onSuccess: (saved) => {
+                                  // link the invoice to the client it created
+                                  updateInvoice.mutate({
+                                    id: invoice.id,
+                                    data: { clientId: saved.id },
+                                  });
+                                  toast.success(`${saved.name} added to your clients`);
+                                },
+                              }
+                            )
+                          }
+                        >
+                          {createClient.isPending ? (
+                            <span className="iw-spin" aria-hidden="true" />
+                          ) : (
+                            <i className="bx bx-user-plus" aria-hidden="true" />
+                          )}
+                          Add to clients
+                        </button>
+                      </div>
+                    )}
+
                   {invoice?.status === 'paid' && invoice.dateReceived && (
                     <div className="iw-march" style={{ marginBottom: 16 }}>
                       <i className="bx bx-badge-check" aria-hidden="true" />
@@ -528,7 +601,7 @@ export const InvoicePanel = () => {
                   )}
                   <div className="cinv-fields">
                     <label className="cinv-field">
-                      <span>Client</span>
+                      <span>Bill to</span>
                       <select
                         value={clientId}
                         className={errors.client ? 'is-invalid' : ''}
@@ -537,7 +610,7 @@ export const InvoicePanel = () => {
                           setErrors((er) => ({ ...er, client: undefined }));
                         }}
                       >
-                        <option value="">Select a client…</option>
+                        <option value="">Someone new…</option>
                         {clients.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.name}
@@ -564,6 +637,37 @@ export const InvoicePanel = () => {
                       />
                     </label>
                   </div>
+
+                  {!clientId && (
+                    <div className="iw-adhoc">
+                      <label className="cinv-field">
+                        <span>Their name</span>
+                        <input
+                          type="text"
+                          value={recipientName}
+                          placeholder="Otto Holdings"
+                          onChange={(e) => {
+                            setRecipientName(e.target.value);
+                            setErrors((er) => ({ ...er, client: undefined }));
+                          }}
+                        />
+                      </label>
+                      <label className="cinv-field">
+                        <span>Their email</span>
+                        <input
+                          type="email"
+                          value={recipientEmail}
+                          placeholder="accounts@otto.com"
+                          onChange={(e) => setRecipientEmail(e.target.value)}
+                        />
+                      </label>
+                      <p className="iw-adhoc-note">
+                        <i className="bx bx-info-circle" aria-hidden="true" />
+                        No need to add them as a client first. You can save them
+                        to your list once they pay.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="iw-toggles">
                     <label className="iw-toggle">
@@ -713,11 +817,17 @@ export const InvoicePanel = () => {
                   data-label={
                     action.needsReady && !formReady
                       ? `${action.label} · finish the invoice first`
-                      : action.label
+                      : action.needsEmail && !canSend
+                        ? `${action.label} · add an email address first`
+                        : action.label
                   }
                   aria-label={action.label}
                   onClick={action.onClick}
-                  disabled={!!busy || (action.needsReady && !formReady)}
+                  disabled={
+                    !!busy ||
+                    (action.needsReady && !formReady) ||
+                    (action.needsEmail && !canSend)
+                  }
                 >
                   {busy === action.label ? (
                     <span className="iw-spin" aria-hidden="true" />

@@ -4424,3 +4424,55 @@
   font-size: 0.72rem;
   color: var(--ink-faint);
 }
+
+/* ---- billing someone who is not in the address book yet ---- */
+.iw .iw-adhoc {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+.iw .iw-adhoc-note {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+.iw .iw-adhoc-note i {
+  color: var(--brand-600);
+  font-size: 0.95rem;
+}
+@media (max-width: 640px) {
+  .iw .iw-adhoc {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- the offer to keep them, once they have paid ---- */
+.iw .iw-savelead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--brand-tint);
+  border: 1px dashed rgba(146, 78, 233, 0.4);
+}
+.iw .iw-savelead b {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+.iw .iw-savelead small {
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}

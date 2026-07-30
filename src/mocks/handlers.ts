@@ -86,8 +86,17 @@ export const handlers = [
   }),
   http.post('*/api/invoices', async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    const client = clients.find((c) => c.id === body.clientId) ?? clients[0];
     const now = new Date().toISOString();
+    // A recipient does not have to exist in the address book. An empty id
+    // marks someone who has not been saved as a client yet.
+    const client =
+      clients.find((c) => c.id === body.clientId) ??
+      ({
+        id: '',
+        name: (body.recipientName as string)?.trim() || 'Unnamed recipient',
+        email: (body.recipientEmail as string)?.trim() || '',
+        createdAt: now,
+      } as Client);
     const taxRate = (body.taxRate as number) ?? 0;
     const rawItems = (body.items as Array<Record<string, unknown>>) ?? [];
     const seq = invoices.length + 1;
@@ -138,6 +147,16 @@ export const handlers = [
 
     if (body.clientId) {
       invoice.client = clients.find((c) => c.id === body.clientId) ?? invoice.client;
+    } else if (
+      typeof body.recipientName === 'string' ||
+      typeof body.recipientEmail === 'string'
+    ) {
+      invoice.client = {
+        ...invoice.client,
+        id: '',
+        name: (body.recipientName as string)?.trim() || invoice.client.name,
+        email: (body.recipientEmail as string)?.trim() ?? invoice.client.email,
+      };
     }
     if (typeof body.currency === 'string') invoice.currency = body.currency;
     if (typeof body.dueDate === 'string') invoice.dueDate = body.dueDate;

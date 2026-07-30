@@ -30,6 +30,7 @@ vi.mock('@/hooks', () => ({
   useMarkInvoicePaid: () => ({ mutate: vi.fn() }),
   useDuplicateInvoice: () => ({ mutate: vi.fn() }),
   useDeleteInvoice: () => ({ mutate: vi.fn() }),
+  useCreateClient: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 import { InvoicePanel } from './InvoicePanel';

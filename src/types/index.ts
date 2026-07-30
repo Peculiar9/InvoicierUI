@@ -178,7 +178,11 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CreateInvoiceDto {
-  clientId: string;
+  /** Optional: bill a saved client, or name the recipient inline below. */
+  clientId?: string;
+  /** Ad-hoc recipient, used when no client has been saved yet. */
+  recipientName?: string;
+  recipientEmail?: string;
   items: Omit<InvoiceItem, 'id' | 'total'>[];
   currency: string;
   dueDate: string;
