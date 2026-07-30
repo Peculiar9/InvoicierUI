@@ -69,8 +69,12 @@ export const useSendInvoice = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => invoicesApi.send(id),
-    onSuccess: (_, id) => {
+    mutationFn: (vars: string | { id: string; channel?: string; to?: string }) =>
+      typeof vars === 'string'
+        ? invoicesApi.send(vars)
+        : invoicesApi.send(vars.id, { channel: vars.channel ?? 'email', to: vars.to }),
+    onSuccess: (_, vars) => {
+      const id = typeof vars === 'string' ? vars : vars.id;
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
     },

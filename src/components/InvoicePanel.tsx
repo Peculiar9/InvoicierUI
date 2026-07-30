@@ -30,6 +30,17 @@ interface DraftItem {
 
 const emptyItem: DraftItem = { description: '', quantity: 1, unitPrice: 0 };
 
+/** Short, human time for the history rows. */
+const formatWhen = (iso: string) => {
+  const then = new Date(iso).getTime();
+  const mins = Math.round((Date.now() - then) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hr ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
 export const InvoicePanel = () => {
   const { open, mode, invoiceId, prefillClientId, close, openView, openEdit } =
     useInvoicePanelStore();
@@ -246,16 +257,19 @@ export const InvoicePanel = () => {
       return;
     }
     const method = await sendInvoiceEmail(inv, profile);
-    sendInvoice.mutate(inv.id, {
+    sendInvoice.mutate(
+      { id: inv.id, channel: method === 'none' ? 'link' : method, to: inv.client?.email },
+      {
       onSuccess: () =>
         toast.success(
           method === 'emailjs'
             ? `Invoice emailed to ${inv.client.name}`
             : method === 'mailto'
               ? `Email draft opened for ${inv.client.name}`
-              : 'Marked as sent (client has no email)'
-        ),
-    });
+                : 'Marked as sent (client has no email)'
+          ),
+      }
+    );
   };
 
   const handleSave = async () => {
@@ -417,6 +431,63 @@ export const InvoicePanel = () => {
                   </button>
                 </div>
                 <div className="ipanel-body">
+                  {invoice && (invoice.sends?.length || invoice.viewedAt || invoice.dateReceived) ? (
+                    <ol className="iw-trail" aria-label="Invoice history">
+                      {invoice.sends?.map((s, i) => (
+                        <li key={`send-${i}`} className="is-sent">
+                          <i className="bx bx-send" aria-hidden="true" />
+                          <div>
+                            <b>
+                              Sent{s.channel === 'mailto' ? ' from your mail app' : ''}
+                              {s.channel === 'link' ? ' as a link' : ''}
+                            </b>
+                            <small>
+                              {s.to ? `${s.to} · ` : ''}
+                              {formatWhen(s.at)}
+                            </small>
+                          </div>
+                        </li>
+                      ))}
+                      {invoice.viewedAt && (
+                        <li className="is-viewed">
+                          <i className="bx bx-show" aria-hidden="true" />
+                          <div>
+                            <b>Opened by {invoice.client?.name ?? 'the client'}</b>
+                            <small>{formatWhen(invoice.viewedAt)}</small>
+                          </div>
+                        </li>
+                      )}
+                      {invoice.dateReceived && (
+                        <li className="is-paid">
+                          <i className="bx bx-check-circle" aria-hidden="true" />
+                          <div>
+                            <b>
+                              Paid{' '}
+                              {formatCurrency(
+                                invoice.amountReceived ?? invoice.total,
+                                invoice.currency
+                              )}
+                              {invoice.paymentMethod ? ` by ${invoice.paymentMethod}` : ''}
+                            </b>
+                            <small>received {invoice.dateReceived.slice(0, 10)}</small>
+                          </div>
+                        </li>
+                      )}
+                      {invoice.receiptNumber && (
+                        <li className="is-receipted">
+                          <i className="bx bx-receipt" aria-hidden="true" />
+                          <div>
+                            <b>Receipt {invoice.receiptNumber} issued</b>
+                            <small>
+                              {invoice.payerEmail
+                                ? `sent to ${invoice.payerEmail}`
+                                : 'sent to both parties'}
+                            </small>
+                          </div>
+                        </li>
+                      )}
+                    </ol>
+                  ) : null}
                   {invoice?.status === 'paid' && invoice.dateReceived && (
                     <div className="iw-march" style={{ marginBottom: 16 }}>
                       <i className="bx bx-badge-check" aria-hidden="true" />

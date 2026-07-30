@@ -4361,3 +4361,66 @@
   background: rgba(255, 90, 95, 0.1);
   color: var(--accent);
 }
+
+/* ============================================================================
+   INVOICE HISTORY — what actually happened, in order
+   ========================================================================== */
+
+.iw .iw-trail {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.iw .iw-trail li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 9px 0 9px 2px;
+}
+/* the connecting spine */
+.iw .iw-trail li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 32px;
+  bottom: -4px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border);
+}
+.iw .iw-trail i {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.iw .iw-trail .is-sent i { color: var(--brand-600); }
+.iw .iw-trail .is-viewed i { color: var(--accent); }
+.iw .iw-trail .is-paid i,
+.iw .iw-trail .is-receipted i {
+  color: var(--paid);
+  border-color: rgba(12, 141, 111, 0.35);
+}
+.iw .iw-trail b {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .iw-trail small {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}

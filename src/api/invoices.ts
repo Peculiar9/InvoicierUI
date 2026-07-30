@@ -48,11 +48,20 @@ export const invoicesApi = {
     await apiClient.delete(`/invoices/${id}`);
   },
 
-  send: async (id: string): Promise<Invoice> => {
+  send: async (
+    id: string,
+    delivery?: { channel: string; to?: string }
+  ): Promise<Invoice> => {
     const response = await apiClient.post<ApiResponse<Invoice>>(
-      `/invoices/${id}/send`
+      `/invoices/${id}/send`,
+      delivery
     );
     return response.data.data;
+  },
+
+  /** Public: the payer opened the link. Fire-and-forget, never blocks the page. */
+  registerView: async (id: string): Promise<void> => {
+    await apiClient.post(`/invoices/${id}/viewed`);
   },
 
   markAsPaid: async (id: string, data?: MarkPaidDto): Promise<Invoice> => {

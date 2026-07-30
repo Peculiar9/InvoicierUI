@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { useInvoice, useMarkInvoicePaid } from '@/hooks';
+import { invoicesApi } from '@/api/invoices';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Invoice } from '@/types';
@@ -36,10 +37,20 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   const [payerEmail, setPayerEmail] = useState('');
   const [emailError, setEmailError] = useState('');
 
-  // an already-paid invoice opens straight on the receipt
+  // a settled invoice opens straight on the receipt
   useEffect(() => {
-    if (invoice?.status === 'paid') setStage('done');
+    if (invoice?.status === 'paid' || invoice?.status === 'receipted') setStage('done');
   }, [invoice?.status]);
+
+  // tell the sender their client opened the link. Fire and forget: a failure
+  // here must never stop someone from paying.
+  const pinged = useRef(false);
+  useEffect(() => {
+    if (!invoice || pinged.current) return;
+    if (invoice.status === 'paid' || invoice.status === 'receipted') return;
+    pinged.current = true;
+    invoicesApi.registerView(invoice.id).catch(() => {});
+  }, [invoice]);
 
   useEffect(() => {
     if (invoice && !payerEmail) setPayerEmail(invoice.client?.email ?? '');
@@ -57,6 +68,8 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
         data: {
           dateReceived: new Date().toISOString().slice(0, 10),
           amountReceived: inv.total,
+          paymentMethod: method,
+          payerEmail: payerEmail.trim(),
         },
       },
       {
@@ -266,7 +279,8 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
 
                     <p className="pay-reassure">
                       <i className="bx bx-check-shield" />
-                      Reference {invoice.invoiceNumber} · keep this for your records
+                      Receipt {invoice.receiptNumber ?? invoice.invoiceNumber} · keep this
+                      for your records
                     </p>
                   </div>
                 )}
