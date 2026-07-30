@@ -30,7 +30,9 @@ const statusLabel: Record<InvoiceStatus, string> = {
   draft: 'Draft',
   pending: 'Pending',
   sent: 'Sent',
+  viewed: 'Viewed',
   paid: 'Paid',
+  receipted: 'Receipted',
   overdue: 'Overdue',
   cancelled: 'Cancelled',
 };

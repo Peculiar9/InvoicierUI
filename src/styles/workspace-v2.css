@@ -4346,3 +4346,18 @@
   border-color: rgba(12, 141, 111, 0.3);
   color: var(--paid);
 }
+
+/* the two new lifecycle states get their own badges */
+.iw .dash-badge.is-viewed {
+  background: rgba(255, 90, 95, 0.1);
+  color: var(--accent);
+}
+.iw .dash-badge.is-receipted {
+  background: rgba(12, 141, 111, 0.14);
+  color: var(--paid);
+}
+
+.iw .dash-feed-icon.is-invoice_viewed {
+  background: rgba(255, 90, 95, 0.1);
+  color: var(--accent);
+}

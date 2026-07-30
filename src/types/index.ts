@@ -69,9 +69,42 @@ export interface Invoice {
   amountReceived?: number;
   /** Amount withheld by the client; spawns a WHT credit record. */
   whtWithheld?: number;
+
+  /* ---- the trail from send to receipt ---- */
+  /** Every delivery, so "we never got it" has an answer. */
+  sends?: InvoiceSend[];
+  /** First time the client opened the payment link. */
+  viewedAt?: string;
+  /** How the money arrived, as chosen on the payment page. */
+  paymentMethod?: string;
+  /** Where the payer asked for their receipt. */
+  payerEmail?: string;
+  /** Receipts get their own identity, not the invoice number. */
+  receiptNumber?: string;
+  receiptedAt?: string;
 }
 
-export type InvoiceStatus = 'draft' | 'pending' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+/**
+ * The lifecycle: draft -> sent -> viewed -> paid -> receipted, plus overdue
+ * (past due and unpaid) and cancelled. 'pending' is retained because seeded
+ * and older records use it; it reads as "sent, awaiting payment".
+ */
+export type InvoiceStatus =
+  | 'draft'
+  | 'pending'
+  | 'sent'
+  | 'viewed'
+  | 'paid'
+  | 'receipted'
+  | 'overdue'
+  | 'cancelled';
+
+/** One delivery of an invoice: how it went out, and when. */
+export interface InvoiceSend {
+  channel: 'email' | 'mailto' | 'link' | 'whatsapp';
+  at: string;
+  to?: string;
+}
 
 export interface DashboardStats {
   totalReceived: number;
@@ -98,7 +131,12 @@ export interface ChartData {
 
 export interface Activity {
   id: string;
-  type: 'invoice_created' | 'invoice_sent' | 'invoice_paid' | 'client_added';
+  type:
+    | 'invoice_created'
+    | 'invoice_sent'
+    | 'invoice_viewed'
+    | 'invoice_paid'
+    | 'client_added';
   description: string;
   timestamp: string;
   invoiceId?: string;
@@ -160,4 +198,7 @@ export interface MarkPaidDto {
   dateReceived: string;
   amountReceived: number;
   whtWithheld?: number;
+  /** set when the payer pays through the public link */
+  paymentMethod?: string;
+  payerEmail?: string;
 }

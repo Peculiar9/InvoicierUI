@@ -175,10 +175,25 @@ export const handlers = [
     saveDb();
     return new HttpResponse(null, { status: 200 });
   }),
-  http.post('*/api/invoices/:id/send', ({ params }) => {
+  http.post('*/api/invoices/:id/send', async ({ params, request }) => {
     const invoice = invoices.find((i) => i.id === params.id);
     if (invoice) {
-      invoice.status = 'sent';
+      const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+      const channel = (body?.channel as string) ?? 'email';
+      // every delivery is logged, so "we never got it" has an answer
+      invoice.sends = [
+        ...(invoice.sends ?? []),
+        {
+          channel: channel as 'email' | 'mailto' | 'link' | 'whatsapp',
+          at: new Date().toISOString(),
+          to: (body?.to as string) ?? invoice.client?.email,
+        },
+      ];
+      // a resend must not walk the status backwards from viewed or paid
+      if (invoice.status === 'draft' || invoice.status === 'pending') {
+        invoice.status = 'sent';
+      }
+      invoice.updatedAt = new Date().toISOString();
       logActivity('invoice_sent', `Invoice sent to ${invoice.client?.name ?? 'client'}`, {
         invoiceId: invoice.id,
       });
@@ -186,11 +201,28 @@ export const handlers = [
     }
     return ok(invoice as Invoice, 'Invoice sent');
   }),
+
+  // the client opened the payment link: first open wins, and it never
+  // overwrites a payment that already happened
+  http.post('*/api/invoices/:id/viewed', ({ params }) => {
+    const invoice = invoices.find((i) => i.id === params.id);
+    if (invoice) {
+      const settled = ['paid', 'receipted', 'cancelled'];
+      if (!invoice.viewedAt) {
+        invoice.viewedAt = new Date().toISOString();
+        logActivity('invoice_viewed', `${invoice.client?.name ?? 'Client'} opened an invoice`, {
+          invoiceId: invoice.id,
+        });
+      }
+      if (!settled.includes(invoice.status)) invoice.status = 'viewed';
+      saveDb();
+    }
+    return ok(invoice as Invoice, 'View recorded');
+  }),
   http.post('*/api/invoices/:id/mark-paid', async ({ params, request }) => {
     const invoice = invoices.find((i) => i.id === params.id);
     if (invoice) {
       const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-      invoice.status = 'paid';
       // Cash basis: the ledger row is written at the payment event, keyed on
       // the date the money actually landed.
       invoice.dateReceived =
@@ -200,6 +232,15 @@ export const handlers = [
       if (typeof body?.whtWithheld === 'number' && body.whtWithheld > 0) {
         invoice.whtWithheld = body.whtWithheld;
       }
+      if (typeof body?.paymentMethod === 'string') invoice.paymentMethod = body.paymentMethod;
+      if (typeof body?.payerEmail === 'string') invoice.payerEmail = body.payerEmail;
+      // the receipt is its own document with its own identity
+      if (!invoice.receiptNumber) {
+        invoice.receiptNumber = `RCT-${invoice.invoiceNumber.replace(/^IV/i, '')}`;
+        invoice.receiptedAt = new Date().toISOString();
+      }
+      invoice.status = 'receipted';
+      invoice.updatedAt = new Date().toISOString();
       logActivity('invoice_paid', `${invoice.client?.name ?? 'Client'} paid an invoice`, {
         invoiceId: invoice.id,
       });
