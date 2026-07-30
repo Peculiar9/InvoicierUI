@@ -19,17 +19,20 @@ import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
+import { DateRange, EMPTY_RANGE, inDateRange, rangeIsSet } from '@/components/DateRange';
+import type { DateRangeValue } from '@/components/DateRange';
 import type { Invoice, InvoiceStatus } from '@/types';
 
 /* ---- reporting period ---- */
 
-type Period = 'month' | 'quarter' | 'year' | 'all';
+type Period = 'month' | 'quarter' | 'year' | 'all' | 'custom';
 
 const PERIODS: { key: Period; label: string; sub: string }[] = [
   { key: 'month', label: 'This month', sub: 'this month' },
   { key: 'quarter', label: 'This quarter', sub: 'this quarter' },
   { key: 'year', label: 'This year', sub: 'this tax year' },
   { key: 'all', label: 'All time', sub: 'all time' },
+  { key: 'custom', label: 'Custom', sub: 'the selected dates' },
 ];
 
 const periodStart = (period: Period): Date | null => {
@@ -42,8 +45,15 @@ const periodStart = (period: Period): Date | null => {
   return null;
 };
 
-const inPeriod = (iso: string | undefined, start: Date | null) =>
-  start === null || (Boolean(iso) && new Date(iso as string) >= start);
+const inPeriod = (
+  iso: string | undefined,
+  start: Date | null,
+  range?: DateRangeValue
+) => {
+  // a custom range wins whenever it is set; otherwise fall back to the preset
+  if (range && rangeIsSet(range)) return inDateRange(iso, range);
+  return start === null || (Boolean(iso) && new Date(iso as string) >= start);
+};
 
 ChartJS.register(
   CategoryScale,
@@ -75,6 +85,7 @@ export const Dashboard = () => {
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const [period, setPeriod] = useState<Period>('year');
+  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
 
   if (isLoading || !data) {
     return (
@@ -110,14 +121,18 @@ export const Dashboard = () => {
   const { stats, revenueChart, invoiceStatusChart, recentInvoices } = data;
   const allInvoices = invData?.data ?? [];
 
-  const start = periodStart(period);
-  const periodSub = PERIODS.find((p) => p.key === period)?.sub ?? '';
+  const start = period === 'custom' ? null : periodStart(period);
+  const periodSub =
+    period === 'custom' && rangeIsSet(range)
+      ? `${range.from || 'the start'} to ${range.to || 'today'}`
+      : (PERIODS.find((p) => p.key === period)?.sub ?? '');
 
   // Collected follows the period on a cash basis; the money-owed figures are
   // a current balance, so they ignore the period on purpose.
   const paidInPeriod = allInvoices.filter(
     (inv) =>
-      isPaid(inv.status) && inPeriod(inv.dateReceived ?? inv.updatedAt, start)
+      isPaid(inv.status) &&
+      inPeriod(inv.dateReceived ?? inv.updatedAt, start, period === 'custom' ? range : undefined)
   );
   const collected = paidInPeriod.reduce(
     (sum, inv) => sum + (inv.amountReceived ?? inv.total),
@@ -348,6 +363,16 @@ export const Dashboard = () => {
               {p.label}
             </button>
           ))}
+          {period === 'custom' && (
+            <DateRange
+              label="Received"
+              value={range}
+              onChange={(next) => {
+                setRange(next);
+                setPeriod('custom');
+              }}
+            />
+          )}
         </div>
 
         {/* KPI cards */}
