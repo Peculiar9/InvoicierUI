@@ -18,6 +18,7 @@ import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
+import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import type { Invoice, InvoiceStatus } from '@/types';
 
 /* ---- reporting period ---- */
@@ -116,7 +117,7 @@ export const Dashboard = () => {
   // a current balance, so they ignore the period on purpose.
   const paidInPeriod = allInvoices.filter(
     (inv) =>
-      inv.status === 'paid' && inPeriod(inv.dateReceived ?? inv.updatedAt, start)
+      isPaid(inv.status) && inPeriod(inv.dateReceived ?? inv.updatedAt, start)
   );
   const collected = paidInPeriod.reduce(
     (sum, inv) => sum + (inv.amountReceived ?? inv.total),
@@ -133,7 +134,7 @@ export const Dashboard = () => {
     inPeriod(inv.issueDate, start)
   ).length;
   const outstanding = allInvoices
-    .filter((inv) => inv.status !== 'paid' && inv.status !== 'cancelled')
+    .filter((inv) => !isSettled(inv.status))
     .reduce((sum, inv) => sum + inv.total, 0);
   const paidCount = stats.paidCount ?? 0;
   const taxReady = stats.taxReadyPaid ?? 0;
@@ -156,7 +157,7 @@ export const Dashboard = () => {
         text: `${formatCurrency(inv.total, inv.currency)} from ${inv.client.name} is past due`,
       })),
     ...allInvoices
-      .filter((inv) => inv.status === 'paid' && !inv.dateReceived)
+      .filter((inv) => isPaid(inv.status) && !inv.dateReceived)
       .map((inv) => ({
         inv,
         kind: 'no-date' as const,
@@ -177,7 +178,7 @@ export const Dashboard = () => {
   // Receivables aging: how old the money you are owed is.
   const DAY = 24 * 60 * 60 * 1000;
   const openInvoices = allInvoices.filter(
-    (inv) => inv.status !== 'paid' && inv.status !== 'cancelled' && inv.status !== 'draft'
+    (inv) => !isSettled(inv.status) && inv.status !== 'draft'
   );
   const AGING = [
     { label: 'Current', color: '#0c8d6f', test: (d: number) => d <= 0 },
@@ -283,7 +284,8 @@ export const Dashboard = () => {
     },
   };
 
-  const statusColors = ['#0c8d6f', '#e0a008', '#357fff', '#ef5d54', '#9b99ab'];
+  // paid, viewed, sent, pending, overdue, draft
+  const statusColors = ['#0c8d6f', '#ff5a5f', '#357fff', '#e0a008', '#ef5d54', '#9b99ab'];
   const statusValues = invoiceStatusChart.datasets[0].data;
   const statusTotal = statusValues.reduce((a, b) => a + b, 0) || 1;
 

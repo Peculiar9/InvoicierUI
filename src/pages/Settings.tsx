@@ -6,6 +6,7 @@ import { useInvoices } from '@/hooks';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { usePayoutStore } from '@/stores/payoutStore';
 import type { PayoutSchedule, PayoutType, PayoutMethod } from '@/stores/payoutStore';
+import { isPaid } from '@/utils/invoiceStatus';
 import { formatCurrency, formatDate } from '@/utils/format';
 import {
   isEmail,
@@ -81,7 +82,7 @@ export const Settings = () => {
   const [withdrawMethodId, setWithdrawMethodId] = useState<string>('');
   const [withdrawError, setWithdrawError] = useState('');
 
-  const paidTotal = invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.total, 0);
+  const paidTotal = invoices.filter((i) => isPaid(i.status)).reduce((s, i) => s + i.total, 0);
   const withdrawn = withdrawals.reduce((s, w) => s + w.amount, 0);
   const balance = Math.max(0, paidTotal - withdrawn);
 

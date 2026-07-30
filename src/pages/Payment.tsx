@@ -5,6 +5,7 @@ import { useInvoice, useMarkInvoicePaid } from '@/hooks';
 import { invoicesApi } from '@/api/invoices';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice } from '@/types';
 
 type Stage = 'review' | 'method' | 'processing' | 'done';
@@ -39,7 +40,7 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
 
   // a settled invoice opens straight on the receipt
   useEffect(() => {
-    if (invoice?.status === 'paid' || invoice?.status === 'receipted') setStage('done');
+    if (invoice && isPaid(invoice.status)) setStage('done');
   }, [invoice?.status]);
 
   // tell the sender their client opened the link. Fire and forget: a failure
@@ -47,7 +48,7 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   const pinged = useRef(false);
   useEffect(() => {
     if (!invoice || pinged.current) return;
-    if (invoice.status === 'paid' || invoice.status === 'receipted') return;
+    if (isPaid(invoice.status)) return;
     pinged.current = true;
     invoicesApi.registerView(invoice.id).catch(() => {});
   }, [invoice]);

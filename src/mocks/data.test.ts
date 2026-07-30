@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { computeStats, computeStatusChart, invoices, saveDb } from './data';
+import { isPaid } from '@/utils/invoiceStatus';
 
 // Fresh module + empty localStorage in the test env => seed data is used.
 describe('mock data (live-computed)', () => {
   it('computes dashboard stats from the seed invoices', () => {
     const stats = computeStats();
     const paidTotal = invoices
-      .filter((i) => i.status === 'paid')
+      .filter((i) => isPaid(i.status))
       .reduce((s, i) => s + i.total, 0);
     expect(stats.totalInvoices).toBe(invoices.length);
     expect(stats.totalReceived).toBe(paidTotal);
@@ -17,7 +18,9 @@ describe('mock data (live-computed)', () => {
     const chart = computeStatusChart();
     const total = chart.datasets[0].data.reduce((a, b) => a + b, 0);
     expect(total).toBe(invoices.length);
-    expect(chart.labels).toHaveLength(5);
+    // one bucket per label, whatever the lifecycle grows to
+    expect(chart.labels).toHaveLength(chart.datasets[0].data.length);
+    expect(chart.labels).toContain('Viewed');
   });
 
   it('persists the database to localStorage', () => {

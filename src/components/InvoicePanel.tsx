@@ -21,6 +21,7 @@ import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
 import { sendInvoiceEmail } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
+import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice } from '@/types';
 
 interface DraftItem {
@@ -421,10 +422,10 @@ export const InvoicePanel = () => {
                   <button type="button" className="btn btn-ghost" onClick={() => printInvoice()}>
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
-                  {invoice && (invoice.status !== 'paid' || !invoice.dateReceived) && (
+                  {invoice && (!isPaid(invoice.status) || !invoice.dateReceived) && (
                     <button type="button" className="btn btn-ghost" onClick={openPaidDialog}>
                       <i className="bx bx-check-circle" />{' '}
-                      {invoice.status === 'paid' ? 'Record payment details' : 'Mark paid'}
+                      {isPaid(invoice.status) ? 'Record payment details' : 'Mark paid'}
                     </button>
                   )}
                   <button
@@ -519,7 +520,7 @@ export const InvoicePanel = () => {
                   ) : null}
                   {invoice &&
                     !invoice.client?.id &&
-                    (invoice.status === 'paid' || invoice.status === 'receipted') && (
+                    isPaid(invoice.status) && (
                       <div className="iw-savelead">
                         <div>
                           <b>{invoice.client?.name} paid you.</b>
@@ -561,7 +562,7 @@ export const InvoicePanel = () => {
                       </div>
                     )}
 
-                  {invoice?.status === 'paid' && invoice.dateReceived && (
+                  {invoice && isPaid(invoice.status) && invoice.dateReceived && (
                     <div className="iw-march" style={{ marginBottom: 16 }}>
                       <i className="bx bx-badge-check" aria-hidden="true" />
                       <span>

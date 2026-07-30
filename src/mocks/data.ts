@@ -1,3 +1,4 @@
+import { isPaid } from '@/utils/invoiceStatus';
 import type {
   Activity,
   ChartData,
@@ -144,7 +145,7 @@ export function logActivity(
 
 /* ---- live-computed dashboard figures ---- */
 export function computeStats(): DashboardStats {
-  const paid = invoices.filter((i) => i.status === 'paid');
+  const paid = invoices.filter((i) => isPaid(i.status));
   const totalReceived = paid.reduce((s, i) => s + (i.amountReceived ?? i.total), 0);
   return {
     totalReceived,
@@ -160,13 +161,21 @@ export function computeStats(): DashboardStats {
 
 export function computeStatusChart(): ChartData {
   const count = (st: InvoiceStatus) => invoices.filter((i) => i.status === st).length;
+  // every live status needs a bucket, or the chart quietly under-reports
   return {
-    labels: ['Paid', 'Pending', 'Sent', 'Overdue', 'Draft'],
+    labels: ['Paid', 'Viewed', 'Sent', 'Pending', 'Overdue', 'Draft'],
     datasets: [
       {
         label: 'Invoices by status',
-        data: [count('paid'), count('pending'), count('sent'), count('overdue'), count('draft')],
-        backgroundColor: ['#0c8d6f', '#c50b68', '#357fff', '#fd5900', '#9e3a8f'],
+        data: [
+          invoices.filter((i) => isPaid(i.status)).length,
+          count('viewed'),
+          count('sent'),
+          count('pending'),
+          count('overdue'),
+          count('draft'),
+        ],
+        backgroundColor: ['#0c8d6f', '#ff5a5f', '#357fff', '#e0a008', '#ef5d54', '#9b99ab'],
         borderColor: '#924ee9',
         borderWidth: 1,
       },
