@@ -74,7 +74,13 @@ export const Invoices = () => {
   };
 
   const invoices = data?.data ?? [];
-  const clientOptions = [...new Map(invoices.map((i) => [i.client.id, i.client])).values()];
+  // only saved clients can be filtered on: an unsaved recipient has no id,
+  // which would collide with the "All clients" option
+  const clientOptions = [
+    ...new Map(
+      invoices.filter((i) => i.client.id).map((i) => [i.client.id, i.client])
+    ).values(),
+  ];
   const currencyOptions = [...new Set(invoices.map((i) => i.currency))];
 
   const filtered = invoices.filter((inv) => {
