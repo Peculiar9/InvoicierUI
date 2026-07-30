@@ -14,7 +14,9 @@ const tabs: { key: InvoiceStatus | 'all'; label: string }[] = [
   { key: 'draft', label: 'Draft' },
   { key: 'pending', label: 'Pending' },
   { key: 'sent', label: 'Sent' },
+  { key: 'viewed', label: 'Viewed' },
   { key: 'paid', label: 'Paid' },
+  { key: 'receipted', label: 'Receipted' },
   { key: 'overdue', label: 'Overdue' },
 ];
 
