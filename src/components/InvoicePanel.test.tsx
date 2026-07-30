@@ -65,7 +65,9 @@ describe('InvoicePanel', () => {
     useInvoicePanelStore.setState({ open: true, mode: 'create', invoiceId: null });
     render(<InvoicePanel />);
     expect(screen.getByText(/Create invoice/)).toBeInTheDocument();
-    expect(screen.getByText('Select a client…')).toBeInTheDocument();
+    // a client is optional now: the picker offers "someone new" by default
+    expect(screen.getByText('Someone new…')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Otto Holdings')).toBeInTheDocument();
     expect(screen.getByText(/Add item/)).toBeInTheDocument();
     // the sticky action bar (Save / Send / Preview …) is present while preparing
     expect(screen.getByRole('button', { name: /Save/ })).toBeInTheDocument();
