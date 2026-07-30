@@ -133,7 +133,7 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
           <span>{formatCurrency(data.subtotal, currency)}</span>
         </div>
         <div>
-          <span>Tax ({Math.round(data.taxRate * 100)}%)</span>
+          <span>{data.taxRate === 0.075 ? 'VAT' : 'Tax'} ({+(data.taxRate * 100).toFixed(2)}%)</span>
           <span>{formatCurrency(data.tax, currency)}</span>
         </div>
         <div className="invoice-doc-grand">
