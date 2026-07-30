@@ -19,8 +19,9 @@ import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
-import { DateRange, EMPTY_RANGE, inDateRange, rangeIsSet } from '@/components/DateRange';
-import type { DateRangeValue } from '@/components/DateRange';
+import { DateRange } from '@/components/DateRange';
+import { EMPTY_RANGE, inDateRange, rangeIsSet } from '@/utils/dateRange';
+import type { DateRangeValue } from '@/utils/dateRange';
 import type { Invoice, InvoiceStatus } from '@/types';
 
 /* ---- reporting period ---- */

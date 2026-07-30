@@ -39,9 +39,10 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   const [emailError, setEmailError] = useState('');
 
   // a settled invoice opens straight on the receipt
+  const invoiceStatus = invoice?.status;
   useEffect(() => {
-    if (invoice && isPaid(invoice.status)) setStage('done');
-  }, [invoice?.status]);
+    if (invoiceStatus && isPaid(invoiceStatus)) setStage('done');
+  }, [invoiceStatus]);
 
   // tell the sender their client opened the link. Fire and forget: a failure
   // here must never stop someone from paying.

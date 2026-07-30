@@ -1,24 +1,5 @@
-export interface DateRangeValue {
-  from: string;
-  to: string;
-}
-
-export const EMPTY_RANGE: DateRangeValue = { from: '', to: '' };
-
-/**
- * Inclusive on both ends. ISO dates compare correctly as strings, which keeps
- * this free of timezone drift: a date picked as the 3rd stays the 3rd.
- */
-export const inDateRange = (iso: string | undefined, range: DateRangeValue): boolean => {
-  if (!range.from && !range.to) return true;
-  if (!iso) return false;
-  const day = iso.slice(0, 10);
-  if (range.from && day < range.from) return false;
-  if (range.to && day > range.to) return false;
-  return true;
-};
-
-export const rangeIsSet = (range: DateRangeValue) => Boolean(range.from || range.to);
+import { rangeIsSet } from '@/utils/dateRange';
+import type { DateRangeValue } from '@/utils/dateRange';
 
 interface DateRangeProps {
   value: DateRangeValue;
@@ -50,7 +31,7 @@ export const DateRange = ({ value, onChange, label = 'Dates' }: DateRangeProps) 
         type="button"
         className="iw-daterange-clear"
         aria-label={`Clear ${label.toLowerCase()} filter`}
-        onClick={() => onChange(EMPTY_RANGE)}
+        onClick={() => onChange({ from: '', to: '' })}
       >
         <i className="bx bx-x" />
       </button>
