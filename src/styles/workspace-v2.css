@@ -4476,3 +4476,80 @@
   font-size: 0.76rem;
   color: var(--ink-soft);
 }
+
+/* ============================================================================
+   DATE RANGE — a from/to pair in the same pill language as the filters
+   ========================================================================== */
+
+.iw .iw-daterange {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: border-color 0.3s var(--swift), box-shadow 0.35s var(--smooth);
+}
+.iw .iw-daterange:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+.iw .iw-daterange.is-set {
+  border-color: rgba(146, 78, 233, 0.45);
+  background: var(--brand-tint);
+}
+.iw .iw-daterange-label {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.iw .iw-daterange.is-set .iw-daterange-label {
+  color: var(--brand-600);
+}
+.iw .iw-daterange input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  color: var(--ink);
+  padding: 4px 2px;
+  min-width: 112px;
+  color-scheme: light;
+}
+.iw .iw-daterange > i {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+}
+.iw .iw-daterange-clear {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s var(--swift), color 0.2s var(--swift), rotate 0.3s var(--smooth);
+}
+.iw .iw-daterange-clear:hover {
+  background: rgba(212, 69, 60, 0.1);
+  color: var(--danger);
+  rotate: 90deg;
+}
+@media (max-width: 640px) {
+  .iw .iw-daterange {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .iw .iw-daterange input {
+    min-width: 0;
+    flex: 1;
+  }
+}

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
+import { DateRange, EMPTY_RANGE, inDateRange } from '@/components/DateRange';
+import type { DateRangeValue } from '@/components/DateRange';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
@@ -30,6 +32,14 @@ const statusLabel: Record<InvoiceStatus, string> = {
   overdue: 'Overdue',
   cancelled: 'Cancelled',
 };
+
+/** The range can apply to any of the dates an invoice carries. */
+type DateField = 'issueDate' | 'dueDate' | 'dateReceived';
+const DATE_FIELDS: { key: DateField; label: string }[] = [
+  { key: 'issueDate', label: 'Issued' },
+  { key: 'dueDate', label: 'Due' },
+  { key: 'dateReceived', label: 'Received' },
+];
 
 type SortKey =
   | 'invoiceNumber'
@@ -60,6 +70,8 @@ export const Invoices = () => {
   });
   const [clientFilter, setClientFilter] = useState('');
   const [currencyFilter, setCurrencyFilter] = useState('');
+  const [dateField, setDateField] = useState<DateField>('issueDate');
+  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
   const { data, isLoading } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
@@ -87,11 +99,12 @@ export const Invoices = () => {
     const matchesStatus = status === 'all' || inv.status === status;
     const matchesClient = !clientFilter || inv.client.id === clientFilter;
     const matchesCurrency = !currencyFilter || inv.currency === currencyFilter;
+    const matchesDates = inDateRange(inv[dateField], range);
     const q = query.toLowerCase();
     const matchesQuery =
       inv.client.name.toLowerCase().includes(q) ||
       inv.invoiceNumber.toLowerCase().includes(q);
-    return matchesStatus && matchesClient && matchesCurrency && matchesQuery;
+    return matchesStatus && matchesClient && matchesCurrency && matchesDates && matchesQuery;
   });
   const sorted = [...filtered].sort((a, b) => {
     const va = sortValue(a, sort.key);
@@ -191,6 +204,29 @@ export const Invoices = () => {
                 </option>
               ))}
             </select>
+            <select
+              className="iw-select"
+              value={dateField}
+              aria-label="Which date to filter on"
+              onChange={(e) => {
+                setDateField(e.target.value as DateField);
+                setPage(1);
+              }}
+            >
+              {DATE_FIELDS.map((f) => (
+                <option key={f.key} value={f.key}>
+                  {f.label} date
+                </option>
+              ))}
+            </select>
+            <DateRange
+              label={DATE_FIELDS.find((f) => f.key === dateField)?.label ?? 'Dates'}
+              value={range}
+              onChange={(next) => {
+                setRange(next);
+                setPage(1);
+              }}
+            />
           </div>
         </div>
 

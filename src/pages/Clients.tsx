@@ -3,6 +3,8 @@ import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
 import { Pager } from '@/components/Pager';
+import { DateRange, EMPTY_RANGE, inDateRange } from '@/components/DateRange';
+import type { DateRangeValue } from '@/components/DateRange';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
@@ -19,6 +21,7 @@ export const Clients = () => {
   const clients = data?.data ?? [];
 
   const [query, setQuery] = useState('');
+  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sortKey, setSortKey] = useState<'name-asc' | 'name-desc' | 'newest' | 'oldest'>(
     'name-asc'
@@ -32,7 +35,9 @@ export const Clients = () => {
 
   const filtered = clients.filter((c) => {
     const q = query.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    const matchesQuery =
+      c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    return matchesQuery && inDateRange(c.createdAt, range);
   });
   const sorted = [...filtered].sort((a, b) => {
     if (sortKey === 'name-asc') return a.name.localeCompare(b.name);
@@ -105,6 +110,14 @@ export const Clients = () => {
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
           </select>
+          <DateRange
+            label="Added"
+            value={range}
+            onChange={(next) => {
+              setRange(next);
+              setPage(1);
+            }}
+          />
           <div className="view-toolbar-side">
             <div className="view-switch" role="group" aria-label="View mode">
               <button
