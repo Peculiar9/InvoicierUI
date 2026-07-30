@@ -4553,3 +4553,60 @@
     flex: 1;
   }
 }
+
+/* ============================================================================
+   FILTERS ON SMALL SCREENS
+   A single flex row squeezed four controls until the selects showed nothing
+   but a chevron and the date range ran off the edge. On narrow viewports the
+   filters become a grid, and the range takes a full row of its own.
+   ========================================================================== */
+
+@media (max-width: 780px) {
+  .iw .iw-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+  .iw .iw-select {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+  }
+  /* the range needs the whole width to stay reachable */
+  .iw .iw-filters .iw-daterange {
+    grid-column: 1 / -1;
+  }
+
+  /* the dashboard's period row wraps instead of scrolling the range away */
+  .iw .iw-period {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 22px;
+  }
+  .iw .iw-period .iw-daterange {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
+/* very narrow: the label sits above the two dates */
+@media (max-width: 480px) {
+  .iw .iw-daterange {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    padding: 10px 12px;
+    border-radius: 18px;
+  }
+  .iw .iw-daterange-label {
+    flex: 1 0 100%;
+  }
+  .iw .iw-daterange input {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 0.82rem;
+  }
+  .iw .iw-daterange-clear {
+    margin-left: auto;
+  }
+}

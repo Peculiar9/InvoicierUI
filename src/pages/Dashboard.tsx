@@ -124,8 +124,11 @@ export const Dashboard = () => {
 
   const start = period === 'custom' ? null : periodStart(period);
   const periodSub =
-    period === 'custom' && rangeIsSet(range)
-      ? `${range.from || 'the start'} to ${range.to || 'today'}`
+    period === 'custom'
+      ? rangeIsSet(range)
+        ? `${range.from || 'the start'} to ${range.to || 'today'}`
+        : // custom is selected but empty, so nothing is actually filtered
+          'all time'
       : (PERIODS.find((p) => p.key === period)?.sub ?? '');
 
   // Collected follows the period on a cash basis; the money-owed figures are
