@@ -5381,3 +5381,36 @@
     animation: none;
   }
 }
+
+/* the client's-view preview, shown inside the sender's panel.
+   The page renders at its real width and is scaled down whole, so what the
+   sender checks is the layout their client will actually get. */
+.pay-preview-scale {
+  width: 1080px;
+  zoom: 0.62;
+}
+.pay-page--preview {
+  min-height: 0;
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.pay-page--preview .pay-top {
+  padding-inline: 18px;
+}
+.pay-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 24px;
+  background: rgba(108, 92, 231, 0.09);
+  color: var(--brand, #6c5ce7);
+  /* sized up to survive the scale-down and stay readable */
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+/* looking is not doing: nothing in the preview is clickable */
+.pay-page--preview .pay-wrap {
+  pointer-events: none;
+  user-select: none;
+}

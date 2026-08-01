@@ -31,7 +31,14 @@ const methodsFor = (currency: string) =>
  * for anything, so the page has one job: make the invoice legible and the
  * payment obvious, then show them exactly where their receipt went.
  */
-export const Payment = ({ invoiceId }: { invoiceId: string }) => {
+export const Payment = ({
+  invoiceId,
+  preview = false,
+}: {
+  invoiceId: string;
+  /** the sender looking over their client's shoulder: show, never record */
+  preview?: boolean;
+}) => {
   const { data: invoice, isLoading } = useInvoice(invoiceId);
   const markPaid = useMarkInvoicePaid();
   const queryClient = useQueryClient();
@@ -64,11 +71,11 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   // here must never stop someone from paying.
   const pinged = useRef(false);
   useEffect(() => {
-    if (!invoice || pinged.current) return;
+    if (!invoice || pinged.current || preview) return;
     if (isPaid(invoice.status)) return;
     pinged.current = true;
     invoicesApi.registerView(invoice.id).catch(() => {});
-  }, [invoice]);
+  }, [invoice, preview]);
 
   useEffect(() => {
     if (invoice && !payerEmail) setPayerEmail(invoice.client?.email ?? '');
@@ -124,7 +131,16 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
     : { instant: true, transfer: false, account: null };
 
   return (
-    <section className="pay-page">
+    <section className={`pay-page${preview ? ' pay-page--preview' : ''}`}>
+      {preview && (
+        <div className="pay-preview-bar" role="note">
+          <i className="bx bx-show" aria-hidden="true" />
+          <span>
+            This is your client&rsquo;s screen. Nothing here is recorded while you
+            look.
+          </span>
+        </div>
+      )}
       <header className="pay-top">
         <span className="pay-brand">
           invoicier<b>.</b>

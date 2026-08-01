@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { ReceiptDocument } from '@/components/ReceiptDocument';
+import { Payment } from '@/pages/Payment';
 import { Confetti } from '@/components/Confetti';
 import type { InvoiceDocData } from '@/components/InvoiceDocument';
 import { Modal } from '@/components/Modal';
@@ -122,6 +123,8 @@ export const InvoicePanel = () => {
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
   const [previewOpen, setPreviewOpen] = useState(false);
+  // the sender checking the account details their client will read
+  const [clientViewOpen, setClientViewOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -527,6 +530,13 @@ export const InvoicePanel = () => {
                       <i className="bx bx-receipt" /> Receipt
                     </button>
                   )}
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setClientViewOpen(true)}
+                  >
+                    <i className="bx bx-show" /> Client&rsquo;s view
+                  </button>
                   <button type="button" className="btn btn-ghost" onClick={() => printInvoice()}>
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
@@ -1095,6 +1105,19 @@ export const InvoicePanel = () => {
         size="lg"
       >
         <InvoiceDocument data={draftDoc} />
+      </Modal>
+
+      {/* the real payment page, rendered in place, with nothing recorded */}
+      <Modal
+        open={clientViewOpen}
+        onClose={() => setClientViewOpen(false)}
+        title="What your client sees"
+        size="lg"
+      >
+        {/* rendered at real desktop width, then scaled, so the layout is honest */}
+        <div className="pay-preview-scale">
+          {invoice && <Payment invoiceId={invoice.id} preview />}
+        </div>
       </Modal>
 
       <Modal
