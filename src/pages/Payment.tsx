@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { useInvoice, useMarkInvoicePaid } from '@/hooks';
@@ -32,6 +33,7 @@ const methodsFor = (currency: string) =>
 export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   const { data: invoice, isLoading } = useInvoice(invoiceId);
   const markPaid = useMarkInvoicePaid();
+  const queryClient = useQueryClient();
   const profile = useSettingsStore((s) => s.profile);
 
   const [stage, setStage] = useState<Stage>('review');
@@ -106,7 +108,10 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
         reference: reference.trim(),
         payerEmail: payerEmail.trim(),
       })
-      .then(() => setTimeout(() => setStage('reported'), 900))
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['invoices', inv.id] });
+        setTimeout(() => setStage('reported'), 900);
+      })
       .catch(() => setStage('method'));
   };
 
