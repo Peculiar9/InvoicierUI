@@ -71,6 +71,23 @@ export const invoicesApi = {
     return response.data.data;
   },
 
+  /** The sender could not find the money. */
+  declineClaim: async (id: string, reason?: string): Promise<Invoice> => {
+    const response = await apiClient.post<ApiResponse<Invoice>>(
+      `/invoices/${id}/decline-claim`,
+      { reason }
+    );
+    return response.data.data;
+  },
+
+  /** Void keeps the record and its number; delete would erase both. */
+  voidInvoice: async (id: string, reason?: string): Promise<Invoice> => {
+    const response = await apiClient.post<ApiResponse<Invoice>>(`/invoices/${id}/void`, {
+      reason,
+    });
+    return response.data.data;
+  },
+
   /** Public: the payer opened the link. Fire-and-forget, never blocks the page. */
   registerView: async (id: string): Promise<void> => {
     await apiClient.post(`/invoices/${id}/viewed`);

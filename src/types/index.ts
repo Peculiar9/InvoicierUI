@@ -92,6 +92,12 @@ export interface Invoice {
   claimedAt?: string;
   claimReference?: string;
   claimNote?: string;
+  /** the sender could not find the money: when, and what they told the payer */
+  declinedAt?: string;
+  declineReason?: string;
+  /** why an invoice was voided, kept instead of deleting the record */
+  voidReason?: string;
+  voidedAt?: string;
 }
 
 /**
@@ -146,7 +152,7 @@ export interface ReceivingAccount {
 
 /** One delivery of an invoice: how it went out, and when. */
 export interface InvoiceSend {
-  channel: 'email' | 'mailto' | 'link' | 'whatsapp';
+  channel: 'email' | 'mailto' | 'link' | 'whatsapp' | 'reminder';
   at: string;
   to?: string;
 }

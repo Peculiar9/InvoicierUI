@@ -241,6 +241,8 @@ export const handlers = [
       invoice.status = 'awaiting';
       invoice.claimedAt = new Date().toISOString();
       invoice.claimReference = (body?.reference as string)?.trim() || undefined;
+      invoice.declinedAt = undefined;
+      invoice.declineReason = undefined;
       invoice.claimNote = (body?.note as string)?.trim() || undefined;
       if (typeof body?.payerEmail === 'string') invoice.payerEmail = body.payerEmail.trim();
       invoice.updatedAt = new Date().toISOString();
@@ -252,6 +254,35 @@ export const handlers = [
       saveDb();
     }
     return ok(invoice as Invoice, 'Transfer reported');
+  }),
+
+  // the sender looked and could not find the money. The payer needs to know,
+  // so the reason travels back to the payment page.
+  http.post('*/api/invoices/:id/decline-claim', async ({ params, request }) => {
+    const invoice = invoices.find((i) => i.id === params.id);
+    if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    invoice.status = invoice.viewedAt ? 'viewed' : 'sent';
+    invoice.declinedAt = new Date().toISOString();
+    invoice.declineReason = (body?.reason as string)?.trim() || undefined;
+    invoice.claimedAt = undefined;
+    invoice.claimReference = undefined;
+    invoice.updatedAt = new Date().toISOString();
+    saveDb();
+    return ok(invoice as Invoice, 'Claim declined');
+  }),
+
+  // voiding keeps the record and the number; deleting would erase both
+  http.post('*/api/invoices/:id/void', async ({ params, request }) => {
+    const invoice = invoices.find((i) => i.id === params.id);
+    if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    invoice.status = 'cancelled';
+    invoice.voidedAt = new Date().toISOString();
+    invoice.voidReason = (body?.reason as string)?.trim() || undefined;
+    invoice.updatedAt = new Date().toISOString();
+    saveDb();
+    return ok(invoice as Invoice, 'Invoice voided');
   }),
 
   // the client opened the payment link: first open wins, and it never
