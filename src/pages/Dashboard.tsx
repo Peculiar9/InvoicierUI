@@ -19,6 +19,7 @@ import { CountUp } from '@/components/CountUp';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { DateRange } from '@/components/DateRange';
@@ -88,6 +89,8 @@ export const Dashboard = () => {
   const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  // the fallback when there is no money at all yet
+  const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
   const [period, setPeriod] = useState<Period>('year');
   const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
 
@@ -141,23 +144,27 @@ export const Dashboard = () => {
       isPaid(inv.status) &&
       inPeriod(inv.dateReceived ?? inv.updatedAt, start, period === 'custom' ? range : undefined)
   );
-  const collected = paidInPeriod.reduce(
-    (sum, inv) => sum + (inv.amountReceived ?? inv.total),
-    0
-  );
-  // one total hides the FX reality: split what landed by currency
-  const byCurrency = Object.entries(
-    paidInPeriod.reduce<Record<string, number>>((acc, inv) => {
-      acc[inv.currency] = (acc[inv.currency] ?? 0) + (inv.amountReceived ?? inv.total);
-      return acc;
-    }, {})
-  );
+  // Adding naira to dollars would produce a number that is true of nothing.
+  // Every money figure is per currency, headed by whichever one is biggest.
+  const splitBy = (
+    list: Invoice[],
+    amountOf: (inv: Invoice) => number
+  ): Array<[string, number]> =>
+    Object.entries(
+      list.reduce<Record<string, number>>((acc, inv) => {
+        acc[inv.currency] = (acc[inv.currency] ?? 0) + amountOf(inv);
+        return acc;
+      }, {})
+    ).sort((a, b) => b[1] - a[1]);
+
+  const byCurrency = splitBy(paidInPeriod, (inv) => inv.amountReceived ?? inv.total);
+  const [collectedCurrency = baseCurrency, collected = 0] = byCurrency[0] ?? [];
   const issuedInPeriod = allInvoices.filter((inv) =>
     inPeriod(inv.issueDate, start)
   ).length;
-  const outstanding = allInvoices
-    .filter((inv) => !isSettled(inv.status))
-    .reduce((sum, inv) => sum + inv.total, 0);
+  const unsettled = allInvoices.filter((inv) => !isSettled(inv.status));
+  const outstandingBy = splitBy(unsettled, (inv) => inv.total);
+  const [outstandingCurrency = baseCurrency, outstanding = 0] = outstandingBy[0] ?? [];
   const paidCount = stats.paidCount ?? 0;
   const taxReady = stats.taxReadyPaid ?? 0;
   const marchPct = paidCount === 0 ? 100 : Math.round((taxReady / paidCount) * 100);
@@ -242,7 +249,8 @@ export const Dashboard = () => {
         );
 
   // each figure counts itself up, so a payment reads as movement not a swap
-  const money = (n: number) => formatCurrency(n);
+  const money = (n: number) => formatCurrency(n, collectedCurrency);
+  const owedMoney = (n: number) => formatCurrency(n, outstandingCurrency);
   const whole = (n: number) => formatNumber(Math.round(n));
 
   const kpis = [
@@ -250,15 +258,23 @@ export const Dashboard = () => {
       label: 'Collected',
       amount: collected,
       format: money,
-      sub: `received ${periodSub}, cash basis`,
+      split: byCurrency,
+      sub:
+        byCurrency.length > 1
+          ? `received ${periodSub}, plus ${byCurrency.length - 1} other currenc${byCurrency.length === 2 ? 'y' : 'ies'}`
+          : `received ${periodSub}, cash basis`,
       icon: 'bx-wallet',
       tone: 'green',
     },
     {
       label: 'Outstanding',
       amount: outstanding,
-      format: money,
-      sub: `${stats.overdueInvoices} overdue`,
+      format: owedMoney,
+      split: outstandingBy,
+      sub:
+        outstandingBy.length > 1
+          ? `${stats.overdueInvoices} overdue, across ${outstandingBy.length} currencies`
+          : `${stats.overdueInvoices} overdue`,
       icon: 'bx-time-five',
       tone: 'amber',
     },
@@ -266,6 +282,7 @@ export const Dashboard = () => {
       label: 'Invoices',
       amount: issuedInPeriod,
       format: whole,
+      split: undefined as Array<[string, number]> | undefined,
       sub: `issued ${periodSub}, ${stats.pendingInvoices} pending`,
       icon: 'bx-receipt',
       tone: 'purple',
@@ -274,6 +291,7 @@ export const Dashboard = () => {
       label: 'Clients',
       amount: stats.totalClients,
       format: whole,
+      split: undefined as Array<[string, number]> | undefined,
       sub: 'active',
       icon: 'bx-group',
       tone: 'blue',
@@ -410,9 +428,9 @@ export const Dashboard = () => {
                   <CountUp value={kpi.amount} format={kpi.format} />
                 </span>
                 <span className="dash-kpi-sub">{kpi.sub}</span>
-                {kpi.label === 'Collected' && byCurrency.length > 1 && (
+                {kpi.split && kpi.split.length > 1 && (
                   <span className="iw-currsplit">
-                    {byCurrency.map(([cur, amount]) => (
+                    {kpi.split.map(([cur, amount]) => (
                       <b key={cur}>{formatCurrency(amount, cur)}</b>
                     ))}
                   </span>
