@@ -166,9 +166,16 @@ export const Dashboard = () => {
   const staleBefore = Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000;
   const attention: Array<{
     inv: Invoice;
-    kind: 'overdue' | 'no-date' | 'stale';
+    kind: 'claimed' | 'overdue' | 'no-date' | 'stale';
     text: string;
   }> = [
+    ...allInvoices
+      .filter((inv) => inv.status === 'awaiting')
+      .map((inv) => ({
+        inv,
+        kind: 'claimed' as const,
+        text: `${inv.client.name} says they sent ${formatCurrency(inv.total, inv.currency)}`,
+      })),
     ...allInvoices
       .filter((inv) => inv.status === 'overdue')
       .map((inv) => ({
@@ -434,7 +441,13 @@ export const Dashboard = () => {
                   <p>{text}</p>
                   <small>#{inv.invoiceNumber}</small>
                   <button type="button" className="iw-attn-go" onClick={() => openView(inv.id)}>
-                    {kind === 'no-date' ? 'Record' : kind === 'stale' ? 'Finish' : 'Open'}
+                    {kind === 'no-date'
+                      ? 'Record'
+                      : kind === 'stale'
+                        ? 'Finish'
+                        : kind === 'claimed'
+                          ? 'Confirm'
+                          : 'Open'}
                     <i className="bx bx-right-arrow-alt" />
                   </button>
                 </li>

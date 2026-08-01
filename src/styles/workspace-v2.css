@@ -4972,3 +4972,9 @@
   color: var(--warn);
   border-color: rgba(185, 125, 16, 0.4);
 }
+
+/* a client waiting on your confirmation is the most urgent row there is */
+.iw .iw-attn-icon.is-claimed {
+  background: rgba(185, 125, 16, 0.14);
+  color: var(--warn);
+}
