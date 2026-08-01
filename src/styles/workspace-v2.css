@@ -4923,3 +4923,52 @@
 .pay-wait-steps span.now i {
   animation: iw-spin 1.6s linear infinite;
 }
+
+/* ---- a reported transfer, waiting on you to confirm ---- */
+.iw .iw-claim {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(185, 125, 16, 0.07);
+  border: 1px dashed rgba(185, 125, 16, 0.45);
+}
+.iw .iw-claim-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.iw .iw-claim-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(185, 125, 16, 0.16);
+  color: var(--warn);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.iw .iw-claim-head b {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.iw .iw-claim-head small {
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+}
+.iw .iw-claim-copy {
+  margin: 12px 0 14px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.iw .iw-claim-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.iw .iw-trail .is-claimed i {
+  color: var(--warn);
+  border-color: rgba(185, 125, 16, 0.4);
+}

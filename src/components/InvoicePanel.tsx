@@ -22,6 +22,7 @@ import { sendInvoiceEmail } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
 import { isPaid } from '@/utils/invoiceStatus';
+import type { PaymentRoute } from '@/types';
 import type { Invoice } from '@/types';
 
 interface DraftItem {
@@ -69,6 +70,7 @@ export const InvoicePanel = () => {
   const [dueDate, setDueDate] = useState('');
   const [vatEnabled, setVatEnabled] = useState(true);
   const [whtExpected, setWhtExpected] = useState(false);
+  const [paymentRoute, setPaymentRoute] = useState<PaymentRoute | ''>('');
   const [terms, setTerms] = useState('Payment due within 14 days');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
@@ -99,6 +101,7 @@ export const InvoicePanel = () => {
       // onboarding answers set the defaults; every invoice can still differ
       setVatEnabled(profile.vatRegistered ?? true);
       setWhtExpected(profile.whtUsual ?? false);
+      setPaymentRoute('');
       setTerms('Payment due within 14 days');
       setNotes('');
       setItems([{ ...emptyItem }]);
@@ -111,6 +114,7 @@ export const InvoicePanel = () => {
       setDueDate(invoice.dueDate ? invoice.dueDate.slice(0, 10) : '');
       setVatEnabled(invoice.vatEnabled ?? invoice.taxRate > 0);
       setWhtExpected(invoice.whtExpected ?? false);
+      setPaymentRoute(invoice.paymentRoute ?? '');
       setTerms(invoice.terms ?? '');
       setNotes(invoice.notes ?? '');
       setItems(
@@ -194,6 +198,7 @@ export const InvoicePanel = () => {
     taxRate,
     vatEnabled,
     whtExpected,
+    ...(paymentRoute ? { paymentRoute } : {}),
     notes,
     terms,
     items: items.map((it) => ({
@@ -461,7 +466,7 @@ export const InvoicePanel = () => {
                   </button>
                 </div>
                 <div className="ipanel-body">
-                  {invoice && (invoice.sends?.length || invoice.viewedAt || invoice.dateReceived) ? (
+                  {invoice && (invoice.sends?.length || invoice.viewedAt || invoice.claimedAt || invoice.dateReceived) ? (
                     <ol className="iw-trail" aria-label="Invoice history">
                       {invoice.sends?.map((s, i) => (
                         <li key={`send-${i}`} className="is-sent">
@@ -484,6 +489,18 @@ export const InvoicePanel = () => {
                           <div>
                             <b>Opened by {invoice.client?.name ?? 'the client'}</b>
                             <small>{formatWhen(invoice.viewedAt)}</small>
+                          </div>
+                        </li>
+                      )}
+                      {invoice.claimedAt && (
+                        <li className="is-claimed">
+                          <i className="bx bx-time-five" aria-hidden="true" />
+                          <div>
+                            <b>{invoice.client?.name ?? 'The client'} reported a transfer</b>
+                            <small>
+                              {formatWhen(invoice.claimedAt)}
+                              {invoice.claimReference ? ` · ref ${invoice.claimReference}` : ''}
+                            </small>
                           </div>
                         </li>
                       )}
@@ -518,6 +535,45 @@ export const InvoicePanel = () => {
                       )}
                     </ol>
                   ) : null}
+                  {invoice?.status === 'awaiting' && (
+                    <div className="iw-claim">
+                      <div className="iw-claim-head">
+                        <span className="iw-claim-icon">
+                          <i className="bx bx-time-five" />
+                        </span>
+                        <div>
+                          <b>{invoice.client?.name ?? 'Your client'} says they sent this</b>
+                          <small>
+                            Reported{' '}
+                            {invoice.claimedAt ? formatWhen(invoice.claimedAt) : 'recently'}
+                            {invoice.claimReference ? ` · ref ${invoice.claimReference}` : ''}
+                          </small>
+                        </div>
+                      </div>
+                      <p className="iw-claim-copy">
+                        Nothing is recorded until you have seen the money. Check the
+                        account, then confirm what actually landed.
+                      </p>
+                      <div className="iw-claim-actions">
+                        <button type="button" className="iw-btn" onClick={openPaidDialog}>
+                          <i className="bx bx-check-circle" /> It landed, record it
+                        </button>
+                        <button
+                          type="button"
+                          className="iw-btn iw-btn--ghost"
+                          onClick={() =>
+                            updateInvoice.mutate(
+                              { id: invoice.id, data: { status: 'sent' } },
+                              { onSuccess: () => toast.info('Marked as still unpaid') }
+                            )
+                          }
+                        >
+                          Not yet
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {invoice &&
                     !invoice.client?.id &&
                     isPaid(invoice.status) && (
@@ -669,6 +725,31 @@ export const InvoicePanel = () => {
                       </p>
                     </div>
                   )}
+
+                  <label className="cinv-field cinv-field--mt">
+                    <span>How they pay</span>
+                    <select
+                      value={paymentRoute}
+                      onChange={(e) => setPaymentRoute(e.target.value as PaymentRoute | '')}
+                    >
+                      <option value="">
+                        My default for {currency}
+                        {profile.routeByCurrency?.[currency]
+                          ? ` (${profile.routeByCurrency[currency]})`
+                          : ''}
+                      </option>
+                      <option value="instant">Instant only</option>
+                      <option value="transfer">Transfer to my account</option>
+                      <option value="both">Let them choose</option>
+                    </select>
+                    {(paymentRoute === 'transfer' || paymentRoute === 'both') &&
+                      !(profile.receivingAccounts ?? []).some((a) => a.currency === currency) && (
+                        <small className="field-error">
+                          No {currency} account saved yet, so instant will be offered
+                          instead. Add one under Settings, Getting paid.
+                        </small>
+                      )}
+                  </label>
 
                   <div className="iw-toggles">
                     <label className="iw-toggle">
