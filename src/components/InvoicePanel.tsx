@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { ReceiptDocument } from '@/components/ReceiptDocument';
+import { Confetti } from '@/components/Confetti';
 import type { InvoiceDocData } from '@/components/InvoiceDocument';
 import { Modal } from '@/components/Modal';
 import {
@@ -128,6 +129,8 @@ export const InvoicePanel = () => {
 
   // The three answers that make a payment tax-grade.
   const [paidOpen, setPaidOpen] = useState(false);
+  // money landing is the whole point of the product, so it gets a burst
+  const [celebrate, setCelebrate] = useState(0);
   const [payDate, setPayDate] = useState('');
   const [payAmount, setPayAmount] = useState('');
   const [payWht, setPayWht] = useState('');
@@ -286,6 +289,8 @@ export const InvoicePanel = () => {
       {
         onSuccess: () => {
           setPaidOpen(false);
+          setCelebrate((n) => n + 1);
+          window.setTimeout(() => setCelebrate(0), 4200);
           toast.success('Payment recorded, receipt on its way');
         },
       }
@@ -437,6 +442,7 @@ export const InvoicePanel = () => {
 
   return (
     <>
+      {celebrate > 0 && <Confetti count={54} burstKey={celebrate} />}
       <button
         type="button"
         className={`ipanel-scrim${open ? ' open' : ''}`}

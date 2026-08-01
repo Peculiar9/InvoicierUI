@@ -13,7 +13,9 @@ import { Line } from 'react-chartjs-2';
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
+import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
+import { CountUp } from '@/components/CountUp';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
@@ -239,31 +241,39 @@ export const Dashboard = () => {
           ) / paidWithDates.length
         );
 
+  // each figure counts itself up, so a payment reads as movement not a swap
+  const money = (n: number) => formatCurrency(n);
+  const whole = (n: number) => formatNumber(Math.round(n));
+
   const kpis = [
     {
       label: 'Collected',
-      value: formatCurrency(collected),
+      amount: collected,
+      format: money,
       sub: `received ${periodSub}, cash basis`,
       icon: 'bx-wallet',
       tone: 'green',
     },
     {
       label: 'Outstanding',
-      value: formatCurrency(outstanding),
+      amount: outstanding,
+      format: money,
       sub: `${stats.overdueInvoices} overdue`,
       icon: 'bx-time-five',
       tone: 'amber',
     },
     {
       label: 'Invoices',
-      value: formatNumber(issuedInPeriod),
+      amount: issuedInPeriod,
+      format: whole,
       sub: `issued ${periodSub}, ${stats.pendingInvoices} pending`,
       icon: 'bx-receipt',
       tone: 'purple',
     },
     {
       label: 'Clients',
-      value: formatNumber(stats.totalClients),
+      amount: stats.totalClients,
+      format: whole,
       sub: 'active',
       icon: 'bx-group',
       tone: 'blue',
@@ -396,7 +406,9 @@ export const Dashboard = () => {
               </span>
               <div className="dash-kpi-body">
                 <span className="dash-kpi-label">{kpi.label}</span>
-                <span className="dash-kpi-value">{kpi.value}</span>
+                <span className="dash-kpi-value">
+                  <CountUp value={kpi.amount} format={kpi.format} />
+                </span>
                 <span className="dash-kpi-sub">{kpi.sub}</span>
                 {kpi.label === 'Collected' && byCurrency.length > 1 && (
                   <span className="iw-currsplit">
@@ -476,7 +488,9 @@ export const Dashboard = () => {
               <h2>Revenue</h2>
               <p>Last 6 months</p>
             </div>
-            <span className="dash-card-figure">{formatCurrency(stats.totalReceived)}</span>
+            <span className="dash-card-figure">
+              <CountUp value={stats.totalReceived} format={money} />
+            </span>
           </header>
           <div className="dash-chart">
             <Line data={revenueData} options={revenueOptions} />
@@ -516,10 +530,11 @@ export const Dashboard = () => {
                       </td>
                     </tr>
                   )}
-                  {recentInvoices.map((inv: Invoice) => (
+                  {recentInvoices.map((inv: Invoice, i: number) => (
                     <tr
                       key={inv.id}
                       className="dash-row-click"
+                      style={{ '--i': i } as CSSProperties}
                       onClick={() => openView(inv.id)}
                     >
                       <td className="dash-mono">#{inv.invoiceNumber}</td>

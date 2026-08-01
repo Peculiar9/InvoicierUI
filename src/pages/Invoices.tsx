@@ -5,6 +5,7 @@ import { SwipeScroll } from '@/components/SwipeScroll';
 import { DateRange } from '@/components/DateRange';
 import { EMPTY_RANGE, inDateRange } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
+import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
@@ -282,8 +283,9 @@ export const Invoices = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {paged.map((inv) => (
+                  {paged.map((inv, i) => (
                     <tr
+                      style={{ '--i': i } as CSSProperties}
                       key={inv.id}
                       className="dash-row-click"
                       onClick={() => openView(inv.id)}
