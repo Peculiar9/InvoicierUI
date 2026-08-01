@@ -5288,11 +5288,11 @@
   color: var(--iw-ink-3, #6b7280);
 }
 
-/* the burst sits above the panel, and is never in the way */
+/* the burst sits above the panel and its rail, and is never in the way */
 .iw .ob-confetti,
 .ob-confetti {
   pointer-events: none;
-  z-index: 999;
+  z-index: 1700;
 }
 
 /* rows arrive in sequence rather than all at once */
