@@ -3,12 +3,13 @@ import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { useInvoice, useMarkInvoicePaid } from '@/hooks';
 import { invoicesApi } from '@/api/invoices';
+import { resolveRoutes, PROVIDER_LABELS } from '@/utils/paymentRoutes';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice } from '@/types';
 
-type Stage = 'review' | 'method' | 'processing' | 'done';
+type Stage = 'review' | 'method' | 'processing' | 'done' | 'reported';
 
 /** How the money can arrive, by currency. NGN is instant; the rest are transfers. */
 const methodsFor = (currency: string) =>
@@ -37,6 +38,18 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
   const [method, setMethod] = useState('');
   const [payerEmail, setPayerEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [reference, setReference] = useState('');
+  const [copied, setCopied] = useState('');
+
+  const copy = (label: string, value: string) => {
+    navigator.clipboard?.writeText(value).then(
+      () => {
+        setCopied(label);
+        setTimeout(() => setCopied(''), 1600);
+      },
+      () => {}
+    );
+  };
 
   // a settled invoice opens straight on the receipt
   const invoiceStatus = invoice?.status;
@@ -82,7 +95,27 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
     );
   };
 
+  const reportTransfer = (inv: Invoice) => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail.trim())) {
+      setEmailError('We need an address to send your receipt to');
+      return;
+    }
+    setStage('processing');
+    invoicesApi
+      .claimPayment(inv.id, {
+        reference: reference.trim(),
+        payerEmail: payerEmail.trim(),
+      })
+      .then(() => setTimeout(() => setStage('reported'), 900))
+      .catch(() => setStage('method'));
+  };
+
   const senderName = profile.name || 'Your supplier';
+  // what this invoice actually offers: its own choice, then the sender's
+  // default for the currency
+  const routes = invoice
+    ? resolveRoutes(invoice, profile)
+    : { instant: true, transfer: false, account: null };
 
   return (
     <section className="pay-page">
@@ -120,14 +153,27 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
             {/* where the payer is in the flow */}
             <ol className="pay-steps" aria-label="Payment steps">
               {(['review', 'method', 'done'] as const).map((key, i) => {
-                const order: Stage[] = ['review', 'method', 'processing', 'done'];
+                const order: Stage[] = ['review', 'method', 'processing', 'reported', 'done'];
                 const at = order.indexOf(stage);
                 const mine = order.indexOf(key === 'done' ? 'done' : key);
-                const state = at > mine ? 'done' : at === mine || (key === 'method' && stage === 'processing') ? 'now' : '';
+                const state =
+                  at > mine
+                    ? 'done'
+                    : at === mine ||
+                        (key === 'method' && stage === 'processing') ||
+                        (key === 'done' && stage === 'reported')
+                      ? 'now'
+                      : '';
                 return (
                   <li key={key} className={state}>
                     <span>{i + 1}</span>
-                    {key === 'review' ? 'Review' : key === 'method' ? 'Pay' : 'Receipt'}
+                    {key === 'review'
+                      ? 'Review'
+                      : key === 'method'
+                        ? 'Pay'
+                        : routes.transfer
+                          ? 'Confirm'
+                          : 'Receipt'}
                   </li>
                 );
               })}
@@ -182,6 +228,7 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
                       {formatCurrency(invoice.total, invoice.currency)}
                     </strong>
 
+                    {!routes.transfer && (
                     <div className="pay-methods">
                       {methodsFor(invoice.currency).map((m) => (
                         <button
@@ -200,6 +247,65 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
                         </button>
                       ))}
                     </div>
+                    )}
+
+                    {routes.transfer && routes.account && (
+                      <div className="pay-transfer">
+                        <div className="pay-transfer-head">
+                          <span className="pay-transfer-tag">
+                            {PROVIDER_LABELS[routes.account.provider] ?? 'Transfer'}
+                          </span>
+                          <b>Send {formatCurrency(invoice.total, invoice.currency)} to</b>
+                        </div>
+                        <dl className="pay-transfer-rows">
+                          {[
+                            ['Account name', routes.account.accountName],
+                            [
+                              routes.account.provider === 'paypal' ? 'PayPal email' : 'Account number',
+                              routes.account.accountNumber,
+                            ],
+                            ['Bank', routes.account.bankName],
+                            ['Routing / sort code', routes.account.routingNumber],
+                            ['SWIFT / BIC', routes.account.swift],
+                            ['Reference', invoice.invoiceNumber],
+                          ]
+                            .filter(([, v]) => Boolean(v))
+                            .map(([label, value]) => (
+                              <div key={label as string}>
+                                <dt>{label}</dt>
+                                <dd>
+                                  <span>{value}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => copy(label as string, String(value))}
+                                    aria-label={`Copy ${label}`}
+                                  >
+                                    <i
+                                      className={`bx ${
+                                        copied === label ? 'bx-check' : 'bx-copy'
+                                      }`}
+                                    />
+                                  </button>
+                                </dd>
+                              </div>
+                            ))}
+                        </dl>
+                        {routes.account.instructions && (
+                          <p className="pay-transfer-note">
+                            <i className="bx bx-info-circle" />
+                            {routes.account.instructions}
+                          </p>
+                        )}
+                        <label className="pay-field">
+                          <span>Your transfer reference (optional)</span>
+                          <input
+                            value={reference}
+                            onChange={(e) => setReference(e.target.value)}
+                            placeholder="The reference your bank gave you"
+                          />
+                        </label>
+                      </div>
+                    )}
 
                     <label className="pay-field">
                       <span>Send my receipt to</span>
@@ -216,24 +322,77 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
                       {emailError && <small className="pay-error">{emailError}</small>}
                     </label>
 
-                    <button
-                      type="button"
-                      className="pay-btn pay-btn--primary pay-btn--block"
-                      disabled={!method || stage === 'processing'}
-                      onClick={() => pay(invoice)}
-                    >
-                      {stage === 'processing' ? (
-                        <>
-                          <span className="iw-spin" aria-hidden="true" />
-                          Confirming payment
-                        </>
-                      ) : (
-                        <>
-                          <i className="bx bx-lock-alt" /> Pay{' '}
-                          {formatCurrency(invoice.total, invoice.currency)}
-                        </>
-                      )}
-                    </button>
+                    {routes.transfer && routes.account ? (
+                      <button
+                        type="button"
+                        className="pay-btn pay-btn--primary pay-btn--block"
+                        disabled={stage === 'processing'}
+                        onClick={() => reportTransfer(invoice)}
+                      >
+                        {stage === 'processing' ? (
+                          <>
+                            <span className="iw-spin" aria-hidden="true" />
+                            Letting them know
+                          </>
+                        ) : (
+                          <>
+                            <i className="bx bx-check" /> I have sent the transfer
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="pay-btn pay-btn--primary pay-btn--block"
+                        disabled={!method || stage === 'processing'}
+                        onClick={() => pay(invoice)}
+                      >
+                        {stage === 'processing' ? (
+                          <>
+                            <span className="iw-spin" aria-hidden="true" />
+                            Confirming payment
+                          </>
+                        ) : (
+                          <>
+                            <i className="bx bx-lock-alt" /> Pay{' '}
+                            {formatCurrency(invoice.total, invoice.currency)}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {stage === 'reported' && (
+                  <div className="pay-card pay-card--waiting">
+                    <span className="pay-wait-icon" aria-hidden="true">
+                      <i className="bx bx-time-five" />
+                    </span>
+                    <h2>Transfer reported</h2>
+                    <p className="pay-done-amount">
+                      You told {senderName} you sent{' '}
+                      {formatCurrency(invoice.total, invoice.currency)}
+                    </p>
+                    <p className="pay-wait-copy">
+                      Bank transfers take a moment to arrive. {senderName} will
+                      confirm once the money lands, and your receipt goes out the
+                      same minute.
+                    </p>
+                    <div className="pay-wait-steps" aria-hidden="true">
+                      <span className="done">
+                        <i className="bx bx-check" /> You sent it
+                      </span>
+                      <span className="now">
+                        <i className="bx bx-loader-alt" /> Money in transit
+                      </span>
+                      <span>
+                        <i className="bx bx-receipt" /> Receipt issued
+                      </span>
+                    </div>
+                    <p className="pay-reassure">
+                      <i className="bx bx-envelope" />
+                      We will email {payerEmail || 'you'} the moment it is confirmed
+                    </p>
                   </div>
                 )}
 
