@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import type { PaymentRoute, ReceivingAccount } from '@/types';
 
 export type Persona = 'freelancer' | 'studio' | 'specialist' | 'collector';
 export type InvoiceTemplate = 'classic' | 'ledger' | 'bold';
@@ -18,6 +19,11 @@ export interface BusinessProfile {
   persona?: Persona;
   /** invoice document layout, chosen in onboarding, changeable in settings */
   template?: InvoiceTemplate;
+  /* ---- getting paid ---- */
+  /** accounts a client can send money straight into */
+  receivingAccounts?: ReceivingAccount[];
+  /** the default route per currency, e.g. NGN instant, USD transfer */
+  routeByCurrency?: Record<string, PaymentRoute>;
   /* ---- tax posture: sets the invoice form defaults ---- */
   vatRegistered?: boolean;
   whtUsual?: boolean;
@@ -39,6 +45,10 @@ const defaultProfile: BusinessProfile = {
   currency: 'NGN',
   brandColor: '#924ee9',
   template: 'classic',
+  receivingAccounts: [],
+  // naira settles itself through Paystack; foreign currency lands in an
+  // account you own, so it starts as a transfer you confirm
+  routeByCurrency: { NGN: 'instant', USD: 'transfer', EUR: 'transfer', GBP: 'transfer' },
   vatRegistered: true,
   whtUsual: false,
 };

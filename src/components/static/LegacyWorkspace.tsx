@@ -14,6 +14,7 @@ const activityIcon: Record<Activity['type'], string> = {
   invoice_created: 'bx-plus-circle',
   invoice_sent: 'bx-send',
   invoice_viewed: 'bx-show',
+  invoice_claimed: 'bx-hourglass',
   invoice_paid: 'bx-check-circle',
   client_added: 'bx-user-plus',
 };

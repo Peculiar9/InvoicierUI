@@ -82,6 +82,16 @@ export interface Invoice {
   /** Receipts get their own identity, not the invoice number. */
   receiptNumber?: string;
   receiptedAt?: string;
+
+  /* ---- how this one is meant to be paid ---- */
+  /** Overrides the sender's default for this invoice only. */
+  paymentRoute?: PaymentRoute;
+  /** Which of the sender's accounts to show for a transfer. */
+  receivingAccountId?: string;
+  /** The payer said they sent it: when, and what reference they quoted. */
+  claimedAt?: string;
+  claimReference?: string;
+  claimNote?: string;
 }
 
 /**
@@ -94,10 +104,45 @@ export type InvoiceStatus =
   | 'pending'
   | 'sent'
   | 'viewed'
+  /** the payer says they transferred; the money is not confirmed yet */
+  | 'awaiting'
   | 'paid'
   | 'receipted'
   | 'overdue'
   | 'cancelled';
+
+/**
+ * How the money can reach you.
+ * 'instant' settles itself (Paystack today); 'transfer' means the client
+ * moves money to an account you own (Grey, Fincra, a dom account), which
+ * only you can confirm has landed.
+ */
+export type PaymentRoute = 'instant' | 'transfer' | 'both';
+
+export type AccountProvider =
+  | 'grey'
+  | 'fincra'
+  | 'dom'
+  | 'bank'
+  | 'wise'
+  | 'paypal'
+  | 'other';
+
+/** An account a client can send money straight into. */
+export interface ReceivingAccount {
+  id: string;
+  label: string;
+  provider: AccountProvider;
+  currency: string;
+  accountName: string;
+  accountNumber?: string;
+  bankName?: string;
+  routingNumber?: string;
+  swift?: string;
+  iban?: string;
+  /** anything the payer needs to be told, e.g. a reference to quote */
+  instructions?: string;
+}
 
 /** One delivery of an invoice: how it went out, and when. */
 export interface InvoiceSend {
@@ -135,6 +180,7 @@ export interface Activity {
     | 'invoice_created'
     | 'invoice_sent'
     | 'invoice_viewed'
+    | 'invoice_claimed'
     | 'invoice_paid'
     | 'client_added';
   description: string;
@@ -191,6 +237,8 @@ export interface CreateInvoiceDto {
   taxRate?: number;
   vatEnabled?: boolean;
   whtExpected?: boolean;
+  paymentRoute?: PaymentRoute;
+  receivingAccountId?: string;
 }
 
 export interface UpdateInvoiceDto extends Partial<CreateInvoiceDto> {

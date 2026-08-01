@@ -4610,3 +4610,9 @@
     margin-left: auto;
   }
 }
+
+/* money the payer says they sent, not yet confirmed by you */
+.iw .dash-badge.is-awaiting {
+  background: rgba(185, 125, 16, 0.14);
+  color: var(--warn);
+}

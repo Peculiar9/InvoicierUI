@@ -130,6 +130,8 @@ export const handlers = [
       terms: body.terms as string | undefined,
       vatEnabled: Boolean(body.vatEnabled),
       whtExpected: Boolean(body.whtExpected),
+      paymentRoute: body.paymentRoute as Invoice['paymentRoute'],
+      receivingAccountId: body.receivingAccountId as string | undefined,
       createdAt: now,
       updatedAt: now,
     };
@@ -166,6 +168,12 @@ export const handlers = [
     if (typeof body.taxRate === 'number') invoice.taxRate = body.taxRate;
     if (typeof body.vatEnabled === 'boolean') invoice.vatEnabled = body.vatEnabled;
     if (typeof body.whtExpected === 'boolean') invoice.whtExpected = body.whtExpected;
+    if (typeof body.paymentRoute === 'string') {
+      invoice.paymentRoute = body.paymentRoute as Invoice['paymentRoute'];
+    }
+    if (typeof body.receivingAccountId === 'string') {
+      invoice.receivingAccountId = body.receivingAccountId;
+    }
 
     if (Array.isArray(body.items)) {
       invoice.items = (body.items as Array<Record<string, unknown>>).map((it, idx) => {
@@ -219,6 +227,31 @@ export const handlers = [
       saveDb();
     }
     return ok(invoice as Invoice, 'Invoice sent');
+  }),
+
+  // the payer says they transferred the money. This is a claim, not a
+  // payment: it never touches the ledger, because only the account holder
+  // can see whether it actually arrived.
+  http.post('*/api/invoices/:id/payment-claimed', async ({ params, request }) => {
+    const invoice = invoices.find((i) => i.id === params.id);
+    if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    const settled = ['paid', 'receipted', 'cancelled'];
+    if (!settled.includes(invoice.status)) {
+      invoice.status = 'awaiting';
+      invoice.claimedAt = new Date().toISOString();
+      invoice.claimReference = (body?.reference as string)?.trim() || undefined;
+      invoice.claimNote = (body?.note as string)?.trim() || undefined;
+      if (typeof body?.payerEmail === 'string') invoice.payerEmail = body.payerEmail.trim();
+      invoice.updatedAt = new Date().toISOString();
+      logActivity(
+        'invoice_claimed',
+        `${invoice.client?.name ?? 'A client'} says they sent payment`,
+        { invoiceId: invoice.id }
+      );
+      saveDb();
+    }
+    return ok(invoice as Invoice, 'Transfer reported');
   }),
 
   // the client opened the payment link: first open wins, and it never

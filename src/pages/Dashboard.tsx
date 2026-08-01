@@ -74,6 +74,7 @@ const statusLabel: Record<InvoiceStatus, string> = {
   pending: 'Pending',
   sent: 'Sent',
   viewed: 'Viewed',
+  awaiting: 'Awaiting confirmation',
   paid: 'Paid',
   receipted: 'Receipted',
   overdue: 'Overdue',
