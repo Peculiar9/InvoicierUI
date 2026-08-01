@@ -4616,3 +4616,156 @@
   background: rgba(185, 125, 16, 0.14);
   color: var(--warn);
 }
+
+/* ============================================================================
+   GETTING PAID — the accounts clients send money into
+   ========================================================================== */
+
+.iw .iw-acct-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0;
+}
+.iw .iw-acct {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.iw .iw-acct-badge {
+  display: grid;
+  place-items: center;
+  min-width: 46px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.iw .iw-acct-info {
+  min-width: 0;
+  flex: 1;
+}
+.iw .iw-acct-info b {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.iw .iw-acct-info small {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+.iw .iw-acct-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.iw .iw-acct-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1.5px dashed var(--border);
+  border-radius: 14px;
+  color: var(--ink-soft);
+}
+.iw .iw-acct-empty i {
+  font-size: 1.5rem;
+  color: var(--brand-600);
+}
+.iw .iw-acct-empty b {
+  display: block;
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+.iw .iw-acct-empty small {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+/* per-currency default route */
+.iw .iw-routes {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+}
+.iw .iw-routes li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.iw .iw-routes-cur {
+  min-width: 46px;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .iw-routes-pick {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.iw .iw-routes-pick button {
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.iw .iw-routes-pick button.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+.iw .iw-routes-warn {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.73rem;
+  color: var(--warn);
+}
+@media (max-width: 640px) {
+  .iw .iw-routes-pick {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .iw .iw-routes-pick button {
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 0.72rem;
+  }
+  .iw .iw-acct {
+    flex-wrap: wrap;
+  }
+  .iw .iw-acct-actions {
+    width: 100%;
+  }
+  .iw .iw-acct-actions .btn {
+    flex: 1;
+  }
+}

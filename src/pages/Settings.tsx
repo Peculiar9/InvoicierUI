@@ -6,6 +6,8 @@ import { useInvoices } from '@/hooks';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { usePayoutStore } from '@/stores/payoutStore';
 import type { PayoutSchedule, PayoutType, PayoutMethod } from '@/stores/payoutStore';
+import { PROVIDER_LABELS } from '@/utils/paymentRoutes';
+import type { AccountProvider, PaymentRoute, ReceivingAccount } from '@/types';
 import { isPaid } from '@/utils/invoiceStatus';
 import { formatCurrency, formatDate } from '@/utils/format';
 import {
@@ -26,6 +28,26 @@ interface MethodForm {
   accountNumber: string;
   email: string;
 }
+
+const emptyAccount: ReceivingAccount = {
+  id: '',
+  label: '',
+  provider: 'grey',
+  currency: 'USD',
+  accountName: '',
+  accountNumber: '',
+  bankName: '',
+  routingNumber: '',
+  swift: '',
+  iban: '',
+  instructions: '',
+};
+
+const ROUTE_CHOICES: { key: PaymentRoute; label: string; hint: string }[] = [
+  { key: 'instant', label: 'Instant', hint: 'Card or transfer, confirmed automatically' },
+  { key: 'transfer', label: 'Transfer to me', hint: 'They send to your account, you confirm' },
+  { key: 'both', label: 'Let them choose', hint: 'Offer both on the invoice' },
+];
 
 const emptyMethodForm: MethodForm = {
   type: 'bank',
@@ -62,7 +84,7 @@ export const Settings = () => {
   const { data } = useInvoices();
   const invoices = data?.data ?? [];
 
-  const [tab, setTab] = useState<'profile' | 'payouts'>('profile');
+  const [tab, setTab] = useState<'profile' | 'paid' | 'payouts'>('profile');
   const [form, setForm] = useState(profile);
   const [profileErrors, setProfileErrors] = useState<{
     name?: string;
@@ -75,6 +97,56 @@ export const Settings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [methodForm, setMethodForm] = useState<MethodForm>(emptyMethodForm);
   const [methodErrors, setMethodErrors] = useState<Partial<Record<keyof MethodForm, string>>>({});
+
+  // receiving accounts: where clients send money directly
+  const accounts = profile.receivingAccounts ?? [];
+  const [acctOpen, setAcctOpen] = useState(false);
+  const [acctEditingId, setAcctEditingId] = useState<string | null>(null);
+  const [acctForm, setAcctForm] = useState<ReceivingAccount>(emptyAccount);
+  const [acctErrors, setAcctErrors] = useState<Record<string, string>>({});
+
+  const openAddAccount = () => {
+    setAcctEditingId(null);
+    setAcctForm({ ...emptyAccount, currency: profile.currency || 'USD' });
+    setAcctErrors({});
+    setAcctOpen(true);
+  };
+  const openEditAccount = (a: ReceivingAccount) => {
+    setAcctEditingId(a.id);
+    setAcctForm(a);
+    setAcctErrors({});
+    setAcctOpen(true);
+  };
+  const saveAccount = () => {
+    const errs: Record<string, string> = {};
+    if (!isFilled(acctForm.label)) errs.label = 'Give this account a name';
+    if (!isFilled(acctForm.accountName)) errs.accountName = 'Required';
+    if (!isFilled(acctForm.currency)) errs.currency = 'Required';
+    if (acctForm.provider === 'paypal') {
+      if (!isEmail(acctForm.accountNumber ?? '')) errs.accountNumber = 'Enter the PayPal email';
+    } else if (!isFilled(acctForm.accountNumber ?? '')) {
+      errs.accountNumber = 'Required';
+    }
+    setAcctErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    const next = acctEditingId
+      ? accounts.map((a) => (a.id === acctEditingId ? { ...acctForm, id: acctEditingId } : a))
+      : [...accounts, { ...acctForm, id: `rcv_${Date.now()}` }];
+    setProfile({ receivingAccounts: next });
+    toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
+    setAcctOpen(false);
+  };
+  const removeAccount = (a: ReceivingAccount) => {
+    if (!window.confirm(`Remove “${a.label}”? Clients will stop seeing these details.`)) return;
+    setProfile({ receivingAccounts: accounts.filter((x) => x.id !== a.id) });
+    toast.info('Account removed');
+  };
+  const setRoute = (currency: string, route: PaymentRoute) => {
+    setProfile({
+      routeByCurrency: { ...(profile.routeByCurrency ?? {}), [currency]: route },
+    });
+  };
 
   // withdraw
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -211,6 +283,13 @@ export const Settings = () => {
           >
             Business profile
           </button>
+          <button
+            type="button"
+            className={tab === 'paid' ? 'active' : ''}
+            onClick={() => setTab('paid')}
+          >
+            Getting paid
+          </button>
         </div>
 
         {tab === 'profile' && (
@@ -308,6 +387,106 @@ export const Settings = () => {
               }}
             />
           </div>
+        )}
+
+        {tab === 'paid' && (
+          <>
+            <div className="dash-card">
+              <h3 className="cinv-section-title">Where clients send money</h3>
+              <p className="dash-muted settings-lead">
+                Add the accounts you already get paid into. Invoicier never
+                touches this money, it just shows your client the right details
+                and waits for you to confirm it landed.
+              </p>
+
+              {accounts.length === 0 ? (
+                <div className="iw-acct-empty">
+                  <i className="bx bx-wallet" aria-hidden="true" />
+                  <div>
+                    <b>No accounts yet</b>
+                    <small>
+                      Grey, Fincra, a domiciliary account, anywhere your money
+                      already arrives.
+                    </small>
+                  </div>
+                </div>
+              ) : (
+                <ul className="iw-acct-list">
+                  {accounts.map((a) => (
+                    <li key={a.id} className="iw-acct">
+                      <span className="iw-acct-badge">{a.currency}</span>
+                      <div className="iw-acct-info">
+                        <b>{a.label}</b>
+                        <small>
+                          {PROVIDER_LABELS[a.provider] ?? a.provider}
+                          {a.accountNumber ? ` · ${maskAccount(a.accountNumber) || a.accountNumber}` : ''}
+                        </small>
+                      </div>
+                      <div className="iw-acct-actions">
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => openEditAccount(a)}
+                        >
+                          <i className="bx bx-pencil" /> Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={() => removeAccount(a)}
+                        >
+                          <i className="bx bx-trash" />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <button type="button" className="iw-btn" onClick={openAddAccount}>
+                <i className="bx bx-plus" /> Add an account
+              </button>
+            </div>
+
+            <div className="dash-card">
+              <h3 className="cinv-section-title">How each currency gets paid</h3>
+              <p className="dash-muted settings-lead">
+                The default for new invoices. You can still change it on any
+                single invoice before you send it.
+              </p>
+              <ul className="iw-routes">
+                {['NGN', 'USD', 'EUR', 'GBP'].map((cur) => {
+                  const active =
+                    profile.routeByCurrency?.[cur] ?? (cur === 'NGN' ? 'instant' : 'transfer');
+                  const hasAccount = accounts.some((a) => a.currency === cur);
+                  return (
+                    <li key={cur}>
+                      <span className="iw-routes-cur">{cur}</span>
+                      <div className="iw-routes-pick">
+                        {ROUTE_CHOICES.map((c) => (
+                          <button
+                            key={c.key}
+                            type="button"
+                            title={c.hint}
+                            className={active === c.key ? 'active' : ''}
+                            onClick={() => setRoute(cur, c.key)}
+                          >
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
+                      {!hasAccount && active !== 'instant' && (
+                        <small className="iw-routes-warn">
+                          <i className="bx bx-error-circle" /> No {cur} account yet, so
+                          instant is offered instead
+                        </small>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </>
         )}
 
         {tab === 'payouts' && (
@@ -558,6 +737,132 @@ export const Settings = () => {
       </Modal>
 
       {/* withdraw */}
+      <Modal
+        open={acctOpen}
+        onClose={() => setAcctOpen(false)}
+        title={acctEditingId ? 'Edit account' : 'Add an account'}
+      >
+        <div className="cinv-fields cinv-fields--stack">
+          <div className="iw-paid-grid">
+            <label className="cinv-field">
+              <span>Provider</span>
+              <select
+                value={acctForm.provider}
+                onChange={(e) =>
+                  setAcctForm({ ...acctForm, provider: e.target.value as AccountProvider })
+                }
+              >
+                {Object.entries(PROVIDER_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="cinv-field">
+              <span>Currency</span>
+              <select
+                value={acctForm.currency}
+                onChange={(e) => setAcctForm({ ...acctForm, currency: e.target.value })}
+              >
+                {['NGN', 'USD', 'EUR', 'GBP'].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="cinv-field">
+            <span>Name it</span>
+            <input
+              value={acctForm.label}
+              placeholder="Grey USD"
+              className={acctErrors.label ? 'is-invalid' : ''}
+              onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+            />
+            {acctErrors.label && <small className="field-error">{acctErrors.label}</small>}
+          </label>
+
+          <label className="cinv-field">
+            <span>Account name</span>
+            <input
+              value={acctForm.accountName}
+              placeholder="Ada Obi"
+              className={acctErrors.accountName ? 'is-invalid' : ''}
+              onChange={(e) => setAcctForm({ ...acctForm, accountName: e.target.value })}
+            />
+            {acctErrors.accountName && (
+              <small className="field-error">{acctErrors.accountName}</small>
+            )}
+          </label>
+
+          <label className="cinv-field">
+            <span>{acctForm.provider === 'paypal' ? 'PayPal email' : 'Account number'}</span>
+            <input
+              value={acctForm.accountNumber ?? ''}
+              placeholder={acctForm.provider === 'paypal' ? 'you@example.com' : '0123456789'}
+              className={acctErrors.accountNumber ? 'is-invalid' : ''}
+              onChange={(e) => setAcctForm({ ...acctForm, accountNumber: e.target.value })}
+            />
+            {acctErrors.accountNumber && (
+              <small className="field-error">{acctErrors.accountNumber}</small>
+            )}
+          </label>
+
+          {acctForm.provider !== 'paypal' && (
+            <>
+              <label className="cinv-field">
+                <span>Bank</span>
+                <input
+                  value={acctForm.bankName ?? ''}
+                  placeholder="Bank name"
+                  onChange={(e) => setAcctForm({ ...acctForm, bankName: e.target.value })}
+                />
+              </label>
+              <div className="iw-paid-grid">
+                <label className="cinv-field">
+                  <span>Routing / sort code</span>
+                  <input
+                    value={acctForm.routingNumber ?? ''}
+                    onChange={(e) =>
+                      setAcctForm({ ...acctForm, routingNumber: e.target.value })
+                    }
+                  />
+                </label>
+                <label className="cinv-field">
+                  <span>SWIFT / BIC</span>
+                  <input
+                    value={acctForm.swift ?? ''}
+                    onChange={(e) => setAcctForm({ ...acctForm, swift: e.target.value })}
+                  />
+                </label>
+              </div>
+            </>
+          )}
+
+          <label className="cinv-field">
+            <span>Anything they should know</span>
+            <textarea
+              rows={2}
+              value={acctForm.instructions ?? ''}
+              placeholder="Quote the invoice number as the reference"
+              onChange={(e) => setAcctForm({ ...acctForm, instructions: e.target.value })}
+            />
+          </label>
+
+          <div className="iw-paid-actions">
+            <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="iw-btn" onClick={saveAccount}>
+              {acctEditingId ? 'Save changes' : 'Add account'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <Modal
         open={withdrawOpen}
         onClose={() => setWithdrawOpen(false)}
