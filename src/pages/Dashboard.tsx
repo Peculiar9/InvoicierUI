@@ -426,7 +426,20 @@ export const Dashboard = () => {
         {/* the working grid: money on the left, action rail on the right */}
         <div className="iw-grid">
         {/* Needs attention first: what to DO, before what to admire */}
-        {attention.length > 0 && (
+        {attention.length === 0 ? (
+          <section className="dash-card iw-attn iw-attn--clear">
+            <span className="iw-attn-clear-mark" aria-hidden="true">
+              <i className="bx bx-check" />
+            </span>
+            <div>
+              <b>Nothing needs you</b>
+              <p>
+                No invoice is waiting on a decision from you. When one is, it
+                lands here first.
+              </p>
+            </div>
+          </section>
+        ) : (
           <section className="dash-card iw-attn">
             <div className="iw-attn-head">
               <h2>Needs attention</h2>
@@ -491,6 +504,18 @@ export const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
+                  {recentInvoices.length === 0 && (
+                    <tr className="dash-row-empty">
+                      <td colSpan={5}>
+                        <i className="bx bx-receipt" aria-hidden="true" />
+                        <b>No invoices yet</b>
+                        <span>Your first one shows up here the moment you save it.</span>
+                        <button type="button" className="iw-btn" onClick={() => openCreate()}>
+                          Create an invoice
+                        </button>
+                      </td>
+                    </tr>
+                  )}
                   {recentInvoices.map((inv: Invoice) => (
                     <tr
                       key={inv.id}

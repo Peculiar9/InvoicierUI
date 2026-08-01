@@ -252,7 +252,19 @@ export const Invoices = () => {
               <EmptyState
                 icon="bx-search-alt"
                 title="No matching invoices"
-                message="Try a different search term or switch the status filter above."
+                message="Nothing here fits the filters you have on. Widen them and the invoices come back."
+                action={{
+                  label: 'Clear filters',
+                  icon: 'bx-eraser',
+                  onClick: () => {
+                    setStatus('all');
+                    setQuery('');
+                    setClientFilter('');
+                    setCurrencyFilter('');
+                    setRange(EMPTY_RANGE);
+                    setPage(1);
+                  },
+                }}
               />
             )
           ) : (
