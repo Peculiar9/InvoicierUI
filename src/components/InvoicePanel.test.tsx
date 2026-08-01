@@ -1,4 +1,14 @@
-import { render, screen } from '@testing-library/react';
+import { render as rtlRender, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+/** the panel talks to the query cache directly, so it needs a provider */
+const render = (ui: ReactElement) => {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return rtlRender(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+};
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Stub the data hooks so the panel renders without a backend.
