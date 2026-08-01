@@ -4978,3 +4978,56 @@
   background: rgba(185, 125, 16, 0.14);
   color: var(--warn);
 }
+
+/* ---- a settled invoice is a record, not a draft ---- */
+.iw .iw-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px dashed var(--border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+.iw .iw-locked i {
+  font-size: 0.95rem;
+}
+
+/* ---- voided ---- */
+.iw .iw-voided {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--paper);
+  border: 1px dashed var(--border);
+}
+.iw .iw-voided i {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(29, 27, 46, 0.06);
+  color: var(--ink-faint);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.iw .iw-voided b {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+.iw .iw-voided small {
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+.iw .iw-trail .is-declined i {
+  color: var(--danger);
+  border-color: rgba(212, 69, 60, 0.35);
+}

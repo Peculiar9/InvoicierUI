@@ -21,7 +21,9 @@ import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
 import { sendInvoiceEmail } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
-import { isPaid } from '@/utils/invoiceStatus';
+import { isPaid, isSettled } from '@/utils/invoiceStatus';
+import { invoicesApi } from '@/api/invoices';
+import { useQueryClient } from '@tanstack/react-query';
 import type { PaymentRoute } from '@/types';
 import type { Invoice } from '@/types';
 
@@ -61,6 +63,48 @@ export const InvoicePanel = () => {
   const duplicate = useDuplicateInvoice();
   const remove = useDeleteInvoice();
   const createClient = useCreateClient();
+  const queryClient = useQueryClient();
+
+  // declining a reported transfer, and voiding an invoice
+  const [declineOpen, setDeclineOpen] = useState(false);
+  const [declineReason, setDeclineReason] = useState('');
+  const [voidOpen, setVoidOpen] = useState(false);
+  const [voidReason, setVoidReason] = useState('');
+  const [acting, setActing] = useState(false);
+
+  const refreshInvoice = (id: string) => {
+    queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['invoices', id] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  };
+
+  const confirmDecline = async () => {
+    if (!invoice) return;
+    setActing(true);
+    try {
+      await invoicesApi.declineClaim(invoice.id, declineReason.trim());
+      refreshInvoice(invoice.id);
+      setDeclineOpen(false);
+      setDeclineReason('');
+      toast.info('Marked as not received. Your client has been told why.');
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const confirmVoid = async () => {
+    if (!invoice) return;
+    setActing(true);
+    try {
+      await invoicesApi.voidInvoice(invoice.id, voidReason.trim());
+      refreshInvoice(invoice.id);
+      setVoidOpen(false);
+      setVoidReason('');
+      toast.info(`${invoice.invoiceNumber} voided. The record stays in your books.`);
+    } finally {
+      setActing(false);
+    }
+  };
 
   const [clientId, setClientId] = useState('');
   // billing someone who is not in the address book yet
@@ -298,6 +342,19 @@ export const InvoicePanel = () => {
     );
   };
 
+  const nudge = async (inv: Invoice) => {
+    setBusy('Remind');
+    try {
+      await sendInvoiceEmail(inv, profile);
+      sendInvoice.mutate(
+        { id: inv.id, channel: 'reminder', to: inv.client?.email },
+        { onSuccess: () => toast.success(`Reminder sent to ${inv.client?.name}`) }
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleSave = async () => {
     setBusy('Save');
     try {
@@ -403,13 +460,23 @@ export const InvoicePanel = () => {
             {mode === 'view' && (
               <>
                 <div className="ipanel-actions">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => invoice && openEdit(invoice.id)}
-                  >
-                    <i className="bx bx-edit-alt" /> Edit
-                  </button>
+                  {/* a settled invoice is a record, not a draft: editing it
+                      would rewrite something the client already has */}
+                  {invoice && !isSettled(invoice.status) && (
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => openEdit(invoice.id)}
+                    >
+                      <i className="bx bx-edit-alt" /> Edit
+                    </button>
+                  )}
+                  {invoice && isSettled(invoice.status) && (
+                    <span className="iw-locked" title="Settled invoices cannot be edited">
+                      <i className="bx bx-lock-alt" />
+                      {invoice.status === 'cancelled' ? 'Voided' : 'Locked'}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className="btn btn-ghost"
@@ -417,6 +484,21 @@ export const InvoicePanel = () => {
                   >
                     <i className="bx bx-send" /> Send
                   </button>
+                  {invoice && !isSettled(invoice.status) && invoice.sends?.length ? (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      disabled={busy === 'Remind'}
+                      onClick={() => invoice && nudge(invoice)}
+                    >
+                      {busy === 'Remind' ? (
+                        <span className="iw-spin" aria-hidden="true" />
+                      ) : (
+                        <i className="bx bx-bell" />
+                      )}
+                      Remind
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="btn btn-ghost"
@@ -448,6 +530,15 @@ export const InvoicePanel = () => {
                   >
                     <i className="bx bx-copy" /> Duplicate
                   </button>
+                  {invoice && !isSettled(invoice.status) && invoice.status !== 'draft' && (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => setVoidOpen(true)}
+                    >
+                      <i className="bx bx-block" /> Void
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="btn btn-danger"
@@ -466,7 +557,11 @@ export const InvoicePanel = () => {
                   </button>
                 </div>
                 <div className="ipanel-body">
-                  {invoice && (invoice.sends?.length || invoice.viewedAt || invoice.claimedAt || invoice.dateReceived) ? (
+                  {invoice && (invoice.sends?.length ||
+                    invoice.viewedAt ||
+                    invoice.claimedAt ||
+                    invoice.declinedAt ||
+                    invoice.dateReceived) ? (
                     <ol className="iw-trail" aria-label="Invoice history">
                       {invoice.sends?.map((s, i) => (
                         <li key={`send-${i}`} className="is-sent">
@@ -504,6 +599,18 @@ export const InvoicePanel = () => {
                           </div>
                         </li>
                       )}
+                      {invoice.declinedAt && (
+                        <li className="is-declined">
+                          <i className="bx bx-x-circle" aria-hidden="true" />
+                          <div>
+                            <b>You reported the money had not arrived</b>
+                            <small>
+                              {formatWhen(invoice.declinedAt)}
+                              {invoice.declineReason ? ` · "${invoice.declineReason}"` : ''}
+                            </small>
+                          </div>
+                        </li>
+                      )}
                       {invoice.dateReceived && (
                         <li className="is-paid">
                           <i className="bx bx-check-circle" aria-hidden="true" />
@@ -535,6 +642,20 @@ export const InvoicePanel = () => {
                       )}
                     </ol>
                   ) : null}
+                  {invoice?.status === 'cancelled' && (
+                    <div className="iw-voided">
+                      <i className="bx bx-block" aria-hidden="true" />
+                      <div>
+                        <b>This invoice was voided</b>
+                        <small>
+                          {invoice.voidReason
+                            ? invoice.voidReason
+                            : 'It stays in your books but is no longer owed.'}
+                        </small>
+                      </div>
+                    </div>
+                  )}
+
                   {invoice?.status === 'awaiting' && (
                     <div className="iw-claim">
                       <div className="iw-claim-head">
@@ -561,12 +682,7 @@ export const InvoicePanel = () => {
                         <button
                           type="button"
                           className="iw-btn iw-btn--ghost"
-                          onClick={() =>
-                            updateInvoice.mutate(
-                              { id: invoice.id, data: { status: 'sent' } },
-                              { onSuccess: () => toast.info('Marked as still unpaid') }
-                            )
-                          }
+                          onClick={() => setDeclineOpen(true)}
                         >
                           Not yet
                         </button>
@@ -930,6 +1046,76 @@ export const InvoicePanel = () => {
         size="lg"
       >
         <InvoiceDocument data={draftDoc} />
+      </Modal>
+
+      {/* telling the payer why, instead of silently rewinding their screen */}
+      <Modal
+        open={declineOpen}
+        onClose={() => setDeclineOpen(false)}
+        title="Money not received"
+      >
+        <div className="iw-paid-form">
+          <p className="hint">
+            <b>Your client will see this.</b> They think the money is on its
+            way, so a sentence about what to check saves an email thread.
+          </p>
+          <label className="cinv-field">
+            <span>What should they know?</span>
+            <textarea
+              rows={3}
+              autoFocus
+              value={declineReason}
+              onChange={(e) => setDeclineReason(e.target.value)}
+              placeholder="Nothing has landed yet. Could you check the reference and send the receipt from your bank?"
+            />
+          </label>
+          <div className="iw-paid-actions">
+            <button
+              type="button"
+              className="iw-btn iw-btn--ghost"
+              onClick={() => setDeclineOpen(false)}
+            >
+              Cancel
+            </button>
+            <button type="button" className="iw-btn" onClick={confirmDecline} disabled={acting}>
+              {acting ? <span className="iw-spin" aria-hidden="true" /> : null}
+              Tell them
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* voiding keeps the number and the paper trail */}
+      <Modal open={voidOpen} onClose={() => setVoidOpen(false)} title="Void this invoice">
+        <div className="iw-paid-form">
+          <p className="hint">
+            <b>The record stays.</b> {invoice?.invoiceNumber} keeps its number and
+            its history, but it stops counting as money owed and the payment link
+            closes. Use this instead of deleting when something has already been
+            sent.
+          </p>
+          <label className="cinv-field">
+            <span>Reason (optional)</span>
+            <input
+              value={voidReason}
+              onChange={(e) => setVoidReason(e.target.value)}
+              placeholder="Replaced by IV1042, wrong amount"
+            />
+          </label>
+          <div className="iw-paid-actions">
+            <button
+              type="button"
+              className="iw-btn iw-btn--ghost"
+              onClick={() => setVoidOpen(false)}
+            >
+              Keep it
+            </button>
+            <button type="button" className="iw-btn iw-btn--danger" onClick={confirmVoid} disabled={acting}>
+              {acting ? <span className="iw-spin" aria-hidden="true" /> : null}
+              Void invoice
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* the three answers that make a payment tax-grade */}
