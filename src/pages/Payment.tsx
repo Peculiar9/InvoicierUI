@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
+import { ReceiptDocument } from '@/components/ReceiptDocument';
 import { useInvoice, useMarkInvoicePaid } from '@/hooks';
 import { invoicesApi } from '@/api/invoices';
 import { resolveRoutes, PROVIDER_LABELS } from '@/utils/paymentRoutes';
@@ -186,7 +187,12 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
 
             <div className="pay-grid">
               <div className="pay-doc">
-                <InvoiceDocument data={invoice} />
+                {/* once it is settled the receipt is the document that matters */}
+                {isPaid(invoice.status) ? (
+                  <ReceiptDocument invoice={invoice} />
+                ) : (
+                  <InvoiceDocument data={invoice} />
+                )}
               </div>
 
               <aside className="pay-side">
@@ -365,6 +371,21 @@ export const Payment = ({ invoiceId }: { invoiceId: string }) => {
                         )}
                       </button>
                     )}
+                  </div>
+                )}
+
+                {stage === 'method' && invoice.declinedAt && (
+                  <div className="pay-declined">
+                    <span className="pay-declined-icon" aria-hidden="true">
+                      <i className="bx bx-error-circle" />
+                    </span>
+                    <div>
+                      <b>{senderName} could not find that payment</b>
+                      <p>
+                        {invoice.declineReason ||
+                          'Nothing had landed when they last checked. Worth confirming the reference and the account details below.'}
+                      </p>
+                    </div>
                   </div>
                 )}
 

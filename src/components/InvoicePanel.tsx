@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
+import { ReceiptDocument } from '@/components/ReceiptDocument';
 import type { InvoiceDocData } from '@/components/InvoiceDocument';
 import { Modal } from '@/components/Modal';
 import {
@@ -119,6 +120,7 @@ export const InvoicePanel = () => {
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [receiptOpen, setReceiptOpen] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ client?: string; items?: string }>({});
@@ -506,6 +508,15 @@ export const InvoicePanel = () => {
                   >
                     <i className="bx bx-link" /> Copy link
                   </button>
+                  {invoice?.receiptNumber && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setReceiptOpen(true)}
+                    >
+                      <i className="bx bx-receipt" /> Receipt
+                    </button>
+                  )}
                   <button type="button" className="btn btn-ghost" onClick={() => printInvoice()}>
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
@@ -1046,6 +1057,20 @@ export const InvoicePanel = () => {
         size="lg"
       >
         <InvoiceDocument data={draftDoc} />
+      </Modal>
+
+      <Modal
+        open={receiptOpen}
+        onClose={() => setReceiptOpen(false)}
+        title={`Receipt ${invoice?.receiptNumber ?? ''}`}
+        size="lg"
+      >
+        {invoice && <ReceiptDocument invoice={invoice} />}
+        <div className="iw-paid-actions">
+          <button type="button" className="iw-btn iw-btn--ghost" onClick={() => printInvoice()}>
+            <i className="bx bx-printer" /> Print or save as PDF
+          </button>
+        </div>
       </Modal>
 
       {/* telling the payer why, instead of silently rewinding their screen */}

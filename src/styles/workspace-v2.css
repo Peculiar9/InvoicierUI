@@ -5031,3 +5031,188 @@
   color: var(--danger);
   border-color: rgba(212, 69, 60, 0.35);
 }
+
+/* ============================================================================
+   THE RECEIPT — its own document, not the invoice relabelled
+   ========================================================================== */
+
+.rcpt {
+  display: block;
+  padding: 32px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #ece8f6;
+  color: #5f5d72;
+  font-family: 'Poppins', sans-serif;
+}
+.rcpt-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ece8f6;
+}
+.rcpt-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rcpt-logo,
+.rcpt-monogram {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.rcpt-monogram {
+  display: grid;
+  place-items: center;
+  background: var(--acc, #924ee9);
+  color: #fff;
+  font-weight: 800;
+}
+.rcpt-brand b {
+  display: block;
+  color: #1d1b2e;
+  font-size: 0.95rem;
+}
+.rcpt-brand small {
+  font-size: 0.78rem;
+  color: #9b99ab;
+}
+.rcpt-id {
+  text-align: right;
+}
+.rcpt-id span {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9b99ab;
+}
+.rcpt-id b {
+  font-size: 1rem;
+  color: #1d1b2e;
+}
+
+.rcpt-hero {
+  position: relative;
+  margin: 24px 0;
+  padding: 26px;
+  border-radius: 16px;
+  background: rgba(12, 141, 111, 0.07);
+  text-align: center;
+}
+.rcpt-hero > span:first-child {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #0c8d6f;
+}
+.rcpt-hero strong {
+  display: block;
+  margin: 6px 0 4px;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1d1b2e;
+  font-variant-numeric: tabular-nums;
+}
+.rcpt-hero small {
+  font-size: 0.82rem;
+  color: #5f5d72;
+}
+.rcpt-stamp {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  padding: 3px 12px;
+  border: 2px solid rgba(12, 141, 111, 0.45);
+  border-radius: 6px;
+  color: #0c8d6f;
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  rotate: -8deg;
+}
+
+.rcpt-rows {
+  margin: 0;
+}
+.rcpt-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px dashed #ece8f6;
+  font-size: 0.85rem;
+}
+.rcpt-rows dt {
+  color: #9b99ab;
+}
+.rcpt-rows dd {
+  margin: 0;
+  font-weight: 600;
+  color: #1d1b2e;
+  font-variant-numeric: tabular-nums;
+}
+.rcpt-owed {
+  color: #b97d10 !important;
+}
+.rcpt-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #ece8f6;
+  font-size: 0.74rem;
+  color: #9b99ab;
+}
+.rcpt-mark {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1d1b2e;
+}
+.rcpt-mark b {
+  color: #ff5a5f;
+}
+
+/* the payer being told their report bounced */
+.pay-declined {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(212, 69, 60, 0.07);
+  border: 1px solid rgba(212, 69, 60, 0.25);
+}
+.pay-declined-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(212, 69, 60, 0.14);
+  color: #d4453c;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.pay-declined b {
+  display: block;
+  font-size: 0.86rem;
+  color: #1d1b2e;
+}
+.pay-declined p {
+  margin-top: 4px;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  color: #5f5d72;
+}
