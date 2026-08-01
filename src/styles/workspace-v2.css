@@ -5308,3 +5308,76 @@
   .iw .dash-table tbody tr { animation: none; }
   .iw .iw-attn-clear-mark { animation: none; }
 }
+
+/* ── micro-interactions ────────────────────────────────────────── */
+
+/* an empty state should arrive, not blink into existence */
+.iw .empty-state {
+  animation: iw-fade-up 420ms cubic-bezier(0.22, 0.9, 0.28, 1) both;
+}
+.iw .empty-state__icon {
+  animation: iw-float 3.6s ease-in-out infinite;
+}
+@keyframes iw-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes iw-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* the attention queue is a to-do list, so its rows behave like buttons */
+.iw .iw-attn li {
+  border-radius: 12px;
+  padding-inline: 8px;
+  margin-inline: -8px;
+  transition: background 200ms ease, transform 200ms cubic-bezier(0.22, 0.9, 0.28, 1);
+}
+.iw .iw-attn li:hover {
+  background: var(--iw-tint, rgba(108, 92, 231, 0.06));
+  transform: translateX(2px);
+}
+.iw .iw-attn-go {
+  transition: gap 180ms ease, color 180ms ease;
+}
+.iw .iw-attn li:hover .iw-attn-go i {
+  transform: translateX(3px);
+}
+.iw .iw-attn-go i {
+  transition: transform 220ms cubic-bezier(0.22, 0.9, 0.28, 1);
+}
+
+/* a status badge that just changed earns one pulse, then holds still */
+.iw .dash-badge {
+  transition: background 220ms ease, color 220ms ease;
+}
+.iw .dash-badge.is-paid,
+.iw .dash-badge.is-receipted {
+  animation: iw-badge-pop 640ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+@keyframes iw-badge-pop {
+  0%   { transform: scale(0.86); }
+  55%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* every pressable thing acknowledges the press */
+.iw .btn:active,
+.iw .ws-create-btn:active,
+.iw .empty-state__action:active {
+  transform: translateY(1px) scale(0.985);
+}
+.iw .ws-create-btn,
+.iw .empty-state__action {
+  transition: transform 140ms cubic-bezier(0.22, 0.9, 0.28, 1), box-shadow 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iw .empty-state,
+  .iw .empty-state__icon,
+  .iw .dash-badge.is-paid,
+  .iw .dash-badge.is-receipted {
+    animation: none;
+  }
+}
