@@ -59,6 +59,18 @@ export const invoicesApi = {
     return response.data.data;
   },
 
+  /** Public: the payer says they made a transfer. A claim, not a payment. */
+  claimPayment: async (
+    id: string,
+    data: { reference?: string; note?: string; payerEmail?: string }
+  ): Promise<Invoice> => {
+    const response = await apiClient.post<ApiResponse<Invoice>>(
+      `/invoices/${id}/payment-claimed`,
+      data
+    );
+    return response.data.data;
+  },
+
   /** Public: the payer opened the link. Fire-and-forget, never blocks the page. */
   registerView: async (id: string): Promise<void> => {
     await apiClient.post(`/invoices/${id}/viewed`);
