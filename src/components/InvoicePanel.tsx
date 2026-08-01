@@ -116,6 +116,7 @@ export const InvoicePanel = () => {
   const [vatEnabled, setVatEnabled] = useState(true);
   const [whtExpected, setWhtExpected] = useState(false);
   const [paymentRoute, setPaymentRoute] = useState<PaymentRoute | ''>('');
+  const [receivingAccountId, setReceivingAccountId] = useState('');
   const [terms, setTerms] = useState('Payment due within 14 days');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
@@ -148,6 +149,7 @@ export const InvoicePanel = () => {
       setVatEnabled(profile.vatRegistered ?? true);
       setWhtExpected(profile.whtUsual ?? false);
       setPaymentRoute('');
+      setReceivingAccountId('');
       setTerms('Payment due within 14 days');
       setNotes('');
       setItems([{ ...emptyItem }]);
@@ -161,6 +163,7 @@ export const InvoicePanel = () => {
       setVatEnabled(invoice.vatEnabled ?? invoice.taxRate > 0);
       setWhtExpected(invoice.whtExpected ?? false);
       setPaymentRoute(invoice.paymentRoute ?? '');
+      setReceivingAccountId(invoice.receivingAccountId ?? '');
       setTerms(invoice.terms ?? '');
       setNotes(invoice.notes ?? '');
       setItems(
@@ -245,6 +248,7 @@ export const InvoicePanel = () => {
     vatEnabled,
     whtExpected,
     ...(paymentRoute ? { paymentRoute } : {}),
+    ...(receivingAccountId ? { receivingAccountId } : {}),
     notes,
     terms,
     items: items.map((it) => ({
@@ -877,6 +881,34 @@ export const InvoicePanel = () => {
                         </small>
                       )}
                   </label>
+
+                  {(() => {
+                    const forCurrency = (profile.receivingAccounts ?? []).filter(
+                      (a) => a.currency === currency
+                    );
+                    const showsTransfer =
+                      paymentRoute === 'transfer' ||
+                      paymentRoute === 'both' ||
+                      (!paymentRoute &&
+                        (profile.routeByCurrency?.[currency] ?? 'transfer') !== 'instant');
+                    // only worth asking when more than one account could serve
+                    return showsTransfer && forCurrency.length > 1 ? (
+                      <label className="cinv-field">
+                        <span>Which account</span>
+                        <select
+                          value={receivingAccountId}
+                          onChange={(e) => setReceivingAccountId(e.target.value)}
+                        >
+                          <option value="">My default {currency} account</option>
+                          {forCurrency.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null;
+                  })()}
 
                   <div className="iw-toggles">
                     <label className="iw-toggle">

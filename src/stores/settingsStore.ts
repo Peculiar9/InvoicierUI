@@ -24,6 +24,8 @@ export interface BusinessProfile {
   receivingAccounts?: ReceivingAccount[];
   /** the default route per currency, e.g. NGN instant, USD transfer */
   routeByCurrency?: Record<string, PaymentRoute>;
+  /** which account a currency uses when the invoice does not say */
+  defaultAccountByCurrency?: Record<string, string>;
   /* ---- tax posture: sets the invoice form defaults ---- */
   vatRegistered?: boolean;
   whtUsual?: boolean;

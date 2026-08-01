@@ -423,6 +423,27 @@ export const Settings = () => {
                         </small>
                       </div>
                       <div className="iw-acct-actions">
+                        {(profile.defaultAccountByCurrency ?? {})[a.currency] === a.id ? (
+                          <span className="iw-acct-default">
+                            <i className="bx bx-check" /> Default
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => {
+                              setProfile({
+                                defaultAccountByCurrency: {
+                                  ...(profile.defaultAccountByCurrency ?? {}),
+                                  [a.currency]: a.id,
+                                },
+                              });
+                              toast.success(`${a.label} is now the default for ${a.currency}`);
+                            }}
+                          >
+                            Make default
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="btn btn-ghost"

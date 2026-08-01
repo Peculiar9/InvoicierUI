@@ -5216,3 +5216,16 @@
   line-height: 1.55;
   color: #5f5d72;
 }
+
+.iw .iw-acct-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

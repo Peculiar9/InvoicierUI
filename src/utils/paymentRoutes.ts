@@ -10,11 +10,17 @@ import type { Invoice, PaymentRoute, ReceivingAccount } from '@/types';
  */
 export const resolveRoutes = (
   invoice: Pick<Invoice, 'currency' | 'paymentRoute' | 'receivingAccountId'>,
-  profile: Pick<BusinessProfile, 'receivingAccounts' | 'routeByCurrency'>
+  profile: Pick<
+    BusinessProfile,
+    'receivingAccounts' | 'routeByCurrency' | 'defaultAccountByCurrency'
+  >
 ): { instant: boolean; transfer: boolean; account: ReceivingAccount | null } => {
   const accounts = profile.receivingAccounts ?? [];
+  // the invoice's choice, then the currency's default, then any match
+  const defaultId = profile.defaultAccountByCurrency?.[invoice.currency];
   const account =
     accounts.find((a) => a.id === invoice.receivingAccountId) ??
+    accounts.find((a) => a.id === defaultId && a.currency === invoice.currency) ??
     accounts.find((a) => a.currency === invoice.currency) ??
     null;
 
