@@ -88,6 +88,15 @@ export const invoicesApi = {
     return response.data.data;
   },
 
+  /** Undo: put the record back byte for byte, same id and same number. */
+  restore: async (id: string, previous: Invoice): Promise<Invoice> => {
+    const response = await apiClient.post<ApiResponse<Invoice>>(
+      `/invoices/${id}/restore`,
+      previous
+    );
+    return response.data.data;
+  },
+
   /** Public: the payer opened the link. Fire-and-forget, never blocks the page. */
   registerView: async (id: string): Promise<void> => {
     await apiClient.post(`/invoices/${id}/viewed`);

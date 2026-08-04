@@ -82,15 +82,31 @@ export const InvoicePanel = () => {
     queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
+  /**
+   * Do it, then hand back the way out. The snapshot is the invoice as it
+   * stood a moment ago, so undo restores the record rather than making a
+   * new one that merely looks like it.
+   */
+  const offerUndo = (message: string, previous: Invoice) => {
+    toast.undo(message, async () => {
+      await invoicesApi.restore(previous.id, previous);
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      openView(previous.id);
+      toast.success(`${previous.invoiceNumber} is back`);
+    });
+  };
+
   const confirmDecline = async () => {
     if (!invoice) return;
     setActing(true);
     try {
+      const previous = invoice;
       await invoicesApi.declineClaim(invoice.id, declineReason.trim());
       refreshInvoice(invoice.id);
       setDeclineOpen(false);
       setDeclineReason('');
-      toast.info('Marked as not received. Your client has been told why.');
+      offerUndo('Marked as not received. Your client has been told why.', previous);
     } finally {
       setActing(false);
     }
@@ -100,11 +116,12 @@ export const InvoicePanel = () => {
     if (!invoice) return;
     setActing(true);
     try {
+      const previous = invoice;
       await invoicesApi.voidInvoice(invoice.id, voidReason.trim());
       refreshInvoice(invoice.id);
       setVoidOpen(false);
       setVoidReason('');
-      toast.info(`${invoice.invoiceNumber} voided. The record stays in your books.`);
+      offerUndo(`${invoice.invoiceNumber} voided. The record stays in your books.`, previous);
     } finally {
       setActing(false);
     }
@@ -613,14 +630,14 @@ export const InvoicePanel = () => {
                     type="button"
                     className="btn btn-danger"
                     onClick={() => {
-                      if (invoice && window.confirm('Delete this invoice?')) {
-                        remove.mutate(invoice.id, {
-                          onSuccess: () => {
-                            toast.success('Invoice deleted');
-                            close();
-                          },
-                        });
-                      }
+                      if (!invoice) return;
+                      const previous = invoice;
+                      remove.mutate(invoice.id, {
+                        onSuccess: () => {
+                          close();
+                          offerUndo(`${previous.invoiceNumber} deleted`, previous);
+                        },
+                      });
                     }}
                   >
                     <i className="bx bx-trash" /> Delete

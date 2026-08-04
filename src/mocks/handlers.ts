@@ -202,6 +202,19 @@ export const handlers = [
     saveDb();
     return new HttpResponse(null, { status: 200 });
   }),
+  /**
+   * Put a record back exactly as it was. Undo needs the original, not a
+   * fresh copy: an invoice that comes back with a new number is a new
+   * invoice, and this product's whole claim is that the record holds.
+   */
+  http.post('*/api/invoices/:id/restore', async ({ params, request }) => {
+    const previous = (await request.json()) as Invoice;
+    const idx = invoices.findIndex((i) => i.id === params.id);
+    if (idx >= 0) invoices[idx] = previous;
+    else invoices.unshift(previous);
+    saveDb();
+    return HttpResponse.json({ success: true, data: previous });
+  }),
   http.post('*/api/invoices/:id/send', async ({ params, request }) => {
     const invoice = invoices.find((i) => i.id === params.id);
     if (invoice) {
