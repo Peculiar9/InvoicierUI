@@ -1290,6 +1290,22 @@
     border-top: 0;
     border-radius: 999px;
   }
+  /* On the bottom bar there is no room for the label swap, and a tap leaves
+     :hover stuck on. Logout is just an icon down here. */
+  .iw .ws-rail-logout .bye-a,
+  .iw .ws-rail-logout .bye-b,
+  .iw .ws-rail-logout:hover .bye-a,
+  .iw .ws-rail-logout:hover .bye-b {
+    display: none;
+  }
+  .iw .ws-rail-logout:hover {
+    background: transparent;
+    color: inherit;
+  }
+  .iw .ws-rail-logout:hover i {
+    transform: none;
+    animation: none;
+  }
   .iw .ws-content {
     padding-bottom: 110px;
   }
