@@ -5455,3 +5455,72 @@
 .toast .toast-action:active {
   transform: scale(0.96);
 }
+
+/* ---- keyboard affordances --------------------------------------------- */
+.iw .ws-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  font-family: var(--font);
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.85;
+}
+@media (max-width: 900px) {
+  .iw .ws-kbd {
+    display: none;
+  }
+}
+
+/* ---- stepping between invoices without leaving the panel --------------- */
+.iw .ipanel-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 3px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.iw .ipanel-step button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.iw .ipanel-step button:hover:not(:disabled) {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+.iw .ipanel-step button:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+.iw .ipanel-step span {
+  padding: 0 6px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .iw .ipanel-step span {
+    display: none;
+  }
+}

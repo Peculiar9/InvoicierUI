@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import type { ChartOptions } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
 import type { CSSProperties } from 'react';
@@ -89,10 +89,19 @@ export const Dashboard = () => {
   const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   // the fallback when there is no money at all yet
   const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
   const [period, setPeriod] = useState<Period>('year');
   const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
+
+  // the panel steps through the recent list, in the order shown here
+  const recentIds = (data?.recentInvoices ?? [])
+    .map((inv: Invoice) => inv.id)
+    .join(',');
+  useEffect(() => {
+    setSiblings(recentIds ? recentIds.split(',') : []);
+  }, [recentIds, setSiblings]);
 
   if (isLoading || !data) {
     return (

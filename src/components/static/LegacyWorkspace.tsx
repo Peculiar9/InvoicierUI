@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useLogout, useRecentActivities } from '@/hooks';
+import { useHotkeys } from '@/hooks/useHotkeys';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/lib/toast';
@@ -70,6 +71,28 @@ export const LegacyWorkspace = ({
   const { mutate: logout } = useLogout();
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const panelOpen = useInvoicePanelStore((s) => s.open);
+  const closePanel = useInvoicePanelStore((s) => s.close);
+
+  useHotkeys({
+    n: () => openCreate(),
+    // the list search is wherever the page put it
+    '/': () => {
+      const field = document.querySelector<HTMLInputElement>(
+        '.view-search input, input[type="search"]'
+      );
+      field?.focus();
+      field?.select();
+    },
+    Escape: () => {
+      // a field gives up focus first; the panel closes on the second press
+      const active = document.activeElement as HTMLElement | null;
+      if (active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) {
+        active.blur();
+        return;
+      }
+      if (panelOpen) closePanel();
+    },
+  });
 
   const [railMode, setRailMode] = useState<RailMode>(() => {
     const stored = localStorage.getItem(RAIL_KEY);
@@ -252,8 +275,16 @@ export const LegacyWorkspace = ({
                 </>
               )}
             </div>
-            <button type="button" className="ws-create-btn" onClick={() => openCreate()}>
+            <button
+              type="button"
+              className="ws-create-btn"
+              title="New invoice (N)"
+              onClick={() => openCreate()}
+            >
               <i className="bx bx-plus" /> New invoice
+              <kbd className="ws-kbd" aria-hidden="true">
+                N
+              </kbd>
             </button>
           </div>
         </header>

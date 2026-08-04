@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
@@ -118,6 +118,13 @@ export const Invoices = () => {
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
   const paged = sorted.slice((current - 1) * pageSize, current * pageSize);
+
+  // the panel steps through what this page is showing, in this order
+  const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
+  const pagedIds = paged.map((inv) => inv.id).join(',');
+  useEffect(() => {
+    setSiblings(pagedIds ? pagedIds.split(',') : []);
+  }, [pagedIds, setSiblings]);
 
   const Th = ({ k, children }: { k: SortKey; children: string }) => (
     <th aria-sort={sort.key === k ? (sort.dir === 1 ? 'ascending' : 'descending') : undefined}>

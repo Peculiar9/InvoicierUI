@@ -18,6 +18,7 @@ import {
 } from '@/hooks';
 import { useAuthStore } from '@/stores/authStore';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { useHotkeys } from '@/hooks/useHotkeys';
 import { useServicesStore } from '@/stores/servicesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
@@ -50,7 +51,7 @@ const formatWhen = (iso: string) => {
 };
 
 export const InvoicePanel = () => {
-  const { open, mode, invoiceId, prefillClientId, close, openView, openEdit } =
+  const { open, mode, invoiceId, prefillClientId, close, openView, openEdit, siblings, step } =
     useInvoicePanelStore();
   const profile = useSettingsStore((s) => s.profile);
   const services = useServicesStore((s) => s.services);
@@ -123,6 +124,19 @@ export const InvoicePanel = () => {
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  // reading an invoice should not mean closing it to reach the next one
+  const at = invoiceId ? siblings.indexOf(invoiceId) : -1;
+  const canStep = mode === 'view' && at !== -1;
+  const hasPrev = canStep && at > 0;
+  const hasNext = canStep && at < siblings.length - 1;
+  useHotkeys(
+    {
+      ArrowLeft: () => hasPrev && step(-1),
+      ArrowRight: () => hasNext && step(1),
+    },
+    open && canStep
+  );
   // the sender checking the account details their client will read
   const [clientViewOpen, setClientViewOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -466,6 +480,31 @@ export const InvoicePanel = () => {
                     : `#${invoice?.invoiceNumber ?? '…'}`}
                 </h2>
               </div>
+              {canStep && siblings.length > 1 && (
+                <div className="ipanel-step">
+                  <button
+                    type="button"
+                    disabled={!hasPrev}
+                    onClick={() => step(-1)}
+                    title="Previous invoice (left arrow)"
+                    aria-label="Previous invoice"
+                  >
+                    <i className="bx bx-chevron-left" />
+                  </button>
+                  <span>
+                    {at + 1} of {siblings.length}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!hasNext}
+                    onClick={() => step(1)}
+                    title="Next invoice (right arrow)"
+                    aria-label="Next invoice"
+                  >
+                    <i className="bx bx-chevron-right" />
+                  </button>
+                </div>
+              )}
               <button type="button" className="ipanel-close" onClick={close} aria-label="Close">
                 <i className="bx bx-x" />
               </button>
