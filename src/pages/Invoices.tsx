@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
@@ -8,8 +8,11 @@ import type { DateRangeValue } from '@/utils/dateRange';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
-import { useInvoices } from '@/hooks';
+import { useInvoices, useSendInvoice, useMarkInvoicePaid } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { copyInvoiceLink } from '@/lib/invoiceActions';
+import { toast } from '@/lib/toast';
+import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { useListStateStore } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Invoice, InvoiceStatus } from '@/types';
@@ -123,6 +126,14 @@ export const Invoices = () => {
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
   const paged = sorted.slice((current - 1) * pageSize, current * pageSize);
+
+  // ticked rows, kept to this visit only: a stale selection is a hazard
+  const [picked, setPicked] = useState<string[]>([]);
+  const send = useSendInvoice();
+  const markPaid = useMarkInvoicePaid();
+
+  const togglePick = (id: string) =>
+    setPicked((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
 
   // the panel steps through what this page is showing, in this order
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
@@ -274,10 +285,107 @@ export const Invoices = () => {
               />
             )
           ) : (
+            <>
+            {picked.length > 0 && (
+              <div className="iw-bulk" role="region" aria-label="Selected invoices">
+                <span className="iw-bulk-count">
+                  <b>{picked.length}</b> selected
+                </span>
+                <div className="iw-bulk-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    disabled={send.isPending}
+                    onClick={() => {
+                      // only chase the ones still owing; the rest are done
+                      const chase = paged.filter(
+                        (inv) => picked.includes(inv.id) && !isSettled(inv.status)
+                      );
+                      if (chase.length === 0) {
+                        toast.info('Nothing to chase: those are all settled');
+                        return;
+                      }
+                      Promise.all(
+                        chase.map((inv) =>
+                          send.mutateAsync({
+                            id: inv.id,
+                            channel: inv.status === 'draft' ? 'email' : 'reminder',
+                          })
+                        )
+                      ).then(() => {
+                        toast.success(
+                          `Reminder sent to ${chase.length} ${
+                            chase.length === 1 ? 'client' : 'clients'
+                          }`
+                        );
+                        setPicked([]);
+                      });
+                    }}
+                  >
+                    <i className="bx bx-bell" /> Send a reminder
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    disabled={markPaid.isPending}
+                    onClick={() => {
+                      const unpaid = paged.filter(
+                        (inv) => picked.includes(inv.id) && !isSettled(inv.status)
+                      );
+                      if (unpaid.length === 0) {
+                        toast.info('Those are already settled');
+                        return;
+                      }
+                      const today = new Date().toISOString().slice(0, 10);
+                      Promise.all(
+                        unpaid.map((inv) =>
+                          markPaid.mutateAsync({
+                            id: inv.id,
+                            // the date received is the field that matters; today
+                            // is the honest default when recording in bulk
+                            data: { dateReceived: today, amountReceived: inv.total },
+                          })
+                        )
+                      ).then(() => {
+                        toast.success(
+                          `${unpaid.length} marked paid, received today. Open one to change the date.`
+                        );
+                        setPicked([]);
+                      });
+                    }}
+                  >
+                    <i className="bx bx-check-circle" /> Mark paid
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost iw-bulk-clear"
+                    onClick={() => setPicked([])}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
             <SwipeScroll className="dash-table-wrap">
               <table className="dash-table dash-table--invoices">
                 <thead>
                   <tr>
+                    <th className="iw-tick-cell">
+                      <input
+                        type="checkbox"
+                        aria-label="Select every invoice on this page"
+                        checked={picked.length > 0 && picked.length === paged.length}
+                        ref={(el) => {
+                          // some but not all: the box says so rather than lying
+                          if (el)
+                            el.indeterminate =
+                              picked.length > 0 && picked.length < paged.length;
+                        }}
+                        onChange={(e) =>
+                          setPicked(e.target.checked ? paged.map((inv) => inv.id) : [])
+                        }
+                      />
+                    </th>
                     <Th k="invoiceNumber">Invoice</Th>
                     <Th k="client">Client</Th>
                     <Th k="issueDate">Issued</Th>
@@ -285,6 +393,7 @@ export const Invoices = () => {
                     <Th k="dateReceived">Received</Th>
                     <Th k="total">Amount</Th>
                     <Th k="status">Status</Th>
+                    <th className="iw-rowact-cell" aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
@@ -292,9 +401,20 @@ export const Invoices = () => {
                     <tr
                       style={{ '--i': i } as CSSProperties}
                       key={inv.id}
-                      className="dash-row-click"
+                      className={`dash-row-click${picked.includes(inv.id) ? ' is-picked' : ''}`}
                       onClick={() => openView(inv.id)}
                     >
+                      <td
+                        className="iw-tick-cell"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          aria-label={`Select invoice ${inv.invoiceNumber}`}
+                          checked={picked.includes(inv.id)}
+                          onChange={() => togglePick(inv.id)}
+                        />
+                      </td>
                       <td className="dash-mono">#{inv.invoiceNumber}</td>
                       <td>{inv.client.name}</td>
                       <td className="dash-muted">
@@ -314,11 +434,62 @@ export const Invoices = () => {
                           {statusLabel[inv.status]}
                         </span>
                       </td>
+                      {/* the three things you do most, without opening anything */}
+                      <td className="iw-rowact-cell" onClick={(e) => e.stopPropagation()}>
+                        <div className="iw-rowact">
+                          {!isSettled(inv.status) && (
+                            <button
+                              type="button"
+                              title={inv.status === 'draft' ? 'Send this invoice' : 'Send a reminder'}
+                              aria-label={
+                                inv.status === 'draft' ? 'Send this invoice' : 'Send a reminder'
+                              }
+                              onClick={() =>
+                                send.mutate(
+                                  {
+                                    id: inv.id,
+                                    channel: inv.status === 'draft' ? 'email' : 'reminder',
+                                  },
+                                  {
+                                    onSuccess: () =>
+                                      toast.success(
+                                        inv.status === 'draft'
+                                          ? `#${inv.invoiceNumber} sent to ${inv.client.name}`
+                                          : `Reminder sent to ${inv.client.name}`
+                                      ),
+                                  }
+                                )
+                              }
+                            >
+                              <i className={`bx ${inv.status === 'draft' ? 'bx-send' : 'bx-bell'}`} />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            title="Copy the payment link"
+                            aria-label="Copy the payment link"
+                            onClick={() => copyInvoiceLink(inv.id)}
+                          >
+                            <i className="bx bx-link" />
+                          </button>
+                          {!isPaid(inv.status) && inv.status !== 'cancelled' && (
+                            <button
+                              type="button"
+                              title="Mark as paid"
+                              aria-label="Mark as paid"
+                              onClick={() => openView(inv.id)}
+                            >
+                              <i className="bx bx-check-circle" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </SwipeScroll>
+            </>
           )}
           {!isLoading && filtered.length > 0 && (
             <Pager

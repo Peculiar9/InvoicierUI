@@ -5524,3 +5524,125 @@
     display: none;
   }
 }
+
+/* ---- picking rows, and acting on them --------------------------------- */
+.iw .iw-tick-cell {
+  width: 34px;
+  padding-right: 0 !important;
+}
+.iw .iw-tick-cell input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--brand);
+  cursor: pointer;
+  /* the ticks stay out of the way until they are wanted */
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.iw .dash-row-click:hover .iw-tick-cell input,
+.iw .iw-tick-cell input:checked,
+.iw .iw-tick-cell input:indeterminate,
+.iw .iw-tick-cell input:focus-visible,
+.iw .dash-table:has(input:checked) .iw-tick-cell input {
+  opacity: 1;
+}
+.iw .dash-row-click.is-picked {
+  background: var(--brand-tint);
+}
+
+/* the quick actions appear under the cursor, on the row they belong to */
+.iw .iw-rowact-cell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+.iw .iw-rowact {
+  display: inline-flex;
+  gap: 2px;
+  opacity: 0;
+  transform: translateX(4px);
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.iw .dash-row-click:hover .iw-rowact,
+.iw .iw-rowact:focus-within {
+  opacity: 1;
+  transform: none;
+}
+.iw .iw-rowact button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
+    transform 0.14s var(--ease-out);
+}
+.iw .iw-rowact button:hover {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--brand);
+}
+.iw .iw-rowact button:active {
+  transform: scale(0.92);
+}
+/* on touch there is no hover to reveal them, so they simply stay */
+@media (hover: none) {
+  .iw .iw-rowact,
+  .iw .iw-tick-cell input {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.iw .iw-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+  background: var(--brand-tint);
+  border: 1px solid rgba(146, 78, 233, 0.22);
+  border-radius: var(--radius);
+  animation: iw-bulk-in 0.24s var(--ease-out) both;
+}
+@keyframes iw-bulk-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.iw .iw-bulk-count {
+  font-size: 0.83rem;
+  color: var(--ink-soft);
+}
+.iw .iw-bulk-count b {
+  font-family: var(--mono);
+  color: var(--brand);
+}
+.iw .iw-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.iw .iw-bulk .btn {
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  background: var(--card);
+}
+.iw .iw-bulk-clear {
+  background: transparent !important;
+  border-color: transparent;
+}
+@media (max-width: 560px) {
+  .iw .iw-bulk-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}
