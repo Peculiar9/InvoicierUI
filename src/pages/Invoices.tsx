@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { DateRange } from '@/components/DateRange';
-import { EMPTY_RANGE, inDateRange } from '@/utils/dateRange';
+import { inDateRange } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { useListStateStore } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Invoice, InvoiceStatus } from '@/types';
 
@@ -64,29 +65,33 @@ const sortValue = (inv: Invoice, key: SortKey): string | number => {
 };
 
 export const Invoices = () => {
-  const [status, setStatus] = useState<InvoiceStatus | 'all'>('all');
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
-    key: 'issueDate',
-    dir: -1,
-  });
-  const [clientFilter, setClientFilter] = useState('');
-  const [currencyFilter, setCurrencyFilter] = useState('');
-  const [dateField, setDateField] = useState<DateField>('issueDate');
-  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
+  // the list keeps its place: opening an invoice and coming back, or
+  // reloading, should not throw away the filters that found it
+  const listState = useListStateStore((s) => s.invoices);
+  const patch = useListStateStore((s) => s.setInvoices);
+  const resetList = useListStateStore((s) => s.resetInvoices);
+  const { status, query, page, pageSize, sort, clientFilter, currencyFilter, dateField, range } =
+    listState;
+  const setStatus = (v: InvoiceStatus | 'all') => patch({ status: v });
+  const setQuery = (v: string) => patch({ query: v });
+  const setPage = (v: number) => patch({ page: v });
+  const setPageSize = (v: number) => patch({ pageSize: v });
+  const setClientFilter = (v: string) => patch({ clientFilter: v });
+  const setCurrencyFilter = (v: string) => patch({ currencyFilter: v });
+  const setDateField = (v: DateField) => patch({ dateField: v });
+  const setRange = (v: DateRangeValue) => patch({ range: v });
   const { data, isLoading } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
 
   const toggleSort = (key: SortKey) => {
-    setSort((cur) =>
-      cur.key === key
-        ? { key, dir: cur.dir === 1 ? -1 : 1 }
-        : { key, dir: DESC_FIRST.includes(key) ? -1 : 1 }
-    );
-    setPage(1);
+    patch({
+      sort:
+        sort.key === key
+          ? { key, dir: sort.dir === 1 ? -1 : 1 }
+          : { key, dir: DESC_FIRST.includes(key) ? -1 : 1 },
+      page: 1,
+    });
   };
 
   const invoices = data?.data ?? [];
@@ -264,14 +269,7 @@ export const Invoices = () => {
                 action={{
                   label: 'Clear filters',
                   icon: 'bx-eraser',
-                  onClick: () => {
-                    setStatus('all');
-                    setQuery('');
-                    setClientFilter('');
-                    setCurrencyFilter('');
-                    setRange(EMPTY_RANGE);
-                    setPage(1);
-                  },
+                  onClick: () => resetList(),
                 }}
               />
             )

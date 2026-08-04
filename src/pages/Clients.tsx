@@ -4,13 +4,15 @@ import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
 import { Pager } from '@/components/Pager';
 import { DateRange } from '@/components/DateRange';
-import { EMPTY_RANGE, inDateRange } from '@/utils/dateRange';
+import { inDateRange } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { useClients, useCreateClient } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
+import { useListStateStore } from '@/stores/listStateStore';
+import type { ClientSortKey } from '@/stores/listStateStore';
 import { formatDate } from '@/utils/format';
 import { isEmail, isFilled, isPhone } from '@/lib/validate';
 import { toast } from '@/lib/toast';
@@ -21,15 +23,17 @@ export const Clients = () => {
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const clients = data?.data ?? [];
 
-  const [query, setQuery] = useState('');
-  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
-  const [view, setView] = useState<'grid' | 'list'>('grid');
-  const [sortKey, setSortKey] = useState<'name-asc' | 'name-desc' | 'newest' | 'oldest'>(
-    'name-asc'
-  );
+  // how you left this list is how you find it
+  const listState = useListStateStore((s) => s.clients);
+  const patch = useListStateStore((s) => s.setClients);
+  const { query, range, view, sortKey, page, pageSize } = listState;
+  const setQuery = (v: string) => patch({ query: v });
+  const setRange = (v: DateRangeValue) => patch({ range: v });
+  const setView = (v: 'grid' | 'list') => patch({ view: v });
+  const setSortKey = (v: ClientSortKey) => patch({ sortKey: v });
+  const setPage = (v: number) => patch({ page: v });
+  const setPageSize = (v: number) => patch({ pageSize: v });
   const [selected, setSelected] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
