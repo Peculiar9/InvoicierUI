@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -15,20 +15,43 @@ interface ToastItemProps {
   type: ToastType;
   message: string;
   duration?: number;
+  action?: { label: string; onClick: () => void };
   onDone: () => void;
 }
 
-const ToastItem = ({ type, message, duration, onDone }: ToastItemProps) => {
+const ToastItem = ({ type, message, duration, action, onDone }: ToastItemProps) => {
+  const [paused, setPaused] = useState(false);
+  const done = useRef(onDone);
+  done.current = onDone;
+
+  // reaching for Undo should not race the timer that is about to remove it
   useEffect(() => {
-    const timer = setTimeout(onDone, duration ?? 3200);
+    if (paused) return;
+    const timer = setTimeout(() => done.current(), duration ?? 3200);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [paused, duration]);
 
   return (
-    <div className={`toast toast--${type}`} role="status">
+    <div
+      className={`toast toast--${type}${action ? ' toast--action' : ''}`}
+      role="status"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
       <i className={`bx ${icons[type]}`} aria-hidden="true" />
       <span>{message}</span>
+      {action && (
+        <button
+          type="button"
+          className="toast-action"
+          onClick={() => {
+            action.onClick();
+            onDone();
+          }}
+        >
+          {action.label}
+        </button>
+      )}
       <button type="button" onClick={onDone} aria-label="Dismiss">
         <i className="bx bx-x" />
       </button>
@@ -49,6 +72,7 @@ export const Toaster = () => {
           type={n.type}
           message={n.message}
           duration={n.duration}
+          action={n.action}
           onDone={() => removeNotification(n.id)}
         />
       ))}

@@ -12,6 +12,8 @@ interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
   duration?: number;
+  /** one button on the toast, used for undo */
+  action?: { label: string; onClick: () => void };
 }
 
 interface UIActions {

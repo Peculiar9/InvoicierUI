@@ -5430,3 +5430,28 @@
   pointer-events: none;
   user-select: none;
 }
+
+/* ---- undo lives on the toast, wearing the house pill ------------------- */
+.toast--action {
+  max-width: 420px;
+}
+.toast .toast-action {
+  flex: none;
+  padding: 7px 15px;
+  border: 1px solid var(--brand, #924ee9);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brand, #924ee9);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.14s ease;
+}
+.toast .toast-action:hover {
+  background: var(--brand, #924ee9);
+  color: #fff;
+}
+.toast .toast-action:active {
+  transform: scale(0.96);
+}
