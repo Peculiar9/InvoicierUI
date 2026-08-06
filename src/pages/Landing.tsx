@@ -1148,14 +1148,14 @@ export const Landing = () => {
                 <i className="bx bx-right-arrow-alt" />
               </a>
               <h1 data-reveal data-delay="2">
-                Invoices that get themselves paid. From{' '}
+                Invoices that turn into tax records. Paid from{' '}
                 <Typewriter
-                  words={['anywhere', 'a link', 'WhatsApp', 'Paystack', 'any bank', 'your phone']}
+                  words={['a link', 'WhatsApp', 'any bank', 'your phone', 'anywhere']}
                 />
               </h1>
               <p className="lp-hero-sub" data-reveal data-delay="3">
                 {site.heroSubline ??
-                  `Invoicier drafts it in thirty seconds, sends it as a link your client can pay in naira or dollars, then quietly files every payment into a tax-grade ledger. By the time March asks questions, your books already have the answers.`}
+                  `You write it once. Your client pays by card or bank transfer, in naira, dollars, euros or pounds. Every payment is filed with the date it landed, the VAT and the WHT already worked out. So when March asks, your books already have the answers.`}
               </p>
               <div className="lp-hero-actions" data-reveal data-delay="4">
                 <a href="#waitlist" className="lp-btn lp-btn--lg">
