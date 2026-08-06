@@ -19,7 +19,7 @@ interface ErrorStateProps {
 export const ErrorState = ({ doing, error, onRetry, retrying }: ErrorStateProps) => (
   <div className="empty-state error-state" role="alert">
     <span className="empty-state__icon error-state__icon">
-      <i className="bx bx-cloud-off" />
+      <i className="bx bx-wifi-off" />
     </span>
     <h3 className="empty-state__title">We could not load this</h3>
     <p className="empty-state__text">{errorMessage(error, doing)}</p>

@@ -167,7 +167,7 @@ export const Payment = ({
              the invoice is genuinely gone, say it is us and offer a retry. */
           <div className="pay-card pay-state">
             <span className="pay-icon pay-icon--warn">
-              <i className="bx bx-cloud-off" />
+              <i className="bx bx-wifi-off" />
             </span>
             <h2>We cannot reach the invoice right now</h2>
             <p>

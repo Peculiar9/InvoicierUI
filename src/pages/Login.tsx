@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,16 +19,23 @@ type LoginFormData = z.infer<typeof loginSchema>;
  * and nothing else asking for attention.
  */
 export const Login = () => {
-  // the interceptor leaves this behind when a 401 bounced them here
+  // The interceptor leaves this behind when a 401 bounced them here. The
+  // read has to stay pure: StrictMode calls the initialiser twice, so
+  // clearing the flag in here meant the second call found nothing.
   const [expired] = useState(() => {
     try {
-      const flag = sessionStorage.getItem('invoicier-signed-out');
-      if (flag) sessionStorage.removeItem('invoicier-signed-out');
-      return flag === 'expired';
+      return sessionStorage.getItem('invoicier-signed-out') === 'expired';
     } catch {
       return false;
     }
   });
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('invoicier-signed-out');
+    } catch {
+      // private mode: the flag simply never persisted
+    }
+  }, []);
 
   const { mutate: login, isPending, error } = useLogin();
   const {
