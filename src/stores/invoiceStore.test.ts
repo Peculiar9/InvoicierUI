@@ -5,13 +5,13 @@ describe('invoiceStore', () => {
   beforeEach(() => {
     useInvoiceStore.setState({
       draft: {
-        clientId: '',
+        client_id: '',
         items: [],
         currency: 'USD',
-        dueDate: '',
+        due_date: '',
         notes: '',
         terms: 'Payment due within 30 days',
-        taxRate: 0,
+        tax_rate: 0,
       },
       selectedInvoice: null,
       isPreviewOpen: false,
@@ -28,7 +28,7 @@ describe('invoiceStore', () => {
     useInvoiceStore.getState().addItem({
       description: 'Web Design',
       quantity: 1,
-      unitPrice: 1000,
+      unit_price: 1000,
     });
 
     const state = useInvoiceStore.getState();
@@ -41,7 +41,7 @@ describe('invoiceStore', () => {
     useInvoiceStore.getState().addItem({
       description: 'Web Design',
       quantity: 1,
-      unitPrice: 1000,
+      unit_price: 1000,
     });
 
     const itemId = useInvoiceStore.getState().draft.items[0].id;
@@ -56,7 +56,7 @@ describe('invoiceStore', () => {
     useInvoiceStore.getState().addItem({
       description: 'Web Design',
       quantity: 1,
-      unitPrice: 1000,
+      unit_price: 1000,
     });
 
     const itemId = useInvoiceStore.getState().draft.items[0].id;
@@ -70,16 +70,16 @@ describe('invoiceStore', () => {
     useInvoiceStore.getState().addItem({
       description: 'Web Design',
       quantity: 2,
-      unitPrice: 500,
+      unit_price: 500,
     });
 
     useInvoiceStore.getState().addItem({
       description: 'Development',
       quantity: 10,
-      unitPrice: 100,
+      unit_price: 100,
     });
 
-    useInvoiceStore.getState().setDraft({ taxRate: 10 });
+    useInvoiceStore.getState().setDraft({ tax_rate: 10 });
 
     const totals = useInvoiceStore.getState().calculateTotals();
     expect(totals.subtotal).toBe(2000);
@@ -91,14 +91,14 @@ describe('invoiceStore', () => {
     useInvoiceStore.getState().addItem({
       description: 'Web Design',
       quantity: 1,
-      unitPrice: 1000,
+      unit_price: 1000,
     });
 
-    useInvoiceStore.getState().setDraft({ clientId: '123' });
+    useInvoiceStore.getState().setDraft({ client_id: '123' });
     useInvoiceStore.getState().clearDraft();
 
     const state = useInvoiceStore.getState();
     expect(state.draft.items).toHaveLength(0);
-    expect(state.draft.clientId).toBe('');
+    expect(state.draft.client_id).toBe('');
   });
 });

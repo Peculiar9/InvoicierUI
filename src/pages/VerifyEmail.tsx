@@ -19,7 +19,7 @@ export const VerifyEmail = () => {
       .verifyEmail(token)
       .then(() => {
         if (cancelled) return;
-        updateUser({ emailVerified: true });
+        updateUser({ email_verified: true });
         setState('done');
       })
       .catch(() => !cancelled && setState('failed'));

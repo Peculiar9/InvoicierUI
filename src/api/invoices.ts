@@ -10,7 +10,7 @@ import type {
 
 interface InvoiceFilters {
   status?: string;
-  clientId?: string;
+  client_id?: string;
   startDate?: string;
   endDate?: string;
   page?: number;
@@ -62,7 +62,7 @@ export const invoicesApi = {
   /** Public: the payer says they made a transfer. A claim, not a payment. */
   claimPayment: async (
     id: string,
-    data: { reference?: string; note?: string; payerEmail?: string }
+    data: { reference?: string; note?: string; payer_email?: string }
   ): Promise<Invoice> => {
     const response = await apiClient.post<ApiResponse<Invoice>>(
       `/invoices/${id}/payment-claimed`,

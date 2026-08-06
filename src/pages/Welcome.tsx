@@ -69,7 +69,7 @@ export const Welcome = () => {
   );
 
   const displayName = tradingName.trim() || name.trim() || 'Your name here';
-  const firstName = name.trim().split(' ')[0] || 'friend';
+  const first_name = name.trim().split(' ')[0] || 'friend';
 
   const goFromEmail = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
@@ -192,7 +192,7 @@ export const Welcome = () => {
         {/* -------------------------------------- step 2: the trading name */}
         {step === 1 && (
           <div className="ob-step">
-            <span className="ob-kicker">Nice to meet you, {firstName}</span>
+            <span className="ob-kicker">Nice to meet you, {first_name}</span>
             <h1>Does your invoice wear a different name?</h1>
             <p>
               If you trade under a brand, it goes on the letterhead. If it is
@@ -261,7 +261,7 @@ export const Welcome = () => {
         {step === 3 && (
           <div className="ob-step">
             <span className="ob-kicker">Getting to know you</span>
-            <h1>Which hat fits, {firstName}?</h1>
+            <h1>Which hat fits, {first_name}?</h1>
             <p>No wrong answers. We just set the tone.</p>
             <div className="ob-personas">
               {PERSONAS.map((p) => (

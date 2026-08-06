@@ -9,7 +9,7 @@ interface CreateClientData {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
+    zip_code: string;
     country: string;
   };
 }
@@ -73,10 +73,10 @@ export const useDeleteClient = () => {
   });
 };
 
-export const useClientInvoices = (clientId: string, params?: { page?: number; limit?: number }) => {
+export const useClientInvoices = (client_id: string, params?: { page?: number; limit?: number }) => {
   return useQuery({
-    queryKey: ['clients', clientId, 'invoices', params],
-    queryFn: () => clientsApi.getInvoices(clientId, params),
-    enabled: !!clientId,
+    queryKey: ['clients', client_id, 'invoices', params],
+    queryFn: () => clientsApi.getInvoices(client_id, params),
+    enabled: !!client_id,
   });
 };

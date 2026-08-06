@@ -1007,7 +1007,7 @@ const DevPreviewBar = () => {
           id: 'usr_demo',
           email: 'demo@invoicier.app',
           username: 'demo',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
         'mock-jwt-token'
       );

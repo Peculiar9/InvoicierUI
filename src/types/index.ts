@@ -3,11 +3,11 @@ export interface User {
   email: string;
   username: string;
   /** cleared by the verification link; gates sending, nothing else */
-  emailVerified?: boolean;
-  firstName?: string;
-  lastName?: string;
+  email_verified?: boolean;
+  first_name?: string;
+  last_name?: string;
   avatar?: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface AuthState {
@@ -22,14 +22,14 @@ export interface Client {
   email: string;
   phone?: string;
   address?: Address;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Address {
   street: string;
   city: string;
   state: string;
-  zipCode: string;
+  zip_code: string;
   country: string;
 }
 
@@ -37,67 +37,67 @@ export interface InvoiceItem {
   id: string;
   description: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   total: number;
 }
 
 export interface Invoice {
   id: string;
-  invoiceNumber: string;
+  invoice_number: string;
   client: Client;
   items: InvoiceItem[];
   subtotal: number;
   tax: number;
-  taxRate: number;
+  tax_rate: number;
   total: number;
   currency: string;
   status: InvoiceStatus;
-  issueDate: string;
-  dueDate: string;
+  issue_date: string;
+  due_date: string;
   notes?: string;
   terms?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   /* ---- tax-grade record fields (the tax engine eats these later) ---- */
   /** VAT applied at invoice level (7.5% in v1). */
-  vatEnabled?: boolean;
+  vat_enabled?: boolean;
   /** The client is expected to withhold WHT on payment. */
-  whtExpected?: boolean;
+  wht_expected?: boolean;
   /** Date the money actually landed. Cash basis: income exists when received. */
-  dateReceived?: string;
+  date_received?: string;
   /** Amount actually received (fees and FX spreads mean it can differ). */
-  amountReceived?: number;
+  amount_received?: number;
   /** Amount withheld by the client; spawns a WHT credit record. */
-  whtWithheld?: number;
+  wht_withheld?: number;
 
   /* ---- the trail from send to receipt ---- */
   /** Every delivery, so "we never got it" has an answer. */
   sends?: InvoiceSend[];
   /** First time the client opened the payment link. */
-  viewedAt?: string;
+  viewed_at?: string;
   /** How the money arrived, as chosen on the payment page. */
-  paymentMethod?: string;
+  payment_method?: string;
   /** Where the payer asked for their receipt. */
-  payerEmail?: string;
+  payer_email?: string;
   /** Receipts get their own identity, not the invoice number. */
-  receiptNumber?: string;
-  receiptedAt?: string;
+  receipt_number?: string;
+  receipted_at?: string;
 
   /* ---- how this one is meant to be paid ---- */
   /** Overrides the sender's default for this invoice only. */
-  paymentRoute?: PaymentRoute;
+  payment_route?: PaymentRoute;
   /** Which of the sender's accounts to show for a transfer. */
-  receivingAccountId?: string;
+  receiving_account_id?: string;
   /** The payer said they sent it: when, and what reference they quoted. */
-  claimedAt?: string;
-  claimReference?: string;
-  claimNote?: string;
+  claimed_at?: string;
+  claim_reference?: string;
+  claim_note?: string;
   /** the sender could not find the money: when, and what they told the payer */
-  declinedAt?: string;
-  declineReason?: string;
+  declined_at?: string;
+  decline_reason?: string;
   /** why an invoice was voided, kept instead of deleting the record */
-  voidReason?: string;
-  voidedAt?: string;
+  void_reason?: string;
+  voided_at?: string;
 }
 
 /**
@@ -140,10 +140,10 @@ export interface ReceivingAccount {
   label: string;
   provider: AccountProvider;
   currency: string;
-  accountName: string;
-  accountNumber?: string;
-  bankName?: string;
-  routingNumber?: string;
+  account_name: string;
+  account_number?: string;
+  bank_name?: string;
+  routing_number?: string;
   swift?: string;
   iban?: string;
   /** anything the payer needs to be told, e.g. a reference to quote */
@@ -158,15 +158,15 @@ export interface InvoiceSend {
 }
 
 export interface DashboardStats {
-  totalReceived: number;
-  totalInvoices: number;
-  totalClients: number;
-  pendingInvoices: number;
-  overdueInvoices: number;
-  paidThisMonth: number;
+  total_received: number;
+  total_invoices: number;
+  total_clients: number;
+  pending_invoices: number;
+  overdue_invoices: number;
+  paid_this_month: number;
   /** Paid invoices carrying a date-received: the March-readiness signal. */
-  taxReadyPaid?: number;
-  paidCount?: number;
+  tax_ready_paid?: number;
+  paid_count?: number;
 }
 
 export interface ChartData {
@@ -191,16 +191,16 @@ export interface Activity {
     | 'client_added';
   description: string;
   timestamp: string;
-  invoiceId?: string;
-  clientId?: string;
+  invoice_id?: string;
+  client_id?: string;
 }
 
 export interface DashboardData {
   stats: DashboardStats;
-  revenueChart: ChartData;
-  invoiceStatusChart: ChartData;
-  recentInvoices: Invoice[];
-  recentActivities: Activity[];
+  revenue_chart: ChartData;
+  invoice_status_chart: ChartData;
+  recent_invoices: Invoice[];
+  recent_activities: Activity[];
 }
 
 export interface LoginCredentials {
@@ -226,25 +226,25 @@ export interface PaginatedResponse<T> {
   total: number;
   page: number;
   limit: number;
-  totalPages: number;
+  total_pages: number;
 }
 
 export interface CreateInvoiceDto {
   /** Optional: bill a saved client, or name the recipient inline below. */
-  clientId?: string;
+  client_id?: string;
   /** Ad-hoc recipient, used when no client has been saved yet. */
-  recipientName?: string;
-  recipientEmail?: string;
+  recipient_name?: string;
+  recipient_email?: string;
   items: Omit<InvoiceItem, 'id' | 'total'>[];
   currency: string;
-  dueDate: string;
+  due_date: string;
   notes?: string;
   terms?: string;
-  taxRate?: number;
-  vatEnabled?: boolean;
-  whtExpected?: boolean;
-  paymentRoute?: PaymentRoute;
-  receivingAccountId?: string;
+  tax_rate?: number;
+  vat_enabled?: boolean;
+  wht_expected?: boolean;
+  payment_route?: PaymentRoute;
+  receiving_account_id?: string;
 }
 
 export interface UpdateInvoiceDto extends Partial<CreateInvoiceDto> {
@@ -253,10 +253,10 @@ export interface UpdateInvoiceDto extends Partial<CreateInvoiceDto> {
 
 /** The three answers that make a foreign payment tax-grade. */
 export interface MarkPaidDto {
-  dateReceived: string;
-  amountReceived: number;
-  whtWithheld?: number;
+  date_received: string;
+  amount_received: number;
+  wht_withheld?: number;
   /** set when the payer pays through the public link */
-  paymentMethod?: string;
-  payerEmail?: string;
+  payment_method?: string;
+  payer_email?: string;
 }

@@ -44,24 +44,24 @@ const statusLabel: Record<InvoiceStatus, string> = {
 };
 
 /** The range can apply to any of the dates an invoice carries. */
-type DateField = 'issueDate' | 'dueDate' | 'dateReceived';
+type DateField = 'issue_date' | 'due_date' | 'date_received';
 const DATE_FIELDS: { key: DateField; label: string }[] = [
-  { key: 'issueDate', label: 'Issued' },
-  { key: 'dueDate', label: 'Due' },
-  { key: 'dateReceived', label: 'Received' },
+  { key: 'issue_date', label: 'Issued' },
+  { key: 'due_date', label: 'Due' },
+  { key: 'date_received', label: 'Received' },
 ];
 
 type SortKey =
-  | 'invoiceNumber'
+  | 'invoice_number'
   | 'client'
-  | 'issueDate'
-  | 'dueDate'
-  | 'dateReceived'
+  | 'issue_date'
+  | 'due_date'
+  | 'date_received'
   | 'total'
   | 'status';
 
 /** numeric-and-date keys read best newest/biggest first */
-const DESC_FIRST: SortKey[] = ['issueDate', 'dueDate', 'dateReceived', 'total'];
+const DESC_FIRST: SortKey[] = ['issue_date', 'due_date', 'date_received', 'total'];
 
 const sortValue = (inv: Invoice, key: SortKey): string | number => {
   if (key === 'client') return inv.client.name.toLowerCase();
@@ -117,7 +117,7 @@ export const Invoices = () => {
     const q = query.toLowerCase();
     const matchesQuery =
       inv.client.name.toLowerCase().includes(q) ||
-      inv.invoiceNumber.toLowerCase().includes(q);
+      inv.invoice_number.toLowerCase().includes(q);
     return matchesStatus && matchesClient && matchesCurrency && matchesDates && matchesQuery;
   });
   const sorted = [...filtered].sort((a, b) => {
@@ -352,7 +352,7 @@ export const Invoices = () => {
                             id: inv.id,
                             // the date received is the field that matters; today
                             // is the honest default when recording in bulk
-                            data: { dateReceived: today, amountReceived: inv.total },
+                            data: { date_received: today, amount_received: inv.total },
                           })
                         )
                       ).then(() => {
@@ -395,11 +395,11 @@ export const Invoices = () => {
                         }
                       />
                     </th>
-                    <Th k="invoiceNumber">Invoice</Th>
+                    <Th k="invoice_number">Invoice</Th>
                     <Th k="client">Client</Th>
-                    <Th k="issueDate">Issued</Th>
-                    <Th k="dueDate">Due</Th>
-                    <Th k="dateReceived">Received</Th>
+                    <Th k="issue_date">Issued</Th>
+                    <Th k="due_date">Due</Th>
+                    <Th k="date_received">Received</Th>
                     <Th k="total">Amount</Th>
                     <Th k="status">Status</Th>
                     <th className="iw-rowact-cell" aria-label="Actions" />
@@ -419,22 +419,22 @@ export const Invoices = () => {
                       >
                         <input
                           type="checkbox"
-                          aria-label={`Select invoice ${inv.invoiceNumber}`}
+                          aria-label={`Select invoice ${inv.invoice_number}`}
                           checked={picked.includes(inv.id)}
                           onChange={() => togglePick(inv.id)}
                         />
                       </td>
-                      <td className="dash-mono">#{inv.invoiceNumber}</td>
+                      <td className="dash-mono">#{inv.invoice_number}</td>
                       <td>{inv.client.name}</td>
                       <td className="dash-muted">
-                        {formatDate(inv.issueDate, { month: 'short', day: 'numeric' })}
+                        {formatDate(inv.issue_date, { month: 'short', day: 'numeric' })}
                       </td>
                       <td className="dash-muted">
-                        {formatDate(inv.dueDate, { month: 'short', day: 'numeric' })}
+                        {formatDate(inv.due_date, { month: 'short', day: 'numeric' })}
                       </td>
                       <td className="dash-muted">
-                        {inv.dateReceived
-                          ? formatDate(inv.dateReceived, { month: 'short', day: 'numeric' })
+                        {inv.date_received
+                          ? formatDate(inv.date_received, { month: 'short', day: 'numeric' })
                           : '-'}
                       </td>
                       <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
@@ -463,7 +463,7 @@ export const Invoices = () => {
                                     onSuccess: () =>
                                       toast.success(
                                         inv.status === 'draft'
-                                          ? `#${inv.invoiceNumber} sent to ${inv.client.name}`
+                                          ? `#${inv.invoice_number} sent to ${inv.client.name}`
                                           : `Reminder sent to ${inv.client.name}`
                                       ),
                                   }

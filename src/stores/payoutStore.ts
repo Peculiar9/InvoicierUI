@@ -8,9 +8,9 @@ export interface PayoutMethod {
   type: PayoutType;
   label: string;
   /* bank */
-  bankName?: string;
-  accountName?: string;
-  accountNumber?: string;
+  bank_name?: string;
+  account_name?: string;
+  account_number?: string;
   /* paypal */
   email?: string;
 }
@@ -96,18 +96,18 @@ export const usePayoutStore = create<PayoutState>()(
           return state as unknown as PayoutState;
         }
         const old = state.method as
-          | { bankName?: string; accountName?: string; accountNumber?: string }
+          | { bank_name?: string; account_name?: string; account_number?: string }
           | undefined;
-        const hasOld = !!old && !!old.accountNumber && old.accountNumber.trim().length > 0;
+        const hasOld = !!old && !!old.account_number && old.account_number.trim().length > 0;
         const methods: PayoutMethod[] = hasOld
           ? [
               {
                 id: 'pm_legacy',
                 type: 'bank',
-                label: old!.bankName || 'Bank account',
-                bankName: old!.bankName,
-                accountName: old!.accountName,
-                accountNumber: old!.accountNumber,
+                label: old!.bank_name || 'Bank account',
+                bank_name: old!.bank_name,
+                account_name: old!.account_name,
+                account_number: old!.account_number,
               },
             ]
           : [];

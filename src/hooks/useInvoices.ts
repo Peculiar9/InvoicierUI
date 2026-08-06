@@ -4,7 +4,7 @@ import type { CreateInvoiceDto, MarkPaidDto, UpdateInvoiceDto } from '@/types';
 
 interface UseInvoicesParams {
   status?: string;
-  clientId?: string;
+  client_id?: string;
   startDate?: string;
   endDate?: string;
   page?: number;

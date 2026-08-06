@@ -35,10 +35,10 @@ import type { Invoice } from '@/types';
 interface DraftItem {
   description: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
 }
 
-const emptyItem: DraftItem = { description: '', quantity: 1, unitPrice: 0 };
+const emptyItem: DraftItem = { description: '', quantity: 1, unit_price: 0 };
 
 /** Short, human time for the history rows. */
 const formatWhen = (iso: string) => {
@@ -52,14 +52,14 @@ const formatWhen = (iso: string) => {
 };
 
 export const InvoicePanel = () => {
-  const { open, mode, invoiceId, prefillClientId, close, openView, openEdit, siblings, step } =
+  const { open, mode, invoice_id, prefillClientId, close, openView, openEdit, siblings, step } =
     useInvoicePanelStore();
   const profile = useSettingsStore((s) => s.profile);
   const services = useServicesStore((s) => s.services);
   const { data: clientsData } = useClients();
   const clients = clientsData?.data ?? [];
 
-  const { data: invoice } = useInvoice(mode !== 'create' && invoiceId ? invoiceId : '');
+  const { data: invoice } = useInvoice(mode !== 'create' && invoice_id ? invoice_id : '');
 
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
@@ -72,9 +72,9 @@ export const InvoicePanel = () => {
 
   // declining a reported transfer, and voiding an invoice
   const [declineOpen, setDeclineOpen] = useState(false);
-  const [declineReason, setDeclineReason] = useState('');
+  const [decline_reason, setDeclineReason] = useState('');
   const [voidOpen, setVoidOpen] = useState(false);
-  const [voidReason, setVoidReason] = useState('');
+  const [void_reason, setVoidReason] = useState('');
   const [acting, setActing] = useState(false);
 
   const refreshInvoice = (id: string) => {
@@ -94,7 +94,7 @@ export const InvoicePanel = () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       openView(previous.id);
-      toast.success(`${previous.invoiceNumber} is back`);
+      toast.success(`${previous.invoice_number} is back`);
     });
   };
 
@@ -103,7 +103,7 @@ export const InvoicePanel = () => {
     setActing(true);
     try {
       const previous = invoice;
-      await invoicesApi.declineClaim(invoice.id, declineReason.trim());
+      await invoicesApi.declineClaim(invoice.id, decline_reason.trim());
       refreshInvoice(invoice.id);
       setDeclineOpen(false);
       setDeclineReason('');
@@ -118,33 +118,33 @@ export const InvoicePanel = () => {
     setActing(true);
     try {
       const previous = invoice;
-      await invoicesApi.voidInvoice(invoice.id, voidReason.trim());
+      await invoicesApi.voidInvoice(invoice.id, void_reason.trim());
       refreshInvoice(invoice.id);
       setVoidOpen(false);
       setVoidReason('');
-      offerUndo(`${invoice.invoiceNumber} voided. The record stays in your books.`, previous);
+      offerUndo(`${invoice.invoice_number} voided. The record stays in your books.`, previous);
     } finally {
       setActing(false);
     }
   };
 
-  const [clientId, setClientId] = useState('');
+  const [client_id, setClientId] = useState('');
   // billing someone who is not in the address book yet
-  const [recipientName, setRecipientName] = useState('');
-  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipient_name, setRecipientName] = useState('');
+  const [recipient_email, setRecipientEmail] = useState('');
   const [currency, setCurrency] = useState(profile.currency || 'NGN');
-  const [dueDate, setDueDate] = useState('');
-  const [vatEnabled, setVatEnabled] = useState(true);
-  const [whtExpected, setWhtExpected] = useState(false);
-  const [paymentRoute, setPaymentRoute] = useState<PaymentRoute | ''>('');
-  const [receivingAccountId, setReceivingAccountId] = useState('');
+  const [due_date, setDueDate] = useState('');
+  const [vat_enabled, setVatEnabled] = useState(true);
+  const [wht_expected, setWhtExpected] = useState(false);
+  const [payment_route, setPaymentRoute] = useState<PaymentRoute | ''>('');
+  const [receiving_account_id, setReceivingAccountId] = useState('');
   const [terms, setTerms] = useState('Payment due within 14 days');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   // reading an invoice should not mean closing it to reach the next one
-  const at = invoiceId ? siblings.indexOf(invoiceId) : -1;
+  const at = invoice_id ? siblings.indexOf(invoice_id) : -1;
   const canStep = mode === 'view' && at !== -1;
   const hasPrev = canStep && at > 0;
   const hasNext = canStep && at < siblings.length - 1;
@@ -170,7 +170,7 @@ export const InvoicePanel = () => {
   const [payAmount, setPayAmount] = useState('');
   const [payWht, setPayWht] = useState('');
 
-  const emailVerified = useAuthStore((s) => s.user?.emailVerified ?? true);
+  const email_verified = useAuthStore((s) => s.user?.email_verified ?? true);
 
   const editing = mode === 'create' || mode === 'edit';
 
@@ -197,11 +197,11 @@ export const InvoicePanel = () => {
       setRecipientName(invoice.client.id ? '' : invoice.client.name);
       setRecipientEmail(invoice.client.id ? '' : (invoice.client.email ?? ''));
       setCurrency(invoice.currency);
-      setDueDate(invoice.dueDate ? invoice.dueDate.slice(0, 10) : '');
-      setVatEnabled(invoice.vatEnabled ?? invoice.taxRate > 0);
-      setWhtExpected(invoice.whtExpected ?? false);
-      setPaymentRoute(invoice.paymentRoute ?? '');
-      setReceivingAccountId(invoice.receivingAccountId ?? '');
+      setDueDate(invoice.due_date ? invoice.due_date.slice(0, 10) : '');
+      setVatEnabled(invoice.vat_enabled ?? invoice.tax_rate > 0);
+      setWhtExpected(invoice.wht_expected ?? false);
+      setPaymentRoute(invoice.payment_route ?? '');
+      setReceivingAccountId(invoice.receiving_account_id ?? '');
       setTerms(invoice.terms ?? '');
       setNotes(invoice.notes ?? '');
       setItems(
@@ -209,7 +209,7 @@ export const InvoicePanel = () => {
           ? invoice.items.map((it) => ({
               description: it.description,
               quantity: it.quantity,
-              unitPrice: it.unitPrice,
+              unit_price: it.unit_price,
             }))
           : [{ ...emptyItem }]
       );
@@ -217,20 +217,20 @@ export const InvoicePanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mode, invoice?.id, prefillClientId]);
 
-  const client = clients.find((c) => c.id === clientId) ?? null;
+  const client = clients.find((c) => c.id === client_id) ?? null;
   // either a saved client, or a name typed straight onto the invoice
-  const billToName = client?.name ?? recipientName.trim();
-  const billToEmail = client?.email ?? recipientEmail.trim();
-  const lines = items.map((it) => ({ ...it, total: it.quantity * it.unitPrice }));
+  const billToName = client?.name ?? recipient_name.trim();
+  const billToEmail = client?.email ?? recipient_email.trim();
+  const lines = items.map((it) => ({ ...it, total: it.quantity * it.unit_price }));
   const subtotal = lines.reduce((s, l) => s + l.total, 0);
-  const taxRate = vatEnabled ? 0.075 : 0;
-  const tax = subtotal * taxRate;
+  const tax_rate = vat_enabled ? 0.075 : 0;
+  const tax = subtotal * tax_rate;
   const total = subtotal + tax;
 
   // The flow adds up: a client first, then at least one real item. Save and
   // Send stay asleep until the invoice can actually exist.
   const hasValidItem = items.some(
-    (it) => it.description.trim() && it.quantity > 0 && it.unitPrice >= 0
+    (it) => it.description.trim() && it.quantity > 0 && it.unit_price >= 0
   );
   const formReady = Boolean(billToName) && hasValidItem && subtotal > 0;
   // sending needs somewhere to send it; saving and printing do not
@@ -242,20 +242,20 @@ export const InvoicePanel = () => {
       : null;
 
   const draftDoc: InvoiceDocData = {
-    invoiceNumber: invoice?.invoiceNumber ?? 'DRAFT',
+    invoice_number: invoice?.invoice_number ?? 'DRAFT',
     status: 'draft',
     client:
       client ??
       (billToName
-        ? { id: '', name: billToName, email: billToEmail, createdAt: '' }
+        ? { id: '', name: billToName, email: billToEmail, created_at: '' }
         : null),
     items: lines,
     subtotal,
     tax,
-    taxRate,
+    tax_rate,
     total,
     currency,
-    dueDate: dueDate || undefined,
+    due_date: due_date || undefined,
     terms,
     notes,
   };
@@ -271,28 +271,28 @@ export const InvoicePanel = () => {
     const svc = services.find((s) => s.id === id);
     if (!svc) return;
     setItems((prev) => [
-      ...prev.filter((it) => it.description || it.unitPrice),
-      { description: svc.name, quantity: 1, unitPrice: svc.price },
+      ...prev.filter((it) => it.description || it.unit_price),
+      { description: svc.name, quantity: 1, unit_price: svc.price },
     ]);
   };
 
   const buildDto = () => ({
-    ...(clientId
-      ? { clientId }
-      : { recipientName: recipientName.trim(), recipientEmail: recipientEmail.trim() }),
+    ...(client_id
+      ? { client_id }
+      : { recipient_name: recipient_name.trim(), recipient_email: recipient_email.trim() }),
     currency,
-    dueDate: dueDate || todayLocal(),
-    taxRate,
-    vatEnabled,
-    whtExpected,
-    ...(paymentRoute ? { paymentRoute } : {}),
-    ...(receivingAccountId ? { receivingAccountId } : {}),
+    due_date: due_date || todayLocal(),
+    tax_rate,
+    vat_enabled,
+    wht_expected,
+    ...(payment_route ? { payment_route } : {}),
+    ...(receiving_account_id ? { receiving_account_id } : {}),
     notes,
     terms,
     items: items.map((it) => ({
       description: it.description,
       quantity: it.quantity,
-      unitPrice: it.unitPrice,
+      unit_price: it.unit_price,
     })),
   });
 
@@ -316,9 +316,9 @@ export const InvoicePanel = () => {
       {
         id: invoice.id,
         data: {
-          dateReceived: payDate,
-          amountReceived: amount,
-          ...(wht > 0 ? { whtWithheld: wht } : {}),
+          date_received: payDate,
+          amount_received: amount,
+          ...(wht > 0 ? { wht_withheld: wht } : {}),
         },
       },
       {
@@ -336,7 +336,7 @@ export const InvoicePanel = () => {
     const next: { client?: string; items?: string } = {};
     if (!billToName) next.client = 'Pick a client or type who this is for';
     const hasValidItem = items.some(
-      (it) => it.description.trim() && it.quantity > 0 && it.unitPrice >= 0
+      (it) => it.description.trim() && it.quantity > 0 && it.unit_price >= 0
     );
     if (!hasValidItem || subtotal <= 0) {
       next.items = 'Add at least one item with a description and amount';
@@ -352,8 +352,8 @@ export const InvoicePanel = () => {
       return null;
     }
     try {
-      if (mode === 'edit' && invoiceId) {
-        return await updateInvoice.mutateAsync({ id: invoiceId, data: buildDto() });
+      if (mode === 'edit' && invoice_id) {
+        return await updateInvoice.mutateAsync({ id: invoice_id, data: buildDto() });
       }
       if (savedId) {
         return await updateInvoice.mutateAsync({ id: savedId, data: buildDto() });
@@ -369,7 +369,7 @@ export const InvoicePanel = () => {
   };
 
   const emailAndSend = async (inv: Invoice) => {
-    if (!emailVerified) {
+    if (!email_verified) {
       toast.error('Verify your email first, so invoices go out under your name');
       return;
     }
@@ -496,7 +496,7 @@ export const InvoicePanel = () => {
                 <h2>
                   {mode === 'create'
                     ? 'Create invoice'
-                    : `#${invoice?.invoiceNumber ?? '…'}`}
+                    : `#${invoice?.invoice_number ?? '…'}`}
                 </h2>
               </div>
               {canStep && siblings.length > 1 && (
@@ -579,7 +579,7 @@ export const InvoicePanel = () => {
                   >
                     <i className="bx bx-link" /> Copy link
                   </button>
-                  {invoice?.receiptNumber && (
+                  {invoice?.receipt_number && (
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -598,7 +598,7 @@ export const InvoicePanel = () => {
                   <button type="button" className="btn btn-ghost" onClick={() => printInvoice()}>
                     <i className="bx bx-printer" /> Print / PDF
                   </button>
-                  {invoice && (!isPaid(invoice.status) || !invoice.dateReceived) && (
+                  {invoice && (!isPaid(invoice.status) || !invoice.date_received) && (
                     <button type="button" className="btn btn-ghost" onClick={openPaidDialog}>
                       <i className="bx bx-check-circle" />{' '}
                       {isPaid(invoice.status) ? 'Record payment details' : 'Mark paid'}
@@ -637,7 +637,7 @@ export const InvoicePanel = () => {
                       remove.mutate(invoice.id, {
                         onSuccess: () => {
                           close();
-                          offerUndo(`${previous.invoiceNumber} deleted`, previous);
+                          offerUndo(`${previous.invoice_number} deleted`, previous);
                         },
                       });
                     }}
@@ -647,10 +647,10 @@ export const InvoicePanel = () => {
                 </div>
                 <div className="ipanel-body">
                   {invoice && (invoice.sends?.length ||
-                    invoice.viewedAt ||
-                    invoice.claimedAt ||
-                    invoice.declinedAt ||
-                    invoice.dateReceived) ? (
+                    invoice.viewed_at ||
+                    invoice.claimed_at ||
+                    invoice.declined_at ||
+                    invoice.date_received) ? (
                     <ol className="iw-trail" aria-label="Invoice history">
                       {invoice.sends?.map((s, i) => (
                         <li key={`send-${i}`} className="is-sent">
@@ -667,63 +667,63 @@ export const InvoicePanel = () => {
                           </div>
                         </li>
                       ))}
-                      {invoice.viewedAt && (
+                      {invoice.viewed_at && (
                         <li className="is-viewed">
                           <i className="bx bx-show" aria-hidden="true" />
                           <div>
                             <b>Opened by {invoice.client?.name ?? 'the client'}</b>
-                            <small>{formatWhen(invoice.viewedAt)}</small>
+                            <small>{formatWhen(invoice.viewed_at)}</small>
                           </div>
                         </li>
                       )}
-                      {invoice.claimedAt && (
+                      {invoice.claimed_at && (
                         <li className="is-claimed">
                           <i className="bx bx-time-five" aria-hidden="true" />
                           <div>
                             <b>{invoice.client?.name ?? 'The client'} reported a transfer</b>
                             <small>
-                              {formatWhen(invoice.claimedAt)}
-                              {invoice.claimReference ? ` · ref ${invoice.claimReference}` : ''}
+                              {formatWhen(invoice.claimed_at)}
+                              {invoice.claim_reference ? ` · ref ${invoice.claim_reference}` : ''}
                             </small>
                           </div>
                         </li>
                       )}
-                      {invoice.declinedAt && (
+                      {invoice.declined_at && (
                         <li className="is-declined">
                           <i className="bx bx-x-circle" aria-hidden="true" />
                           <div>
                             <b>You reported the money had not arrived</b>
                             <small>
-                              {formatWhen(invoice.declinedAt)}
-                              {invoice.declineReason ? ` · "${invoice.declineReason}"` : ''}
+                              {formatWhen(invoice.declined_at)}
+                              {invoice.decline_reason ? ` · "${invoice.decline_reason}"` : ''}
                             </small>
                           </div>
                         </li>
                       )}
-                      {invoice.dateReceived && (
+                      {invoice.date_received && (
                         <li className="is-paid">
                           <i className="bx bx-check-circle" aria-hidden="true" />
                           <div>
                             <b>
                               Paid{' '}
                               {formatCurrency(
-                                invoice.amountReceived ?? invoice.total,
+                                invoice.amount_received ?? invoice.total,
                                 invoice.currency
                               )}
-                              {invoice.paymentMethod ? ` by ${invoice.paymentMethod}` : ''}
+                              {invoice.payment_method ? ` by ${invoice.payment_method}` : ''}
                             </b>
-                            <small>received {invoice.dateReceived.slice(0, 10)}</small>
+                            <small>received {invoice.date_received.slice(0, 10)}</small>
                           </div>
                         </li>
                       )}
-                      {invoice.receiptNumber && (
+                      {invoice.receipt_number && (
                         <li className="is-receipted">
                           <i className="bx bx-receipt" aria-hidden="true" />
                           <div>
-                            <b>Receipt {invoice.receiptNumber} issued</b>
+                            <b>Receipt {invoice.receipt_number} issued</b>
                             <small>
-                              {invoice.payerEmail
-                                ? `sent to ${invoice.payerEmail}`
+                              {invoice.payer_email
+                                ? `sent to ${invoice.payer_email}`
                                 : 'sent to both parties'}
                             </small>
                           </div>
@@ -737,8 +737,8 @@ export const InvoicePanel = () => {
                       <div>
                         <b>This invoice was voided</b>
                         <small>
-                          {invoice.voidReason
-                            ? invoice.voidReason
+                          {invoice.void_reason
+                            ? invoice.void_reason
                             : 'It stays in your books but is no longer owed.'}
                         </small>
                       </div>
@@ -755,8 +755,8 @@ export const InvoicePanel = () => {
                           <b>{invoice.client?.name ?? 'Your client'} says they sent this</b>
                           <small>
                             Reported{' '}
-                            {invoice.claimedAt ? formatWhen(invoice.claimedAt) : 'recently'}
-                            {invoice.claimReference ? ` · ref ${invoice.claimReference}` : ''}
+                            {invoice.claimed_at ? formatWhen(invoice.claimed_at) : 'recently'}
+                            {invoice.claim_reference ? ` · ref ${invoice.claim_reference}` : ''}
                           </small>
                         </div>
                       </div>
@@ -805,7 +805,7 @@ export const InvoicePanel = () => {
                                   // link the invoice to the client it created
                                   updateInvoice.mutate({
                                     id: invoice.id,
-                                    data: { clientId: saved.id },
+                                    data: { client_id: saved.id },
                                   });
                                   toast.success(`${saved.name} added to your clients`);
                                 },
@@ -823,15 +823,15 @@ export const InvoicePanel = () => {
                       </div>
                     )}
 
-                  {invoice && isPaid(invoice.status) && invoice.dateReceived && (
+                  {invoice && isPaid(invoice.status) && invoice.date_received && (
                     <div className="iw-march" style={{ marginBottom: 16 }}>
                       <i className="bx bx-badge-check" aria-hidden="true" />
                       <span>
                         <b>Tax-grade record.</b> Received{' '}
-                        {formatCurrency(invoice.amountReceived ?? invoice.total, invoice.currency)}{' '}
-                        on {invoice.dateReceived.slice(0, 10)}
-                        {invoice.whtWithheld
-                          ? `, ${formatCurrency(invoice.whtWithheld, invoice.currency)} withheld (WHT credit)`
+                        {formatCurrency(invoice.amount_received ?? invoice.total, invoice.currency)}{' '}
+                        on {invoice.date_received.slice(0, 10)}
+                        {invoice.wht_withheld
+                          ? `, ${formatCurrency(invoice.wht_withheld, invoice.currency)} withheld (WHT credit)`
                           : ''}
                         .
                       </span>
@@ -865,7 +865,7 @@ export const InvoicePanel = () => {
                     <label className="cinv-field">
                       <span>Bill to</span>
                       <select
-                        value={clientId}
+                        value={client_id}
                         className={errors.client ? 'is-invalid' : ''}
                         onChange={(e) => {
                           setClientId(e.target.value);
@@ -894,19 +894,19 @@ export const InvoicePanel = () => {
                       <span>Due date</span>
                       <input
                         type="date"
-                        value={dueDate}
+                        value={due_date}
                         onChange={(e) => setDueDate(e.target.value)}
                       />
                     </label>
                   </div>
 
-                  {!clientId && (
+                  {!client_id && (
                     <div className="iw-adhoc">
                       <label className="cinv-field">
                         <span>Their name</span>
                         <input
                           type="text"
-                          value={recipientName}
+                          value={recipient_name}
                           placeholder="Otto Holdings"
                           onChange={(e) => {
                             setRecipientName(e.target.value);
@@ -918,7 +918,7 @@ export const InvoicePanel = () => {
                         <span>Their email</span>
                         <input
                           type="email"
-                          value={recipientEmail}
+                          value={recipient_email}
                           placeholder="accounts@otto.com"
                           onChange={(e) => setRecipientEmail(e.target.value)}
                         />
@@ -934,7 +934,7 @@ export const InvoicePanel = () => {
                   <label className="cinv-field cinv-field--mt">
                     <span>How they pay</span>
                     <select
-                      value={paymentRoute}
+                      value={payment_route}
                       onChange={(e) => setPaymentRoute(e.target.value as PaymentRoute | '')}
                     >
                       <option value="">
@@ -947,7 +947,7 @@ export const InvoicePanel = () => {
                       <option value="transfer">Transfer to my account</option>
                       <option value="both">Let them choose</option>
                     </select>
-                    {(paymentRoute === 'transfer' || paymentRoute === 'both') &&
+                    {(payment_route === 'transfer' || payment_route === 'both') &&
                       !(profile.receivingAccounts ?? []).some((a) => a.currency === currency) && (
                         <small className="field-error">
                           No {currency} account saved yet, so instant will be offered
@@ -961,16 +961,16 @@ export const InvoicePanel = () => {
                       (a) => a.currency === currency
                     );
                     const showsTransfer =
-                      paymentRoute === 'transfer' ||
-                      paymentRoute === 'both' ||
-                      (!paymentRoute &&
+                      payment_route === 'transfer' ||
+                      payment_route === 'both' ||
+                      (!payment_route &&
                         (profile.routeByCurrency?.[currency] ?? 'transfer') !== 'instant');
                     // only worth asking when more than one account could serve
                     return showsTransfer && forCurrency.length > 1 ? (
                       <label className="cinv-field">
                         <span>Which account</span>
                         <select
-                          value={receivingAccountId}
+                          value={receiving_account_id}
                           onChange={(e) => setReceivingAccountId(e.target.value)}
                         >
                           <option value="">My default {currency} account</option>
@@ -988,7 +988,7 @@ export const InvoicePanel = () => {
                     <label className="iw-toggle">
                       <input
                         type="checkbox"
-                        checked={vatEnabled}
+                        checked={vat_enabled}
                         onChange={(e) => setVatEnabled(e.target.checked)}
                       />
                       <span className="knob" aria-hidden="true" />
@@ -998,7 +998,7 @@ export const InvoicePanel = () => {
                     <label className="iw-toggle">
                       <input
                         type="checkbox"
-                        checked={whtExpected}
+                        checked={wht_expected}
                         onChange={(e) => setWhtExpected(e.target.checked)}
                       />
                       <span className="knob" aria-hidden="true" />
@@ -1056,9 +1056,9 @@ export const InvoicePanel = () => {
                           min={0}
                           step="0.01"
                           inputMode="decimal"
-                          value={line.unitPrice}
+                          value={line.unit_price}
                           onChange={(e) =>
-                            updateItem(i, { unitPrice: Math.max(0, Number(e.target.value) || 0) })
+                            updateItem(i, { unit_price: Math.max(0, Number(e.target.value) || 0) })
                           }
                         />
                         <span className="cinv-line-total">
@@ -1087,7 +1087,7 @@ export const InvoicePanel = () => {
                       <span>Subtotal</span>
                       <span>{formatCurrency(subtotal, currency)}</span>
                     </div>
-                    {vatEnabled && (
+                    {vat_enabled && (
                       <div>
                         <span>VAT (7.5%)</span>
                         <span>{formatCurrency(tax, currency)}</span>
@@ -1181,7 +1181,7 @@ export const InvoicePanel = () => {
       <Modal
         open={receiptOpen}
         onClose={() => setReceiptOpen(false)}
-        title={`Receipt ${invoice?.receiptNumber ?? ''}`}
+        title={`Receipt ${invoice?.receipt_number ?? ''}`}
         size="lg"
       >
         {invoice && <ReceiptDocument invoice={invoice} />}
@@ -1208,7 +1208,7 @@ export const InvoicePanel = () => {
             <textarea
               rows={3}
               autoFocus
-              value={declineReason}
+              value={decline_reason}
               onChange={(e) => setDeclineReason(e.target.value)}
               placeholder="Nothing has landed yet. Could you check the reference and send the receipt from your bank?"
             />
@@ -1233,7 +1233,7 @@ export const InvoicePanel = () => {
       <Modal open={voidOpen} onClose={() => setVoidOpen(false)} title="Void this invoice">
         <div className="iw-paid-form">
           <p className="hint">
-            <b>The record stays.</b> {invoice?.invoiceNumber} keeps its number and
+            <b>The record stays.</b> {invoice?.invoice_number} keeps its number and
             its history, but it stops counting as money owed and the payment link
             closes. Use this instead of deleting when something has already been
             sent.
@@ -1241,7 +1241,7 @@ export const InvoicePanel = () => {
           <label className="cinv-field">
             <span>Reason (optional)</span>
             <input
-              value={voidReason}
+              value={void_reason}
               onChange={(e) => setVoidReason(e.target.value)}
               placeholder="Replaced by IV1042, wrong amount"
             />
@@ -1292,7 +1292,7 @@ export const InvoicePanel = () => {
               />
             </label>
           </div>
-          {invoice?.whtExpected && (
+          {invoice?.wht_expected && (
             <label className="cinv-field">
               <span>Amount withheld, WHT ({invoice?.currency})</span>
               <input

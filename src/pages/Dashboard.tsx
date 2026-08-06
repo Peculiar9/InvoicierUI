@@ -97,7 +97,7 @@ export const Dashboard = () => {
   const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
 
   // the panel steps through the recent list, in the order shown here
-  const recentIds = (data?.recentInvoices ?? [])
+  const recentIds = (data?.recent_invoices ?? [])
     .map((inv: Invoice) => inv.id)
     .join(',');
   useEffect(() => {
@@ -152,7 +152,7 @@ export const Dashboard = () => {
     );
   }
 
-  const { stats, revenueChart, invoiceStatusChart, recentInvoices } = data;
+  const { stats, revenue_chart, invoice_status_chart, recent_invoices } = data;
   const allInvoices = invData?.data ?? [];
 
   const start = period === 'custom' ? null : periodStart(period);
@@ -169,7 +169,7 @@ export const Dashboard = () => {
   const paidInPeriod = allInvoices.filter(
     (inv) =>
       isPaid(inv.status) &&
-      inPeriod(inv.dateReceived ?? inv.updatedAt, start, period === 'custom' ? range : undefined)
+      inPeriod(inv.date_received ?? inv.updated_at, start, period === 'custom' ? range : undefined)
   );
   // Adding naira to dollars would produce a number that is true of nothing.
   // Every money figure is per currency, headed by whichever one is biggest.
@@ -184,17 +184,17 @@ export const Dashboard = () => {
       }, {})
     ).sort((a, b) => b[1] - a[1]);
 
-  const byCurrency = splitBy(paidInPeriod, (inv) => inv.amountReceived ?? inv.total);
+  const byCurrency = splitBy(paidInPeriod, (inv) => inv.amount_received ?? inv.total);
   const [collectedCurrency = baseCurrency, collected = 0] = byCurrency[0] ?? [];
   const issuedInPeriod = allInvoices.filter((inv) =>
-    inPeriod(inv.issueDate, start)
+    inPeriod(inv.issue_date, start)
   ).length;
   const unsettled = allInvoices.filter((inv) => !isSettled(inv.status));
   const outstandingBy = splitBy(unsettled, (inv) => inv.total);
   const [outstandingCurrency = baseCurrency, outstanding = 0] = outstandingBy[0] ?? [];
-  const paidCount = stats.paidCount ?? 0;
-  const taxReady = stats.taxReadyPaid ?? 0;
-  const marchPct = paidCount === 0 ? 100 : Math.round((taxReady / paidCount) * 100);
+  const paid_count = stats.paid_count ?? 0;
+  const taxReady = stats.tax_ready_paid ?? 0;
+  const marchPct = paid_count === 0 ? 100 : Math.round((taxReady / paid_count) * 100);
 
   // What needs a human today: overdue money, paid rows missing their
   // date-received, and drafts going stale.
@@ -220,7 +220,7 @@ export const Dashboard = () => {
         text: `${formatCurrency(inv.total, inv.currency)} from ${inv.client.name} is past due`,
       })),
     ...allInvoices
-      .filter((inv) => isPaid(inv.status) && !inv.dateReceived)
+      .filter((inv) => isPaid(inv.status) && !inv.date_received)
       .map((inv) => ({
         inv,
         kind: 'no-date' as const,
@@ -229,7 +229,7 @@ export const Dashboard = () => {
     ...allInvoices
       .filter(
         (inv) =>
-          inv.status === 'draft' && new Date(inv.updatedAt).getTime() < staleBefore
+          inv.status === 'draft' && new Date(inv.updated_at).getTime() < staleBefore
       )
       .map((inv) => ({
         inv,
@@ -252,15 +252,15 @@ export const Dashboard = () => {
   ].map((bucket) => ({
     ...bucket,
     amount: openInvoices
-      .filter((inv) => bucket.test(Math.floor((Date.now() - new Date(inv.dueDate).getTime()) / DAY)))
+      .filter((inv) => bucket.test(Math.floor((Date.now() - new Date(inv.due_date).getTime()) / DAY)))
       .reduce((sum, inv) => sum + inv.total, 0),
   }));
   const agingTotal = AGING.reduce((sum, b) => sum + b.amount, 0);
 
   // The ledger tiles: the tax return forming in real time.
   const vatCollected = paidInPeriod.reduce((sum, inv) => sum + inv.tax, 0);
-  const whtCredits = paidInPeriod.reduce((sum, inv) => sum + (inv.whtWithheld ?? 0), 0);
-  const paidWithDates = paidInPeriod.filter((inv) => inv.dateReceived);
+  const whtCredits = paidInPeriod.reduce((sum, inv) => sum + (inv.wht_withheld ?? 0), 0);
+  const paidWithDates = paidInPeriod.filter((inv) => inv.date_received);
   const daysToPaid =
     paidWithDates.length === 0
       ? null
@@ -268,8 +268,8 @@ export const Dashboard = () => {
           paidWithDates.reduce(
             (sum, inv) =>
               sum +
-              (new Date(inv.dateReceived as string).getTime() -
-                new Date(inv.issueDate).getTime()) /
+              (new Date(inv.date_received as string).getTime() -
+                new Date(inv.issue_date).getTime()) /
                 DAY,
             0
           ) / paidWithDates.length
@@ -300,8 +300,8 @@ export const Dashboard = () => {
       split: outstandingBy,
       sub:
         outstandingBy.length > 1
-          ? `${stats.overdueInvoices} overdue, across ${outstandingBy.length} currencies`
-          : `${stats.overdueInvoices} overdue`,
+          ? `${stats.overdue_invoices} overdue, across ${outstandingBy.length} currencies`
+          : `${stats.overdue_invoices} overdue`,
       icon: 'bx-time-five',
       tone: 'amber',
     },
@@ -310,13 +310,13 @@ export const Dashboard = () => {
       amount: issuedInPeriod,
       format: whole,
       split: undefined as Array<[string, number]> | undefined,
-      sub: `issued ${periodSub}, ${stats.pendingInvoices} pending`,
+      sub: `issued ${periodSub}, ${stats.pending_invoices} pending`,
       icon: 'bx-receipt',
       tone: 'purple',
     },
     {
       label: 'Clients',
-      amount: stats.totalClients,
+      amount: stats.total_clients,
       format: whole,
       split: undefined as Array<[string, number]> | undefined,
       sub: 'active',
@@ -326,11 +326,11 @@ export const Dashboard = () => {
   ];
 
   const revenueData = {
-    labels: revenueChart.labels,
+    labels: revenue_chart.labels,
     datasets: [
       {
         label: 'Revenue',
-        data: revenueChart.datasets[0].data,
+        data: revenue_chart.datasets[0].data,
         borderColor: '#924ee9',
         backgroundColor: 'rgba(146, 78, 233, 0.12)',
         fill: true,
@@ -368,7 +368,7 @@ export const Dashboard = () => {
 
   // paid, viewed, sent, pending, overdue, draft
   const statusColors = ['#0c8d6f', '#ff5a5f', '#357fff', '#e0a008', '#ef5d54', '#9b99ab'];
-  const statusValues = invoiceStatusChart.datasets[0].data;
+  const statusValues = invoice_status_chart.datasets[0].data;
   const statusTotal = statusValues.reduce((a, b) => a + b, 0) || 1;
 
   return (
@@ -387,14 +387,14 @@ export const Dashboard = () => {
             <span className="iw-firstrun-kicker">Welcome to Invoicier</span>
             <h2>Three steps to your first tax-grade payment.</h2>
             <ol>
-              <li className={stats.totalClients > 0 ? 'done' : ''}>
-                <i className={`bx ${stats.totalClients > 0 ? 'bx-check-circle' : 'bx-user-plus'}`} />
+              <li className={stats.total_clients > 0 ? 'done' : ''}>
+                <i className={`bx ${stats.total_clients > 0 ? 'bx-check-circle' : 'bx-user-plus'}`} />
                 <div>
                   <b>Add a client</b>
                   <p>Name and email is enough to start.</p>
                 </div>
                 <Link to="/clients" className="iw-btn iw-btn--ghost">
-                  {stats.totalClients > 0 ? 'View clients' : 'Add client'}
+                  {stats.total_clients > 0 ? 'View clients' : 'Add client'}
                 </Link>
               </li>
               <li>
@@ -472,7 +472,7 @@ export const Dashboard = () => {
           <i className="bx bx-calendar-check" aria-hidden="true" />
           <span>
             <b>March readiness.</b> Paid invoices with a date received recorded:{' '}
-            {taxReady} of {paidCount}.
+            {taxReady} of {paid_count}.
           </span>
           <span className="iw-march-track" aria-hidden="true">
             <span className="iw-march-fill" style={{ width: `${marchPct}%` }} />
@@ -509,7 +509,7 @@ export const Dashboard = () => {
                 <li key={`${kind}-${inv.id}`}>
                   <span className={`iw-attn-dot is-${kind}`} aria-hidden="true" />
                   <p>{text}</p>
-                  <small>#{inv.invoiceNumber}</small>
+                  <small>#{inv.invoice_number}</small>
                   <button type="button" className="iw-attn-go" onClick={() => openView(inv.id)}>
                     {kind === 'no-date'
                       ? 'Record'
@@ -534,7 +534,7 @@ export const Dashboard = () => {
               <p>Last 6 months</p>
             </div>
             <span className="dash-card-figure">
-              <CountUp value={stats.totalReceived} format={money} />
+              <CountUp value={stats.total_received} format={money} />
             </span>
           </header>
           <div className="dash-chart">
@@ -548,7 +548,7 @@ export const Dashboard = () => {
             <header className="dash-card-head">
               <div>
                 <h2>Recent invoices</h2>
-                <p>{recentInvoices.length} latest</p>
+                <p>{recent_invoices.length} latest</p>
               </div>
             </header>
             <SwipeScroll className="dash-table-wrap">
@@ -563,7 +563,7 @@ export const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentInvoices.length === 0 && (
+                  {recent_invoices.length === 0 && (
                     <tr className="dash-row-empty">
                       <td colSpan={5}>
                         <i className="bx bx-receipt" aria-hidden="true" />
@@ -575,17 +575,17 @@ export const Dashboard = () => {
                       </td>
                     </tr>
                   )}
-                  {recentInvoices.map((inv: Invoice, i: number) => (
+                  {recent_invoices.map((inv: Invoice, i: number) => (
                     <tr
                       key={inv.id}
                       className="dash-row-click"
                       style={{ '--i': i } as CSSProperties}
                       onClick={() => openView(inv.id)}
                     >
-                      <td className="dash-mono">#{inv.invoiceNumber}</td>
+                      <td className="dash-mono">#{inv.invoice_number}</td>
                       <td>{inv.client.name}</td>
                       <td className="dash-muted">
-                        {formatDate(inv.issueDate, { month: 'short', day: 'numeric' })}
+                        {formatDate(inv.issue_date, { month: 'short', day: 'numeric' })}
                       </td>
                       <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
                       <td>
@@ -630,7 +630,7 @@ export const Dashboard = () => {
               <span>{statusTotal} invoices</span>
             </div>
             <div className="dash-status-bar">
-              {invoiceStatusChart.labels.map((label, i) =>
+              {invoice_status_chart.labels.map((label, i) =>
                 statusValues[i] > 0 ? (
                   <span
                     key={label}
@@ -642,7 +642,7 @@ export const Dashboard = () => {
               )}
             </div>
             <div className="iw-band-legend">
-              {invoiceStatusChart.labels.map((label, i) => (
+              {invoice_status_chart.labels.map((label, i) => (
                 <span key={label}>
                   <i style={{ background: statusColors[i] }} />
                   {label}

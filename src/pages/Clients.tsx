@@ -43,13 +43,13 @@ export const Clients = () => {
     const q = query.toLowerCase();
     const matchesQuery =
       c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
-    return matchesQuery && inDateRange(c.createdAt, range);
+    return matchesQuery && inDateRange(c.created_at, range);
   });
   const sorted = [...filtered].sort((a, b) => {
     if (sortKey === 'name-asc') return a.name.localeCompare(b.name);
     if (sortKey === 'name-desc') return b.name.localeCompare(a.name);
-    if (sortKey === 'oldest') return a.createdAt.localeCompare(b.createdAt);
-    return b.createdAt.localeCompare(a.createdAt); // newest
+    if (sortKey === 'oldest') return a.created_at.localeCompare(b.created_at);
+    return b.created_at.localeCompare(a.created_at); // newest
   });
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
@@ -257,7 +257,7 @@ export const Clients = () => {
                       <td className="dash-muted">{c.email}</td>
                       <td className="dash-muted">{c.phone ?? '-'}</td>
                       <td className="dash-muted">
-                        {formatDate(c.createdAt, { month: 'short', year: 'numeric' })}
+                        {formatDate(c.created_at, { month: 'short', year: 'numeric' })}
                       </td>
                     </tr>
                   ))}

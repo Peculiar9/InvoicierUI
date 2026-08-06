@@ -5,11 +5,11 @@ import type { DateRangeValue } from '@/utils/dateRange';
 import { EMPTY_RANGE } from '@/utils/dateRange';
 
 export type InvoiceSortKey =
-  | 'invoiceNumber'
+  | 'invoice_number'
   | 'client'
-  | 'issueDate'
-  | 'dueDate'
-  | 'dateReceived'
+  | 'issue_date'
+  | 'due_date'
+  | 'date_received'
   | 'total'
   | 'status';
 
@@ -23,7 +23,7 @@ interface InvoiceListState {
   sort: { key: InvoiceSortKey; dir: 1 | -1 };
   clientFilter: string;
   currencyFilter: string;
-  dateField: 'issueDate' | 'dueDate' | 'dateReceived';
+  dateField: 'issue_date' | 'due_date' | 'date_received';
   range: DateRangeValue;
 }
 
@@ -49,10 +49,10 @@ const INVOICE_DEFAULTS: InvoiceListState = {
   query: '',
   page: 1,
   pageSize: 8,
-  sort: { key: 'issueDate', dir: -1 },
+  sort: { key: 'issue_date', dir: -1 },
   clientFilter: '',
   currencyFilter: '',
-  dateField: 'issueDate',
+  dateField: 'issue_date',
   range: EMPTY_RANGE,
 };
 

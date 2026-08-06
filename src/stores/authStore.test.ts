@@ -22,7 +22,7 @@ describe('authStore', () => {
       id: '1',
       email: 'test@example.com',
       username: 'testuser',
-      createdAt: '2024-01-01',
+      created_at: '2024-01-01',
     };
     const mockToken = 'mock-jwt-token';
 
@@ -39,7 +39,7 @@ describe('authStore', () => {
       id: '1',
       email: 'test@example.com',
       username: 'testuser',
-      createdAt: '2024-01-01',
+      created_at: '2024-01-01',
     };
 
     useAuthStore.getState().setUser(mockUser, 'token');
@@ -56,7 +56,7 @@ describe('authStore', () => {
       id: '1',
       email: 'test@example.com',
       username: 'testuser',
-      createdAt: '2024-01-01',
+      created_at: '2024-01-01',
     };
 
     useAuthStore.getState().setUser(mockUser, 'token');

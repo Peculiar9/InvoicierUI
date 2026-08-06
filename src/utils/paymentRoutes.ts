@@ -9,7 +9,7 @@ import type { Invoice, PaymentRoute, ReceivingAccount } from '@/types';
  * is an account to transfer into, so it is dropped when there is not.
  */
 export const resolveRoutes = (
-  invoice: Pick<Invoice, 'currency' | 'paymentRoute' | 'receivingAccountId'>,
+  invoice: Pick<Invoice, 'currency' | 'payment_route' | 'receiving_account_id'>,
   profile: Pick<
     BusinessProfile,
     'receivingAccounts' | 'routeByCurrency' | 'defaultAccountByCurrency'
@@ -19,13 +19,13 @@ export const resolveRoutes = (
   // the invoice's choice, then the currency's default, then any match
   const defaultId = profile.defaultAccountByCurrency?.[invoice.currency];
   const account =
-    accounts.find((a) => a.id === invoice.receivingAccountId) ??
+    accounts.find((a) => a.id === invoice.receiving_account_id) ??
     accounts.find((a) => a.id === defaultId && a.currency === invoice.currency) ??
     accounts.find((a) => a.currency === invoice.currency) ??
     null;
 
   const chosen: PaymentRoute =
-    invoice.paymentRoute ??
+    invoice.payment_route ??
     profile.routeByCurrency?.[invoice.currency] ??
     (invoice.currency === 'NGN' ? 'instant' : 'transfer');
 

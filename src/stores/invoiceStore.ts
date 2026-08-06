@@ -2,13 +2,13 @@ import { create } from 'zustand';
 import type { Invoice, InvoiceItem } from '@/types';
 
 interface InvoiceDraft {
-  clientId: string;
+  client_id: string;
   items: InvoiceItem[];
   currency: string;
-  dueDate: string;
+  due_date: string;
   notes: string;
   terms: string;
-  taxRate: number;
+  tax_rate: number;
 }
 
 interface InvoiceState {
@@ -33,13 +33,13 @@ type InvoiceStore = InvoiceState & InvoiceActions;
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
 const initialDraft: InvoiceDraft = {
-  clientId: '',
+  client_id: '',
   items: [],
   currency: 'USD',
-  dueDate: '',
+  due_date: '',
   notes: '',
   terms: 'Payment due within 30 days',
-  taxRate: 0,
+  tax_rate: 0,
 };
 
 export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
@@ -61,7 +61,7 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
           {
             ...item,
             id: generateId(),
-            total: item.quantity * item.unitPrice,
+            total: item.quantity * item.unit_price,
           },
         ],
       },
@@ -74,7 +74,7 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
         items: state.draft.items.map((item) => {
           if (item.id !== id) return item;
           const updated = { ...item, ...updates };
-          return { ...updated, total: updated.quantity * updated.unitPrice };
+          return { ...updated, total: updated.quantity * updated.unit_price };
         }),
       },
     })),
@@ -94,9 +94,9 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
   setPreviewOpen: (open) => set({ isPreviewOpen: open }),
 
   calculateTotals: () => {
-    const { items, taxRate } = get().draft;
+    const { items, tax_rate } = get().draft;
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-    const tax = subtotal * (taxRate / 100);
+    const tax = subtotal * (tax_rate / 100);
     const total = subtotal + tax;
     return { subtotal, tax, total };
   },

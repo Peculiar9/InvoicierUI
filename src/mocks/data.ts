@@ -13,10 +13,10 @@ export const mockUser: User = {
   id: 'usr_1',
   email: 'demo@invoicier.app',
   username: 'demo',
-  emailVerified: true,
-  firstName: 'Demo',
-  lastName: 'User',
-  createdAt: '2026-01-01T09:00:00.000Z',
+  email_verified: true,
+  first_name: 'Demo',
+  last_name: 'User',
+  created_at: '2026-01-01T09:00:00.000Z',
 };
 
 const seedClients: Client[] = [
@@ -29,14 +29,14 @@ const seedClients: Client[] = [
       street: 'No 1 This is the actual address',
       city: 'Lagos',
       state: 'LA',
-      zipCode: '100001',
+      zip_code: '100001',
       country: 'Nigeria',
     },
-    createdAt: '2026-01-04T09:00:00.000Z',
+    created_at: '2026-01-04T09:00:00.000Z',
   },
-  { id: 'cli_2', name: 'Otto Holdings', email: 'mark@otto.com', phone: '08030001122', createdAt: '2026-02-12T09:00:00.000Z' },
-  { id: 'cli_3', name: 'Thornton & Co', email: 'jacob@thornton.io', phone: '07060009988', createdAt: '2026-03-02T09:00:00.000Z' },
-  { id: 'cli_4', name: 'Bird Studios', email: 'larry@bird.studio', createdAt: '2026-04-18T09:00:00.000Z' },
+  { id: 'cli_2', name: 'Otto Holdings', email: 'mark@otto.com', phone: '08030001122', created_at: '2026-02-12T09:00:00.000Z' },
+  { id: 'cli_3', name: 'Thornton & Co', email: 'jacob@thornton.io', phone: '07060009988', created_at: '2026-03-02T09:00:00.000Z' },
+  { id: 'cli_4', name: 'Bird Studios', email: 'larry@bird.studio', created_at: '2026-04-18T09:00:00.000Z' },
 ];
 
 const makeInvoice = (
@@ -44,30 +44,30 @@ const makeInvoice = (
   clientIndex: number,
   status: InvoiceStatus,
   amount: number,
-  issueDate: string,
-  dueDate: string
+  issue_date: string,
+  due_date: string
 ): Invoice => {
   const client = seedClients[clientIndex];
-  const taxRate = 0.075;
-  const subtotal = Math.round(amount / (1 + taxRate));
+  const tax_rate = 0.075;
+  const subtotal = Math.round(amount / (1 + tax_rate));
   const tax = amount - subtotal;
   return {
     id: `inv_${id}`,
-    invoiceNumber: `IV12N3${id}`,
+    invoice_number: `IV12N3${id}`,
     client,
     items: [
-      { id: `item_${id}_1`, description: 'Design & build services', quantity: 1, unitPrice: subtotal, total: subtotal },
+      { id: `item_${id}_1`, description: 'Design & build services', quantity: 1, unit_price: subtotal, total: subtotal },
     ],
     subtotal,
     tax,
-    taxRate,
+    tax_rate,
     total: amount,
     currency: 'USD',
     status,
-    issueDate,
-    dueDate,
-    createdAt: issueDate,
-    updatedAt: issueDate,
+    issue_date,
+    due_date,
+    created_at: issue_date,
+    updated_at: issue_date,
   };
 };
 
@@ -81,10 +81,10 @@ const seedInvoices: Invoice[] = [
 ];
 
 const seedActivities: Activity[] = [
-  { id: 'act_1', type: 'invoice_paid', description: 'Otto Holdings paid an invoice', timestamp: '2026-06-11T10:24:00.000Z', invoiceId: 'inv_2' },
-  { id: 'act_2', type: 'invoice_created', description: 'Demo User added an invoice', timestamp: '2026-06-10T16:00:00.000Z', invoiceId: 'inv_6' },
-  { id: 'act_3', type: 'invoice_sent', description: 'Invoice sent to Shoes Company Resolve', timestamp: '2026-06-09T12:10:00.000Z', invoiceId: 'inv_4' },
-  { id: 'act_4', type: 'client_added', description: 'Bird Studios was added as a client', timestamp: '2026-06-08T08:30:00.000Z', clientId: 'cli_4' },
+  { id: 'act_1', type: 'invoice_paid', description: 'Otto Holdings paid an invoice', timestamp: '2026-06-11T10:24:00.000Z', invoice_id: 'inv_2' },
+  { id: 'act_2', type: 'invoice_created', description: 'Demo User added an invoice', timestamp: '2026-06-10T16:00:00.000Z', invoice_id: 'inv_6' },
+  { id: 'act_3', type: 'invoice_sent', description: 'Invoice sent to Shoes Company Resolve', timestamp: '2026-06-09T12:10:00.000Z', invoice_id: 'inv_4' },
+  { id: 'act_4', type: 'client_added', description: 'Bird Studios was added as a client', timestamp: '2026-06-08T08:30:00.000Z', client_id: 'cli_4' },
 ];
 
 /* ---- localStorage-backed persistence (client-side "database") ---- */
@@ -132,7 +132,7 @@ export function saveDb() {
 export function logActivity(
   type: Activity['type'],
   description: string,
-  extra: { invoiceId?: string; clientId?: string } = {}
+  extra: { invoice_id?: string; client_id?: string } = {}
 ) {
   activities.unshift({
     id: `act_${activities.length + 1}_${Math.floor(Math.random() * 1e6)}`,
@@ -146,16 +146,16 @@ export function logActivity(
 /* ---- live-computed dashboard figures ---- */
 export function computeStats(): DashboardStats {
   const paid = invoices.filter((i) => isPaid(i.status));
-  const totalReceived = paid.reduce((s, i) => s + (i.amountReceived ?? i.total), 0);
+  const total_received = paid.reduce((s, i) => s + (i.amount_received ?? i.total), 0);
   return {
-    totalReceived,
-    totalInvoices: invoices.length,
-    totalClients: clients.length,
-    pendingInvoices: invoices.filter((i) => i.status === 'pending').length,
-    overdueInvoices: invoices.filter((i) => i.status === 'overdue').length,
-    paidThisMonth: totalReceived,
-    taxReadyPaid: paid.filter((i) => i.dateReceived).length,
-    paidCount: paid.length,
+    total_received,
+    total_invoices: invoices.length,
+    total_clients: clients.length,
+    pending_invoices: invoices.filter((i) => i.status === 'pending').length,
+    overdue_invoices: invoices.filter((i) => i.status === 'overdue').length,
+    paid_this_month: total_received,
+    tax_ready_paid: paid.filter((i) => i.date_received).length,
+    paid_count: paid.length,
   };
 }
 
@@ -183,7 +183,7 @@ export function computeStatusChart(): ChartData {
   };
 }
 
-export const revenueChart: ChartData = {
+export const revenue_chart: ChartData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
   datasets: [
     {

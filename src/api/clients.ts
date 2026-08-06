@@ -9,7 +9,7 @@ interface CreateClientDto {
     street: string;
     city: string;
     state: string;
-    zipCode: string;
+    zip_code: string;
     country: string;
   };
 }

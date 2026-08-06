@@ -3,7 +3,7 @@
  *
  * `new Date().toISOString().slice(0, 10)` is UTC. In Lagos that means a
  * payment recorded at 00:30 is filed as yesterday, and on 1 January it is
- * filed in the wrong tax year. `dateReceived` is the field this whole
+ * filed in the wrong tax year. `date_received` is the field this whole
  * product is built to get right, so it never touches UTC.
  */
 

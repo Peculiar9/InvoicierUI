@@ -52,7 +52,7 @@ export const Payment = ({
 
   const [stage, setStage] = useState<Stage>('review');
   const [method, setMethod] = useState('');
-  const [payerEmail, setPayerEmail] = useState('');
+  const [payer_email, setPayerEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [reference, setReference] = useState('');
   const [copied, setCopied] = useState('');
@@ -84,11 +84,11 @@ export const Payment = ({
   }, [invoice, preview]);
 
   useEffect(() => {
-    if (invoice && !payerEmail) setPayerEmail(invoice.client?.email ?? '');
-  }, [invoice, payerEmail]);
+    if (invoice && !payer_email) setPayerEmail(invoice.client?.email ?? '');
+  }, [invoice, payer_email]);
 
   const pay = (inv: Invoice) => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail.trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer_email.trim())) {
       setEmailError('We need an address to send your receipt to');
       return;
     }
@@ -97,10 +97,10 @@ export const Payment = ({
       {
         id: inv.id,
         data: {
-          dateReceived: todayLocal(),
-          amountReceived: inv.total,
-          paymentMethod: method,
-          payerEmail: payerEmail.trim(),
+          date_received: todayLocal(),
+          amount_received: inv.total,
+          payment_method: method,
+          payer_email: payer_email.trim(),
         },
       },
       {
@@ -112,7 +112,7 @@ export const Payment = ({
   };
 
   const reportTransfer = (inv: Invoice) => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail.trim())) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer_email.trim())) {
       setEmailError('We need an address to send your receipt to');
       return;
     }
@@ -120,7 +120,7 @@ export const Payment = ({
     invoicesApi
       .claimPayment(inv.id, {
         reference: reference.trim(),
-        payerEmail: payerEmail.trim(),
+        payer_email: payer_email.trim(),
       })
       .then(() => {
         queryClient.invalidateQueries({ queryKey: ['invoices', inv.id] });
@@ -251,7 +251,7 @@ export const Payment = ({
                       {formatCurrency(invoice.total, invoice.currency)}
                     </strong>
                     <p className="pay-due">
-                      Due {formatDate(invoice.dueDate, { month: 'long', day: 'numeric' })}
+                      Due {formatDate(invoice.due_date, { month: 'long', day: 'numeric' })}
                       {invoice.currency !== 'NGN' && ` · paid in ${invoice.currency}`}
                     </p>
                     <button
@@ -314,15 +314,15 @@ export const Payment = ({
                         </div>
                         <dl className="pay-transfer-rows">
                           {[
-                            ['Account name', routes.account.accountName],
+                            ['Account name', routes.account.account_name],
                             [
                               routes.account.provider === 'paypal' ? 'PayPal email' : 'Account number',
-                              routes.account.accountNumber,
+                              routes.account.account_number,
                             ],
-                            ['Bank', routes.account.bankName],
-                            ['Routing / sort code', routes.account.routingNumber],
+                            ['Bank', routes.account.bank_name],
+                            ['Routing / sort code', routes.account.routing_number],
                             ['SWIFT / BIC', routes.account.swift],
-                            ['Reference', invoice.invoiceNumber],
+                            ['Reference', invoice.invoice_number],
                           ]
                             .filter(([, v]) => Boolean(v))
                             .map(([label, value]) => (
@@ -366,7 +366,7 @@ export const Payment = ({
                       <span>Send my receipt to</span>
                       <input
                         type="email"
-                        value={payerEmail}
+                        value={payer_email}
                         disabled={stage === 'processing'}
                         onChange={(e) => {
                           setPayerEmail(e.target.value);
@@ -418,7 +418,7 @@ export const Payment = ({
                   </div>
                 )}
 
-                {stage === 'method' && invoice.declinedAt && (
+                {stage === 'method' && invoice.declined_at && (
                   <div className="pay-declined">
                     <span className="pay-declined-icon" aria-hidden="true">
                       <i className="bx bx-error-circle" />
@@ -426,7 +426,7 @@ export const Payment = ({
                     <div>
                       <b>{senderName} could not find that payment</b>
                       <p>
-                        {invoice.declineReason ||
+                        {invoice.decline_reason ||
                           'Nothing had landed when they last checked. Worth confirming the reference and the account details below.'}
                       </p>
                     </div>
@@ -461,7 +461,7 @@ export const Payment = ({
                     </div>
                     <p className="pay-reassure">
                       <i className="bx bx-envelope" />
-                      We will email {payerEmail || 'you'} the moment it is confirmed
+                      We will email {payer_email || 'you'} the moment it is confirmed
                     </p>
                   </div>
                 )}
@@ -480,7 +480,7 @@ export const Payment = ({
                     </svg>
                     <h2>Payment successful</h2>
                     <p className="pay-done-amount">
-                      {formatCurrency(invoice.amountReceived ?? invoice.total, invoice.currency)} to{' '}
+                      {formatCurrency(invoice.amount_received ?? invoice.total, invoice.currency)} to{' '}
                       {senderName}
                     </p>
 
@@ -489,7 +489,7 @@ export const Payment = ({
                         <i className="bx bx-envelope" /> Receipt sent to
                       </span>
                       <span className="pay-receipt-row">
-                        <b>{payerEmail || invoice.client?.email || 'you'}</b>
+                        <b>{payer_email || invoice.client?.email || 'you'}</b>
                         <small>your copy</small>
                       </span>
                       <span className="pay-receipt-row">
@@ -510,7 +510,7 @@ export const Payment = ({
 
                     <p className="pay-reassure">
                       <i className="bx bx-check-shield" />
-                      Receipt {invoice.receiptNumber ?? invoice.invoiceNumber} · keep this
+                      Receipt {invoice.receipt_number ?? invoice.invoice_number} · keep this
                       for your records
                     </p>
                   </div>

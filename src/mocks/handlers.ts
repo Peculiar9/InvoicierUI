@@ -8,7 +8,7 @@ import {
   invoices,
   logActivity,
   mockUser,
-  revenueChart,
+  revenue_chart,
   saveDb,
 } from './data';
 
@@ -21,7 +21,7 @@ const paginate = <T>(items: T[], page = 1, limit = 20) => ({
   total: items.length,
   page,
   limit,
-  totalPages: Math.max(1, Math.ceil(items.length / limit)),
+  total_pages: Math.max(1, Math.ceil(items.length / limit)),
 });
 
 const token = 'mock-jwt-token';
@@ -33,7 +33,7 @@ export const handlers = [
     const body = (await request.json().catch(() => ({}))) as Partial<typeof mockUser>;
     // the verification email goes out in the background right here, so it
     // lands while onboarding runs
-    return ok({ user: { ...mockUser, ...body, emailVerified: false }, token });
+    return ok({ user: { ...mockUser, ...body, email_verified: false }, token });
   }),
   http.post('*/api/auth/logout', () => new HttpResponse(null, { status: 200 })),
   http.get('*/api/auth/profile', () => ok(mockUser)),
@@ -49,7 +49,7 @@ export const handlers = [
   // ---- dashboard (computed live from the local DB) ----
   http.get('*/api/dashboard/stats', () => ok(computeStats())),
   http.get('*/api/dashboard/charts/:type', ({ params }) =>
-    ok(params.type === 'status' ? computeStatusChart() : revenueChart)
+    ok(params.type === 'status' ? computeStatusChart() : revenue_chart)
   ),
   http.get('*/api/dashboard/recent-invoices', ({ request }) => {
     const limit = Number(new URL(request.url).searchParams.get('limit')) || 5;
@@ -62,10 +62,10 @@ export const handlers = [
   http.get('*/api/dashboard', () =>
     ok({
       stats: computeStats(),
-      revenueChart,
-      invoiceStatusChart: computeStatusChart(),
-      recentInvoices: invoices.slice(0, 5),
-      recentActivities: activities.slice(0, 5),
+      revenue_chart,
+      invoice_status_chart: computeStatusChart(),
+      recent_invoices: invoices.slice(0, 5),
+      recent_activities: activities.slice(0, 5),
     })
   ),
 
@@ -90,54 +90,54 @@ export const handlers = [
     // A recipient does not have to exist in the address book. An empty id
     // marks someone who has not been saved as a client yet.
     const client =
-      clients.find((c) => c.id === body.clientId) ??
+      clients.find((c) => c.id === body.client_id) ??
       ({
         id: '',
-        name: (body.recipientName as string)?.trim() || 'Unnamed recipient',
-        email: (body.recipientEmail as string)?.trim() || '',
-        createdAt: now,
+        name: (body.recipient_name as string)?.trim() || 'Unnamed recipient',
+        email: (body.recipient_email as string)?.trim() || '',
+        created_at: now,
       } as Client);
-    const taxRate = (body.taxRate as number) ?? 0;
+    const tax_rate = (body.tax_rate as number) ?? 0;
     const rawItems = (body.items as Array<Record<string, unknown>>) ?? [];
     const seq = invoices.length + 1;
     const items = rawItems.map((it, idx) => {
       const quantity = Number(it.quantity) || 0;
-      const unitPrice = Number(it.unitPrice) || 0;
+      const unit_price = Number(it.unit_price) || 0;
       return {
         id: `item_${seq}_${idx}`,
         description: String(it.description ?? ''),
         quantity,
-        unitPrice,
-        total: quantity * unitPrice,
+        unit_price,
+        total: quantity * unit_price,
       };
     });
     const subtotal = items.reduce((sum, i) => sum + i.total, 0);
-    const tax = subtotal * taxRate;
+    const tax = subtotal * tax_rate;
     const invoice: Invoice = {
       id: `inv_${seq}_${Math.floor(Math.random() * 1e4)}`,
-      invoiceNumber: `IV${1000 + seq}`,
+      invoice_number: `IV${1000 + seq}`,
       client,
       items,
       subtotal,
       tax,
-      taxRate,
+      tax_rate,
       total: subtotal + tax,
       currency: (body.currency as string) ?? 'USD',
       status: 'draft',
-      issueDate: now,
-      dueDate: (body.dueDate as string) ?? now,
+      issue_date: now,
+      due_date: (body.due_date as string) ?? now,
       notes: body.notes as string | undefined,
       terms: body.terms as string | undefined,
-      vatEnabled: Boolean(body.vatEnabled),
-      whtExpected: Boolean(body.whtExpected),
-      paymentRoute: body.paymentRoute as Invoice['paymentRoute'],
-      receivingAccountId: body.receivingAccountId as string | undefined,
-      createdAt: now,
-      updatedAt: now,
+      vat_enabled: Boolean(body.vat_enabled),
+      wht_expected: Boolean(body.wht_expected),
+      payment_route: body.payment_route as Invoice['payment_route'],
+      receiving_account_id: body.receiving_account_id as string | undefined,
+      created_at: now,
+      updated_at: now,
     };
     invoices.unshift(invoice);
     logActivity('invoice_created', `Invoice for ${client?.name ?? 'client'} created`, {
-      invoiceId: invoice.id,
+      invoice_id: invoice.id,
     });
     saveDb();
     return ok(invoice, 'Invoice created');
@@ -147,51 +147,51 @@ export const handlers = [
     if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
 
-    if (body.clientId) {
-      invoice.client = clients.find((c) => c.id === body.clientId) ?? invoice.client;
+    if (body.client_id) {
+      invoice.client = clients.find((c) => c.id === body.client_id) ?? invoice.client;
     } else if (
-      typeof body.recipientName === 'string' ||
-      typeof body.recipientEmail === 'string'
+      typeof body.recipient_name === 'string' ||
+      typeof body.recipient_email === 'string'
     ) {
       invoice.client = {
         ...invoice.client,
         id: '',
-        name: (body.recipientName as string)?.trim() || invoice.client.name,
-        email: (body.recipientEmail as string)?.trim() ?? invoice.client.email,
+        name: (body.recipient_name as string)?.trim() || invoice.client.name,
+        email: (body.recipient_email as string)?.trim() ?? invoice.client.email,
       };
     }
     if (typeof body.currency === 'string') invoice.currency = body.currency;
-    if (typeof body.dueDate === 'string') invoice.dueDate = body.dueDate;
+    if (typeof body.due_date === 'string') invoice.due_date = body.due_date;
     if (typeof body.notes === 'string') invoice.notes = body.notes;
     if (typeof body.terms === 'string') invoice.terms = body.terms;
     if (body.status) invoice.status = body.status as Invoice['status'];
-    if (typeof body.taxRate === 'number') invoice.taxRate = body.taxRate;
-    if (typeof body.vatEnabled === 'boolean') invoice.vatEnabled = body.vatEnabled;
-    if (typeof body.whtExpected === 'boolean') invoice.whtExpected = body.whtExpected;
-    if (typeof body.paymentRoute === 'string') {
-      invoice.paymentRoute = body.paymentRoute as Invoice['paymentRoute'];
+    if (typeof body.tax_rate === 'number') invoice.tax_rate = body.tax_rate;
+    if (typeof body.vat_enabled === 'boolean') invoice.vat_enabled = body.vat_enabled;
+    if (typeof body.wht_expected === 'boolean') invoice.wht_expected = body.wht_expected;
+    if (typeof body.payment_route === 'string') {
+      invoice.payment_route = body.payment_route as Invoice['payment_route'];
     }
-    if (typeof body.receivingAccountId === 'string') {
-      invoice.receivingAccountId = body.receivingAccountId;
+    if (typeof body.receiving_account_id === 'string') {
+      invoice.receiving_account_id = body.receiving_account_id;
     }
 
     if (Array.isArray(body.items)) {
       invoice.items = (body.items as Array<Record<string, unknown>>).map((it, idx) => {
         const quantity = Number(it.quantity) || 0;
-        const unitPrice = Number(it.unitPrice) || 0;
+        const unit_price = Number(it.unit_price) || 0;
         return {
           id: `item_${invoice.id}_${idx}`,
           description: String(it.description ?? ''),
           quantity,
-          unitPrice,
-          total: quantity * unitPrice,
+          unit_price,
+          total: quantity * unit_price,
         };
       });
     }
     invoice.subtotal = invoice.items.reduce((s, i) => s + i.total, 0);
-    invoice.tax = invoice.subtotal * invoice.taxRate;
+    invoice.tax = invoice.subtotal * invoice.tax_rate;
     invoice.total = invoice.subtotal + invoice.tax;
-    invoice.updatedAt = new Date().toISOString();
+    invoice.updated_at = new Date().toISOString();
     saveDb();
 
     return ok(invoice, 'Invoice updated');
@@ -233,9 +233,9 @@ export const handlers = [
       if (invoice.status === 'draft' || invoice.status === 'pending') {
         invoice.status = 'sent';
       }
-      invoice.updatedAt = new Date().toISOString();
+      invoice.updated_at = new Date().toISOString();
       logActivity('invoice_sent', `Invoice sent to ${invoice.client?.name ?? 'client'}`, {
-        invoiceId: invoice.id,
+        invoice_id: invoice.id,
       });
       saveDb();
     }
@@ -252,17 +252,17 @@ export const handlers = [
     const settled = ['paid', 'receipted', 'cancelled'];
     if (!settled.includes(invoice.status)) {
       invoice.status = 'awaiting';
-      invoice.claimedAt = new Date().toISOString();
-      invoice.claimReference = (body?.reference as string)?.trim() || undefined;
-      invoice.declinedAt = undefined;
-      invoice.declineReason = undefined;
-      invoice.claimNote = (body?.note as string)?.trim() || undefined;
-      if (typeof body?.payerEmail === 'string') invoice.payerEmail = body.payerEmail.trim();
-      invoice.updatedAt = new Date().toISOString();
+      invoice.claimed_at = new Date().toISOString();
+      invoice.claim_reference = (body?.reference as string)?.trim() || undefined;
+      invoice.declined_at = undefined;
+      invoice.decline_reason = undefined;
+      invoice.claim_note = (body?.note as string)?.trim() || undefined;
+      if (typeof body?.payer_email === 'string') invoice.payer_email = body.payer_email.trim();
+      invoice.updated_at = new Date().toISOString();
       logActivity(
         'invoice_claimed',
         `${invoice.client?.name ?? 'A client'} says they sent payment`,
-        { invoiceId: invoice.id }
+        { invoice_id: invoice.id }
       );
       saveDb();
     }
@@ -275,12 +275,12 @@ export const handlers = [
     const invoice = invoices.find((i) => i.id === params.id);
     if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-    invoice.status = invoice.viewedAt ? 'viewed' : 'sent';
-    invoice.declinedAt = new Date().toISOString();
-    invoice.declineReason = (body?.reason as string)?.trim() || undefined;
-    invoice.claimedAt = undefined;
-    invoice.claimReference = undefined;
-    invoice.updatedAt = new Date().toISOString();
+    invoice.status = invoice.viewed_at ? 'viewed' : 'sent';
+    invoice.declined_at = new Date().toISOString();
+    invoice.decline_reason = (body?.reason as string)?.trim() || undefined;
+    invoice.claimed_at = undefined;
+    invoice.claim_reference = undefined;
+    invoice.updated_at = new Date().toISOString();
     saveDb();
     return ok(invoice as Invoice, 'Claim declined');
   }),
@@ -291,9 +291,9 @@ export const handlers = [
     if (!invoice) return HttpResponse.json({ success: false }, { status: 404 });
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     invoice.status = 'cancelled';
-    invoice.voidedAt = new Date().toISOString();
-    invoice.voidReason = (body?.reason as string)?.trim() || undefined;
-    invoice.updatedAt = new Date().toISOString();
+    invoice.voided_at = new Date().toISOString();
+    invoice.void_reason = (body?.reason as string)?.trim() || undefined;
+    invoice.updated_at = new Date().toISOString();
     saveDb();
     return ok(invoice as Invoice, 'Invoice voided');
   }),
@@ -304,10 +304,10 @@ export const handlers = [
     const invoice = invoices.find((i) => i.id === params.id);
     if (invoice) {
       const settled = ['paid', 'receipted', 'cancelled'];
-      if (!invoice.viewedAt) {
-        invoice.viewedAt = new Date().toISOString();
+      if (!invoice.viewed_at) {
+        invoice.viewed_at = new Date().toISOString();
         logActivity('invoice_viewed', `${invoice.client?.name ?? 'Client'} opened an invoice`, {
-          invoiceId: invoice.id,
+          invoice_id: invoice.id,
         });
       }
       if (!settled.includes(invoice.status)) invoice.status = 'viewed';
@@ -321,24 +321,24 @@ export const handlers = [
       const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
       // Cash basis: the ledger row is written at the payment event, keyed on
       // the date the money actually landed.
-      invoice.dateReceived =
-        typeof body?.dateReceived === 'string' ? body.dateReceived : new Date().toISOString();
-      invoice.amountReceived =
-        typeof body?.amountReceived === 'number' ? body.amountReceived : invoice.total;
-      if (typeof body?.whtWithheld === 'number' && body.whtWithheld > 0) {
-        invoice.whtWithheld = body.whtWithheld;
+      invoice.date_received =
+        typeof body?.date_received === 'string' ? body.date_received : new Date().toISOString();
+      invoice.amount_received =
+        typeof body?.amount_received === 'number' ? body.amount_received : invoice.total;
+      if (typeof body?.wht_withheld === 'number' && body.wht_withheld > 0) {
+        invoice.wht_withheld = body.wht_withheld;
       }
-      if (typeof body?.paymentMethod === 'string') invoice.paymentMethod = body.paymentMethod;
-      if (typeof body?.payerEmail === 'string') invoice.payerEmail = body.payerEmail;
+      if (typeof body?.payment_method === 'string') invoice.payment_method = body.payment_method;
+      if (typeof body?.payer_email === 'string') invoice.payer_email = body.payer_email;
       // the receipt is its own document with its own identity
-      if (!invoice.receiptNumber) {
-        invoice.receiptNumber = `RCT-${invoice.invoiceNumber.replace(/^IV/i, '')}`;
-        invoice.receiptedAt = new Date().toISOString();
+      if (!invoice.receipt_number) {
+        invoice.receipt_number = `RCT-${invoice.invoice_number.replace(/^IV/i, '')}`;
+        invoice.receipted_at = new Date().toISOString();
       }
       invoice.status = 'receipted';
-      invoice.updatedAt = new Date().toISOString();
+      invoice.updated_at = new Date().toISOString();
       logActivity('invoice_paid', `${invoice.client?.name ?? 'Client'} paid an invoice`, {
-        invoiceId: invoice.id,
+        invoice_id: invoice.id,
       });
       saveDb();
     }
@@ -351,7 +351,7 @@ export const handlers = [
     const copy: Invoice = {
       ...source,
       id: `inv_${seq}_${Math.floor(Math.random() * 1e4)}`,
-      invoiceNumber: `IV${1000 + seq}`,
+      invoice_number: `IV${1000 + seq}`,
       status: 'draft',
     };
     invoices.unshift(copy);
@@ -387,10 +387,10 @@ export const handlers = [
       email: body.email ?? '',
       phone: body.phone,
       address: body.address,
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
     clients.push(client);
-    logActivity('client_added', `${client.name} was added as a client`, { clientId: client.id });
+    logActivity('client_added', `${client.name} was added as a client`, { client_id: client.id });
     saveDb();
     return ok(client, 'Client created');
   }),

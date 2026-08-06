@@ -6,22 +6,22 @@ import type { Client, InvoiceStatus } from '@/types';
 export interface InvoiceDocLine {
   description: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   total: number;
 }
 
 export interface InvoiceDocData {
-  invoiceNumber: string;
+  invoice_number: string;
   status?: InvoiceStatus;
   client: Pick<Client, 'name' | 'email' | 'phone' | 'address'> | null;
   items: InvoiceDocLine[];
   subtotal: number;
   tax: number;
-  taxRate: number;
+  tax_rate: number;
   total: number;
   currency: string;
-  issueDate?: string;
-  dueDate?: string;
+  issue_date?: string;
+  due_date?: string;
   notes?: string;
   terms?: string;
 }
@@ -58,7 +58,7 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
           )}
           <div>
             <span className="invoice-doc-mark">Invoice</span>
-            <h2>#{data.invoiceNumber}</h2>
+            <h2>#{data.invoice_number}</h2>
           </div>
         </div>
         {data.status && (
@@ -90,11 +90,11 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
         <div className="invoice-doc-meta">
           <div>
             <span>Issued</span>
-            <strong>{data.issueDate ? formatDate(data.issueDate) : '—'}</strong>
+            <strong>{data.issue_date ? formatDate(data.issue_date) : '—'}</strong>
           </div>
           <div>
             <span>Due</span>
-            <strong>{data.dueDate ? formatDate(data.dueDate) : '—'}</strong>
+            <strong>{data.due_date ? formatDate(data.due_date) : '—'}</strong>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
               <tr key={i}>
                 <td>{item.description || 'Untitled item'}</td>
                 <td>{item.quantity}</td>
-                <td>{formatCurrency(item.unitPrice, currency)}</td>
+                <td>{formatCurrency(item.unit_price, currency)}</td>
                 <td className="invoice-doc-amount">{formatCurrency(item.total, currency)}</td>
               </tr>
             ))
@@ -134,7 +134,7 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
           <span>{formatCurrency(data.subtotal, currency)}</span>
         </div>
         <div>
-          <span>{data.taxRate === 0.075 ? 'VAT' : 'Tax'} ({+(data.taxRate * 100).toFixed(2)}%)</span>
+          <span>{data.tax_rate === 0.075 ? 'VAT' : 'Tax'} ({+(data.tax_rate * 100).toFixed(2)}%)</span>
           <span>{formatCurrency(data.tax, currency)}</span>
         </div>
         <div className="invoice-doc-grand">

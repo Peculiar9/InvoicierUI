@@ -106,7 +106,7 @@ export const LegacyWorkspace = ({
 
   const user = useAuthStore((s) => s.user);
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const unverified = Boolean(user) && user?.emailVerified === false;
+  const unverified = Boolean(user) && user?.email_verified === false;
   const resendVerification = async () => {
     await authApi.resendVerification();
     toast.success(`Verification link resent to ${user?.email}`);

@@ -10,7 +10,7 @@ import type { Invoice } from '@/types';
  */
 export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
   const profile = useSettingsStore((s) => s.profile);
-  const received = invoice.amountReceived ?? invoice.total;
+  const received = invoice.amount_received ?? invoice.total;
   const short = received < invoice.total;
 
   return (
@@ -34,7 +34,7 @@ export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
         </div>
         <div className="rcpt-id">
           <span>Receipt</span>
-          <b>{invoice.receiptNumber ?? invoice.invoiceNumber}</b>
+          <b>{invoice.receipt_number ?? invoice.invoice_number}</b>
         </div>
       </header>
 
@@ -43,7 +43,7 @@ export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
         <strong>{formatCurrency(received, invoice.currency)}</strong>
         <small>
           from {invoice.client?.name}
-          {invoice.dateReceived ? ` on ${formatDate(invoice.dateReceived)}` : ''}
+          {invoice.date_received ? ` on ${formatDate(invoice.date_received)}` : ''}
         </small>
         <span className="rcpt-stamp" aria-hidden="true">
           Paid
@@ -53,7 +53,7 @@ export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
       <dl className="rcpt-rows">
         <div>
           <dt>For invoice</dt>
-          <dd>{invoice.invoiceNumber}</dd>
+          <dd>{invoice.invoice_number}</dd>
         </div>
         <div>
           <dt>Invoice total</dt>
@@ -67,22 +67,22 @@ export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
             </dd>
           </div>
         )}
-        {invoice.paymentMethod && (
+        {invoice.payment_method && (
           <div>
             <dt>Paid by</dt>
-            <dd>{invoice.paymentMethod}</dd>
+            <dd>{invoice.payment_method}</dd>
           </div>
         )}
-        {invoice.whtWithheld ? (
+        {invoice.wht_withheld ? (
           <div>
             <dt>Tax withheld</dt>
-            <dd>{formatCurrency(invoice.whtWithheld, invoice.currency)}</dd>
+            <dd>{formatCurrency(invoice.wht_withheld, invoice.currency)}</dd>
           </div>
         ) : null}
-        {invoice.claimReference && (
+        {invoice.claim_reference && (
           <div>
             <dt>Their reference</dt>
-            <dd>{invoice.claimReference}</dd>
+            <dd>{invoice.claim_reference}</dd>
           </div>
         )}
       </dl>
@@ -90,7 +90,7 @@ export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
       <footer className="rcpt-foot">
         <span>
           Issued by {profile.name}
-          {invoice.receiptedAt ? ` · ${formatDate(invoice.receiptedAt)}` : ''}
+          {invoice.receipted_at ? ` · ${formatDate(invoice.receipted_at)}` : ''}
         </span>
         <span className="rcpt-mark">
           invoicier<b>.</b>

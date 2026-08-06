@@ -23,9 +23,9 @@ import { toast } from '@/lib/toast';
 interface MethodForm {
   type: PayoutType;
   label: string;
-  bankName: string;
-  accountName: string;
-  accountNumber: string;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
   email: string;
 }
 
@@ -34,10 +34,10 @@ const emptyAccount: ReceivingAccount = {
   label: '',
   provider: 'grey',
   currency: 'USD',
-  accountName: '',
-  accountNumber: '',
-  bankName: '',
-  routingNumber: '',
+  account_name: '',
+  account_number: '',
+  bank_name: '',
+  routing_number: '',
   swift: '',
   iban: '',
   instructions: '',
@@ -52,9 +52,9 @@ const ROUTE_CHOICES: { key: PaymentRoute; label: string; hint: string }[] = [
 const emptyMethodForm: MethodForm = {
   type: 'bank',
   label: '',
-  bankName: '',
-  accountName: '',
-  accountNumber: '',
+  bank_name: '',
+  account_name: '',
+  account_number: '',
   email: '',
 };
 
@@ -64,7 +64,7 @@ const maskAccount = (n?: string) => {
   return d ? `•••• ${d.slice(-4)}` : '';
 };
 const methodSummary = (m: PayoutMethod) =>
-  m.type === 'paypal' ? m.email ?? '' : `${m.bankName ?? ''} · ${maskAccount(m.accountNumber)}`;
+  m.type === 'paypal' ? m.email ?? '' : `${m.bank_name ?? ''} · ${maskAccount(m.account_number)}`;
 
 export const Settings = () => {
   const profile = useSettingsStore((s) => s.profile);
@@ -120,12 +120,12 @@ export const Settings = () => {
   const saveAccount = () => {
     const errs: Record<string, string> = {};
     if (!isFilled(acctForm.label)) errs.label = 'Give this account a name';
-    if (!isFilled(acctForm.accountName)) errs.accountName = 'Required';
+    if (!isFilled(acctForm.account_name)) errs.account_name = 'Required';
     if (!isFilled(acctForm.currency)) errs.currency = 'Required';
     if (acctForm.provider === 'paypal') {
-      if (!isEmail(acctForm.accountNumber ?? '')) errs.accountNumber = 'Enter the PayPal email';
-    } else if (!isFilled(acctForm.accountNumber ?? '')) {
-      errs.accountNumber = 'Required';
+      if (!isEmail(acctForm.account_number ?? '')) errs.account_number = 'Enter the PayPal email';
+    } else if (!isFilled(acctForm.account_number ?? '')) {
+      errs.account_number = 'Required';
     }
     setAcctErrors(errs);
     if (Object.keys(errs).length) return;
@@ -186,9 +186,9 @@ export const Settings = () => {
     setMethodForm({
       type: m.type,
       label: m.label,
-      bankName: m.bankName ?? '',
-      accountName: m.accountName ?? '',
-      accountNumber: m.accountNumber ?? '',
+      bank_name: m.bank_name ?? '',
+      account_name: m.account_name ?? '',
+      account_number: m.account_number ?? '',
       email: m.email ?? '',
     });
     setMethodErrors({});
@@ -200,10 +200,10 @@ export const Settings = () => {
     const errs: Partial<Record<keyof MethodForm, string>> = {};
     if (!isFilled(f.label)) errs.label = 'Give this method a name';
     if (f.type === 'bank') {
-      if (!isFilled(f.bankName)) errs.bankName = 'Required';
-      if (!isFilled(f.accountName)) errs.accountName = 'Required';
-      if (!isAccountNumber(f.accountNumber))
-        errs.accountNumber = 'Enter a valid account number (6–20 digits)';
+      if (!isFilled(f.bank_name)) errs.bank_name = 'Required';
+      if (!isFilled(f.account_name)) errs.account_name = 'Required';
+      if (!isAccountNumber(f.account_number))
+        errs.account_number = 'Enter a valid account number (6–20 digits)';
     } else {
       if (!isEmail(f.email)) errs.email = 'Enter a valid PayPal email';
     }
@@ -215,9 +215,9 @@ export const Settings = () => {
         ? {
             type: 'bank' as const,
             label: f.label.trim(),
-            bankName: f.bankName.trim(),
-            accountName: f.accountName.trim(),
-            accountNumber: digitsOnly(f.accountNumber),
+            bank_name: f.bank_name.trim(),
+            account_name: f.account_name.trim(),
+            account_number: digitsOnly(f.account_number),
           }
         : { type: 'paypal' as const, label: f.label.trim(), email: f.email.trim() };
 
@@ -425,7 +425,7 @@ export const Settings = () => {
                         <b>{a.label}</b>
                         <small>
                           {PROVIDER_LABELS[a.provider] ?? a.provider}
-                          {a.accountNumber ? ` · ${maskAccount(a.accountNumber) || a.accountNumber}` : ''}
+                          {a.account_number ? ` · ${maskAccount(a.account_number) || a.account_number}` : ''}
                         </small>
                       </div>
                       <div className="iw-acct-actions">
@@ -702,47 +702,47 @@ export const Settings = () => {
               <label className="cinv-field">
                 <span>Bank name</span>
                 <input
-                  value={methodForm.bankName}
-                  className={methodErrors.bankName ? 'is-invalid' : ''}
+                  value={methodForm.bank_name}
+                  className={methodErrors.bank_name ? 'is-invalid' : ''}
                   placeholder="e.g. Chase"
                   onChange={(e) => {
-                    setMethodForm({ ...methodForm, bankName: e.target.value });
-                    setMethodErrors((er) => ({ ...er, bankName: undefined }));
+                    setMethodForm({ ...methodForm, bank_name: e.target.value });
+                    setMethodErrors((er) => ({ ...er, bank_name: undefined }));
                   }}
                 />
-                {methodErrors.bankName && (
-                  <small className="field-error">{methodErrors.bankName}</small>
+                {methodErrors.bank_name && (
+                  <small className="field-error">{methodErrors.bank_name}</small>
                 )}
               </label>
               <label className="cinv-field">
                 <span>Account name</span>
                 <input
-                  value={methodForm.accountName}
-                  className={methodErrors.accountName ? 'is-invalid' : ''}
+                  value={methodForm.account_name}
+                  className={methodErrors.account_name ? 'is-invalid' : ''}
                   placeholder="Account holder"
                   onChange={(e) => {
-                    setMethodForm({ ...methodForm, accountName: e.target.value });
-                    setMethodErrors((er) => ({ ...er, accountName: undefined }));
+                    setMethodForm({ ...methodForm, account_name: e.target.value });
+                    setMethodErrors((er) => ({ ...er, account_name: undefined }));
                   }}
                 />
-                {methodErrors.accountName && (
-                  <small className="field-error">{methodErrors.accountName}</small>
+                {methodErrors.account_name && (
+                  <small className="field-error">{methodErrors.account_name}</small>
                 )}
               </label>
               <label className="cinv-field">
                 <span>Account number</span>
                 <input
                   inputMode="numeric"
-                  value={methodForm.accountNumber}
-                  className={methodErrors.accountNumber ? 'is-invalid' : ''}
+                  value={methodForm.account_number}
+                  className={methodErrors.account_number ? 'is-invalid' : ''}
                   placeholder="6–20 digits"
                   onChange={(e) => {
-                    setMethodForm({ ...methodForm, accountNumber: e.target.value });
-                    setMethodErrors((er) => ({ ...er, accountNumber: undefined }));
+                    setMethodForm({ ...methodForm, account_number: e.target.value });
+                    setMethodErrors((er) => ({ ...er, account_number: undefined }));
                   }}
                 />
-                {methodErrors.accountNumber && (
-                  <small className="field-error">{methodErrors.accountNumber}</small>
+                {methodErrors.account_number && (
+                  <small className="field-error">{methodErrors.account_number}</small>
                 )}
               </label>
             </>
@@ -817,26 +817,26 @@ export const Settings = () => {
           <label className="cinv-field">
             <span>Account name</span>
             <input
-              value={acctForm.accountName}
+              value={acctForm.account_name}
               placeholder="Ada Obi"
-              className={acctErrors.accountName ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, accountName: e.target.value })}
+              className={acctErrors.account_name ? 'is-invalid' : ''}
+              onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
             />
-            {acctErrors.accountName && (
-              <small className="field-error">{acctErrors.accountName}</small>
+            {acctErrors.account_name && (
+              <small className="field-error">{acctErrors.account_name}</small>
             )}
           </label>
 
           <label className="cinv-field">
             <span>{acctForm.provider === 'paypal' ? 'PayPal email' : 'Account number'}</span>
             <input
-              value={acctForm.accountNumber ?? ''}
+              value={acctForm.account_number ?? ''}
               placeholder={acctForm.provider === 'paypal' ? 'you@example.com' : '0123456789'}
-              className={acctErrors.accountNumber ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, accountNumber: e.target.value })}
+              className={acctErrors.account_number ? 'is-invalid' : ''}
+              onChange={(e) => setAcctForm({ ...acctForm, account_number: e.target.value })}
             />
-            {acctErrors.accountNumber && (
-              <small className="field-error">{acctErrors.accountNumber}</small>
+            {acctErrors.account_number && (
+              <small className="field-error">{acctErrors.account_number}</small>
             )}
           </label>
 
@@ -845,18 +845,18 @@ export const Settings = () => {
               <label className="cinv-field">
                 <span>Bank</span>
                 <input
-                  value={acctForm.bankName ?? ''}
+                  value={acctForm.bank_name ?? ''}
                   placeholder="Bank name"
-                  onChange={(e) => setAcctForm({ ...acctForm, bankName: e.target.value })}
+                  onChange={(e) => setAcctForm({ ...acctForm, bank_name: e.target.value })}
                 />
               </label>
               <div className="iw-paid-grid">
                 <label className="cinv-field">
                   <span>Routing / sort code</span>
                   <input
-                    value={acctForm.routingNumber ?? ''}
+                    value={acctForm.routing_number ?? ''}
                     onChange={(e) =>
-                      setAcctForm({ ...acctForm, routingNumber: e.target.value })
+                      setAcctForm({ ...acctForm, routing_number: e.target.value })
                     }
                   />
                 </label>

@@ -9,9 +9,9 @@ describe('mock data (live-computed)', () => {
     const paidTotal = invoices
       .filter((i) => isPaid(i.status))
       .reduce((s, i) => s + i.total, 0);
-    expect(stats.totalInvoices).toBe(invoices.length);
-    expect(stats.totalReceived).toBe(paidTotal);
-    expect(stats.totalReceived).toBeGreaterThan(0);
+    expect(stats.total_invoices).toBe(invoices.length);
+    expect(stats.total_received).toBe(paidTotal);
+    expect(stats.total_received).toBeGreaterThan(0);
   });
 
   it('status chart totals equal the invoice count', () => {

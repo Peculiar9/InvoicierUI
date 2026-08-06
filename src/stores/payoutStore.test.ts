@@ -15,20 +15,20 @@ describe('payoutStore', () => {
     const id = usePayoutStore.getState().addMethod({
       type: 'bank',
       label: 'Main',
-      bankName: 'Chase',
-      accountName: 'Ada',
-      accountNumber: '12345678',
+      bank_name: 'Chase',
+      account_name: 'Ada',
+      account_number: '12345678',
     });
     const { methods, defaultMethodId } = usePayoutStore.getState();
     expect(methods).toHaveLength(1);
-    expect(methods[0]).toMatchObject({ id, type: 'bank', bankName: 'Chase' });
+    expect(methods[0]).toMatchObject({ id, type: 'bank', bank_name: 'Chase' });
     expect(defaultMethodId).toBe(id);
   });
 
   it('keeps the existing default when adding more, and can switch it', () => {
     const a = usePayoutStore
       .getState()
-      .addMethod({ type: 'bank', label: 'A', accountNumber: '11112222' });
+      .addMethod({ type: 'bank', label: 'A', account_number: '11112222' });
     const b = usePayoutStore
       .getState()
       .addMethod({ type: 'paypal', label: 'B', email: 'b@x.com' });
@@ -40,10 +40,10 @@ describe('payoutStore', () => {
   it('reassigns the default when the default method is removed', () => {
     const a = usePayoutStore
       .getState()
-      .addMethod({ type: 'bank', label: 'A', accountNumber: '11112222' });
+      .addMethod({ type: 'bank', label: 'A', account_number: '11112222' });
     const b = usePayoutStore
       .getState()
-      .addMethod({ type: 'bank', label: 'B', accountNumber: '33334444' });
+      .addMethod({ type: 'bank', label: 'B', account_number: '33334444' });
     usePayoutStore.getState().removeMethod(a);
     const { methods, defaultMethodId } = usePayoutStore.getState();
     expect(methods).toHaveLength(1);
