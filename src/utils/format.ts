@@ -1,3 +1,4 @@
+import { parseDay } from './day';
 export const formatCurrency = (
   amount: number,
   currency: string = 'USD',
@@ -19,7 +20,9 @@ export const formatDate = (
     day: 'numeric',
   };
 
-  return new Date(date).toLocaleDateString('en-US', options || defaultOptions);
+  // parseDay keeps a stored "2026-08-05" on the 5th for every reader, rather
+  // than showing the 4th to anyone west of Greenwich
+  return parseDay(date).toLocaleDateString('en-US', options || defaultOptions);
 };
 
 export const formatDateTime = (date: string | Date): string => {

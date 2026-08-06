@@ -25,6 +25,7 @@ import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
 import { sendInvoiceEmail } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
+import { todayLocal } from '@/utils/day';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { invoicesApi } from '@/api/invoices';
 import { useQueryClient } from '@tanstack/react-query';
@@ -280,7 +281,7 @@ export const InvoicePanel = () => {
       ? { clientId }
       : { recipientName: recipientName.trim(), recipientEmail: recipientEmail.trim() }),
     currency,
-    dueDate: dueDate || new Date().toISOString().slice(0, 10),
+    dueDate: dueDate || todayLocal(),
     taxRate,
     vatEnabled,
     whtExpected,
@@ -297,7 +298,7 @@ export const InvoicePanel = () => {
 
   const openPaidDialog = () => {
     if (!invoice) return;
-    setPayDate(new Date().toISOString().slice(0, 10));
+    setPayDate(todayLocal());
     setPayAmount(String(invoice.total));
     setPayWht('');
     setPaidOpen(true);

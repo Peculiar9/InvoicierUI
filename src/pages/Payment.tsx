@@ -9,6 +9,7 @@ import { invoicesApi } from '@/api/invoices';
 import { resolveRoutes, PROVIDER_LABELS } from '@/utils/paymentRoutes';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice } from '@/types';
 
@@ -96,7 +97,7 @@ export const Payment = ({
       {
         id: inv.id,
         data: {
-          dateReceived: new Date().toISOString().slice(0, 10),
+          dateReceived: todayLocal(),
           amountReceived: inv.total,
           paymentMethod: method,
           payerEmail: payerEmail.trim(),

@@ -16,6 +16,7 @@ import { toast } from '@/lib/toast';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { useListStateStore } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { todayLocal } from '@/utils/day';
 import type { Invoice, InvoiceStatus } from '@/types';
 
 const tabs: { key: InvoiceStatus | 'all'; label: string }[] = [
@@ -344,7 +345,7 @@ export const Invoices = () => {
                         toast.info('Those are already settled');
                         return;
                       }
-                      const today = new Date().toISOString().slice(0, 10);
+                      const today = todayLocal();
                       Promise.all(
                         unpaid.map((inv) =>
                           markPaid.mutateAsync({
