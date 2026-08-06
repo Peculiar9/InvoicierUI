@@ -208,11 +208,11 @@ export interface LoginCredentials {
   password: string;
 }
 
+/** What signing up actually asks for: a name, an email and a password. */
 export interface SignupCredentials {
+  full_name: string;
   email: string;
-  username: string;
   password: string;
-  confirmPassword: string;
 }
 
 export interface ApiResponse<T> {

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
-import { useSettingsStore } from '@/stores/settingsStore';
+import { businessProfileApi } from '@/api/businessProfile';
+import { businessProfileKey, hasOnboarded } from '@/hooks/useBusinessProfile';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginCredentials, SignupCredentials } from '@/types';
 
@@ -12,12 +13,27 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
-    onSuccess: (data) => {
+    meta: { doing: 'Signing you in' },
+    onSuccess: async (data) => {
       setUser(data.user, data.token);
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      // first time in goes through the welcome journey, everyone else
-      // lands straight in the workspace
-      const onboarded = useSettingsStore.getState().onboarded;
+
+      // Where they land is a fact about their account, not about this
+      // browser. It used to be read from localStorage, so signing in on a new
+      // device sent a long-standing customer back through onboarding.
+      // fetchQuery seeds the cache too, so the page that follows does not
+      // ask again.
+      let onboarded = false;
+      try {
+        const profile = await queryClient.fetchQuery({
+          queryKey: businessProfileKey,
+          queryFn: businessProfileApi.get,
+        });
+        onboarded = hasOnboarded(profile);
+      } catch {
+        // no profile, or we could not reach it: onboarding is the safe
+        // landing, and it is idempotent
+      }
       navigate({ to: onboarded ? '/dashboard' : '/welcome' });
     },
   });
@@ -29,8 +45,11 @@ export const useSignup = () => {
 
   return useMutation({
     mutationFn: (credentials: SignupCredentials) => authApi.signup(credentials),
+    meta: { doing: 'Creating your account' },
     onSuccess: (data) => {
       setUser(data.user, data.token);
+      // a new account has a profile but no details in it yet, so onboarding
+      // is always next
       navigate({ to: '/welcome' });
     },
   });

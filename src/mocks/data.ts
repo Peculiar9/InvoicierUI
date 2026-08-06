@@ -195,3 +195,26 @@ export const revenue_chart: ChartData = {
     },
   ],
 };
+
+/**
+ * The demo business profile, which doubles as the onboarding record. A real
+ * business name here means this account has been through onboarding, which is
+ * the same rule the server applies.
+ */
+export const demoBusinessProfile = {
+  id: 'bp_demo',
+  user_id: mockUser.id,
+  business_name: 'Shoes Company Resolve',
+  email: 'accounts@resolve.co',
+  phone: '08120822334',
+  address: 'No 1 This is the actual address, Lagos',
+  logo_url: null as string | null,
+  default_currency: 'NGN',
+  invoice_template: 'classic',
+  route_by_currency: {} as Record<string, string>,
+  default_account_by_currency: {} as Record<string, string>,
+  invoice_sequence: 0,
+  receipt_sequence: 0,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};

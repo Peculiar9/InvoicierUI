@@ -8,6 +8,7 @@ import {
   invoices,
   logActivity,
   mockUser,
+  demoBusinessProfile,
   revenue_chart,
   saveDb,
 } from './data';
@@ -29,20 +30,29 @@ const token = 'mock-jwt-token';
 export const handlers = [
   // ---- auth ----
   http.post('*/api/auth/login', () => ok({ user: mockUser, token })),
-  http.post('*/api/auth/signup', async ({ request }) => {
+
+  /* ---- the business profile, which is also the onboarding record ---- */
+  http.get('*/api/business-profile', () => ok(demoBusinessProfile)),
+  http.patch('*/api/business-profile', async ({ request }) => {
+    const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+    Object.assign(demoBusinessProfile, body, { updated_at: new Date().toISOString() });
+    saveDb();
+    return ok(demoBusinessProfile);
+  }),
+  http.post('*/api/auth/register', async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as Partial<typeof mockUser>;
     // the verification email goes out in the background right here, so it
     // lands while onboarding runs
     return ok({ user: { ...mockUser, ...body, email_verified: false }, token });
   }),
   http.post('*/api/auth/logout', () => new HttpResponse(null, { status: 200 })),
-  http.get('*/api/auth/profile', () => ok(mockUser)),
-  http.patch('*/api/auth/profile', async ({ request }) => {
+  http.get('*/api/auth/me', () => ok(mockUser)),
+  http.patch('*/api/auth/me', async ({ request }) => {
     const updates = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     return ok({ ...mockUser, ...updates });
   }),
   http.post('*/api/auth/forgot-password', () => new HttpResponse(null, { status: 200 })),
-  http.post('*/api/auth/resend-verification', () => new HttpResponse(null, { status: 200 })),
+  http.post('*/api/auth/resend-email-verification', () => new HttpResponse(null, { status: 200 })),
   http.post('*/api/auth/verify-email', () => ok({ verified: true }, 'Email verified')),
   http.post('*/api/auth/reset-password', () => new HttpResponse(null, { status: 200 })),
 

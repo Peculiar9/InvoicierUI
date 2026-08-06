@@ -1,6 +1,7 @@
 export { Landing } from './Landing';
 export { Dashboard } from './Dashboard';
 export { Login } from './Login';
+export { Signup } from './Signup';
 export { ForgotPassword } from './ForgotPassword';
 export { Invoices } from './Invoices';
 export { Clients } from './Clients';

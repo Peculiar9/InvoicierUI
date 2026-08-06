@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSaveBusinessProfile } from '@/hooks';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
@@ -34,6 +35,7 @@ const PREP_MS = 3400;
 
 export const Welcome = () => {
   const navigate = useNavigate();
+  const { mutate: saveProfile } = useSaveBusinessProfile();
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
   const accountEmail = useAuthStore((s) => s.user?.email);
 
@@ -103,6 +105,8 @@ export const Welcome = () => {
   }, [prepping]);
 
   const finish = () => {
+    // Local first, so the workspace behind the loader already looks like
+    // theirs: brand colour, logo and persona are this browser's business.
     completeOnboarding({
       name: displayName,
       logo,
@@ -115,6 +119,19 @@ export const Welcome = () => {
       currency,
       tin: tin.trim() || undefined,
     });
+
+    // Then the account's own record, which is what a second device and every
+    // invoice document read from. Fire it alongside the loader rather than
+    // before it: the save and the three-second preparation overlap instead of
+    // queueing, so nobody waits for a round trip they cannot see.
+    saveProfile({
+      business_name: displayName,
+      email: email.trim() || undefined,
+      logo_url: logo || undefined,
+      default_currency: currency,
+      invoice_template: template,
+    });
+
     setPrepping(true);
   };
 

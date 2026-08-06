@@ -17,7 +17,7 @@ export const authApi = {
 
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
-      '/auth/signup',
+      '/auth/register',
       credentials
     );
     return response.data.data;
@@ -28,13 +28,13 @@ export const authApi = {
   },
 
   getProfile: async (): Promise<User> => {
-    const response = await apiClient.get<ApiResponse<User>>('/auth/profile');
+    const response = await apiClient.get<ApiResponse<User>>('/auth/me');
     return response.data.data;
   },
 
   updateProfile: async (data: Partial<User>): Promise<User> => {
     const response = await apiClient.patch<ApiResponse<User>>(
-      '/auth/profile',
+      '/auth/me',
       data
     );
     return response.data.data;
@@ -45,7 +45,7 @@ export const authApi = {
   },
 
   resendVerification: async (): Promise<void> => {
-    await apiClient.post('/auth/resend-verification');
+    await apiClient.post('/auth/resend-email-verification');
   },
 
   verifyEmail: async (token: string): Promise<void> => {
