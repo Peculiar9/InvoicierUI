@@ -138,9 +138,15 @@ export const Settings = () => {
     setAcctOpen(false);
   };
   const removeAccount = (a: ReceivingAccount) => {
-    if (!window.confirm(`Remove “${a.label}”? Clients will stop seeing these details.`)) return;
+    // put it back where it was, not on the end, so the list does not reshuffle
+    const at = accounts.findIndex((x) => x.id === a.id);
     setProfile({ receivingAccounts: accounts.filter((x) => x.id !== a.id) });
-    toast.info('Account removed');
+    toast.undo(`${a.label} removed. Clients will stop seeing these details.`, () => {
+      const restored = accounts.filter((x) => x.id !== a.id);
+      restored.splice(at < 0 ? restored.length : at, 0, a);
+      setProfile({ receivingAccounts: restored });
+      toast.success(`${a.label} is back`);
+    });
   };
   const setRoute = (currency: string, route: PaymentRoute) => {
     setProfile({
@@ -226,9 +232,13 @@ export const Settings = () => {
   };
 
   const handleRemove = (m: PayoutMethod) => {
-    if (!window.confirm(`Remove “${m.label}”?`)) return;
     removeMethod(m.id);
-    toast.info('Payout method removed');
+    toast.undo(`${m.label} removed`, () => {
+      // addMethod mints a new id; everything the user typed comes back
+      const { id: _id, ...rest } = m;
+      addMethod(rest);
+      toast.success(`${m.label} is back`);
+    });
   };
 
   const openWithdraw = () => {
@@ -256,13 +266,9 @@ export const Settings = () => {
     setWithdrawOpen(false);
   };
 
+  const [resetOpen, setResetOpen] = useState(false);
   const resetDemo = () => {
-    if (
-      !window.confirm(
-        'Reset all demo data — invoices, clients, services and payouts? This cannot be undone.'
-      )
-    )
-      return;
+    setResetOpen(false);
     ['invoicier-db', 'invoicier-services', 'invoicier-payouts'].forEach((k) =>
       localStorage.removeItem(k)
     );
@@ -639,7 +645,7 @@ export const Settings = () => {
             <strong>Reset demo data</strong>
             <p>Restore invoices, clients, services and payouts to the original sample data.</p>
           </div>
-          <button type="button" className="btn btn-danger" onClick={resetDemo}>
+          <button type="button" className="btn btn-danger" onClick={() => setResetOpen(true)}>
             Reset demo
           </button>
         </div>
@@ -937,6 +943,31 @@ export const Settings = () => {
             </select>
           </label>
           {withdrawError && <small className="field-error">{withdrawError}</small>}
+        </div>
+      </Modal>
+
+      {/* The one thing here with no way back, so it still asks first. */}
+      <Modal
+        open={resetOpen}
+        onClose={() => setResetOpen(false)}
+        title="Reset the demo data?"
+      >
+        <p className="dash-muted">
+          This clears every invoice, client, service and payout and puts the
+          original sample data back. Unlike everything else in Invoicier, this
+          one cannot be undone.
+        </p>
+        <div className="iw-paid-actions">
+          <button
+            type="button"
+            className="iw-btn iw-btn--ghost"
+            onClick={() => setResetOpen(false)}
+          >
+            Keep my data
+          </button>
+          <button type="button" className="iw-btn iw-btn--danger" onClick={resetDemo}>
+            Reset everything
+          </button>
         </div>
       </Modal>
     </LegacyWorkspace>
