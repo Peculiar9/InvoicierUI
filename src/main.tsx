@@ -1,14 +1,47 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { routeTree } from './routeTree.gen';
 import './index.css';
 import './styles/legacy-static.css';
 import './styles/workspace-v2.css';
+import { errorMessage, isAuthError } from './lib/apiError';
+import { toast } from './lib/toast';
+
+/**
+ * Nothing fails quietly.
+ *
+ * These live on the caches rather than in defaultOptions so they fire for
+ * every mutation and every query, including the ones that define their own
+ * onError. A silent failure in an invoicing app means someone believes they
+ * were paid when they were not.
+ */
+const mutationCache = new MutationCache({
+  onError: (error, _vars, _ctx, mutation) => {
+    // 401 is handled once, by the interceptor, so it does not stack up
+    if (isAuthError(error)) return;
+    const doing = mutation.meta?.doing as string | undefined;
+    toast.error(errorMessage(error, doing));
+  },
+});
+
+const queryCache = new QueryCache({
+  onError: (error, query) => {
+    if (isAuthError(error)) return;
+    // A visible error state already explains a first load. This is for the
+    // refetches behind it, which would otherwise leave stale figures on
+    // screen with no hint that they stopped updating.
+    if (query.state.data === undefined) return;
+    const loading = query.meta?.loading as string | undefined;
+    toast.error(errorMessage(error, loading ?? 'Refreshing'));
+  },
+});
 
 const queryClient = new QueryClient({
+  mutationCache,
+  queryCache,
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
@@ -46,7 +79,14 @@ async function enableMocking() {
   });
 }
 
-enableMocking().then(() => {
+// If the mock worker cannot start, the app still has to render. Without this
+// catch the promise rejects, React never mounts, and the page is white with
+// nothing in the console to explain it.
+enableMocking()
+  .catch((err) => {
+    console.error('Mock API failed to start; continuing without it.', err);
+  })
+  .then(() => {
   const rootElement = document.getElementById('root')!;
 
   if (!rootElement.innerHTML) {

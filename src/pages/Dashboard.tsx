@@ -15,6 +15,7 @@ import { Link } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
+import { ErrorState } from '@/components/ErrorState';
 import { CountUp } from '@/components/CountUp';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
@@ -85,7 +86,7 @@ const statusLabel: Record<InvoiceStatus, string> = {
 };
 
 export const Dashboard = () => {
-  const { data, isLoading } = useDashboardData();
+  const { data, isLoading, isError, error, refetch, isFetching } = useDashboardData();
   const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
@@ -102,6 +103,23 @@ export const Dashboard = () => {
   useEffect(() => {
     setSiblings(recentIds ? recentIds.split(',') : []);
   }, [recentIds, setSiblings]);
+
+  // Without this the skeleton below runs forever on a failed load: isLoading
+  // goes false, data stays undefined, and the page pretends to be loading.
+  if (isError && !data) {
+    return (
+      <LegacyWorkspace active="dashboard" title="Dashboard">
+        <div className="dash">
+          <ErrorState
+            doing="Loading your dashboard"
+            error={error}
+            retrying={isFetching}
+            onRetry={() => refetch()}
+          />
+        </div>
+      </LegacyWorkspace>
+    );
+  }
 
   if (isLoading || !data) {
     return (

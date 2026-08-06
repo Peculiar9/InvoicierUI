@@ -8,6 +8,7 @@ import type { DateRangeValue } from '@/utils/dateRange';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 import { useInvoices, useSendInvoice, useMarkInvoicePaid } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { copyInvoiceLink } from '@/lib/invoiceActions';
@@ -83,7 +84,7 @@ export const Invoices = () => {
   const setCurrencyFilter = (v: string) => patch({ currencyFilter: v });
   const setDateField = (v: DateField) => patch({ dateField: v });
   const setRange = (v: DateRangeValue) => patch({ range: v });
-  const { data, isLoading } = useInvoices();
+  const { data, isLoading, isError, error, refetch, isFetching } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
 
@@ -264,6 +265,13 @@ export const Invoices = () => {
                 <Skeleton key={i} width="100%" height={46} radius={10} />
               ))}
             </div>
+          ) : isError ? (
+            <ErrorState
+              doing="Loading your invoices"
+              error={error}
+              retrying={isFetching}
+              onRetry={() => refetch()}
+            />
           ) : filtered.length === 0 ? (
             invoices.length === 0 ? (
               <EmptyState

@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -39,7 +40,11 @@ export const Payment = ({
   /** the sender looking over their client's shoulder: show, never record */
   preview?: boolean;
 }) => {
-  const { data: invoice, isLoading } = useInvoice(invoiceId);
+  const { data: invoice, isLoading, isError, error, refetch, isFetching } =
+    useInvoice(invoiceId);
+  // a deleted invoice and an unreachable server are not the same news
+  const isGone =
+    error instanceof AxiosError && error.response?.status === 404;
   const markPaid = useMarkInvoicePaid();
   const queryClient = useQueryClient();
   const profile = useSettingsStore((s) => s.profile);
@@ -155,6 +160,28 @@ export const Payment = ({
           <div className="pay-card pay-state">
             <span className="iw-spin iw-spin--dark" aria-hidden="true" />
             <p className="pay-loading">Fetching the invoice…</p>
+          </div>
+        ) : isError && !isGone ? (
+          /* A payer who is told the link is dead simply stops paying. Unless
+             the invoice is genuinely gone, say it is us and offer a retry. */
+          <div className="pay-card pay-state">
+            <span className="pay-icon pay-icon--warn">
+              <i className="bx bx-cloud-off" />
+            </span>
+            <h2>We cannot reach the invoice right now</h2>
+            <p>
+              This is a problem on our side, not with your payment. The invoice
+              is still there. Try again in a moment, or come back to this same
+              link later.
+            </p>
+            <button
+              type="button"
+              className="pay-btn pay-btn--primary"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Trying again…' : 'Try again'}
+            </button>
           </div>
         ) : !invoice ? (
           <div className="pay-card pay-state">

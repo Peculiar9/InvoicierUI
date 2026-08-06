@@ -361,7 +361,8 @@ export const InvoicePanel = () => {
       setSavedId(created.id);
       return created;
     } catch {
-      toast.error('Could not save the invoice');
+      // the mutation cache has already told them what went wrong; this
+      // only has to stop the caller from carrying on as if it worked
       return null;
     }
   };

@@ -29,7 +29,16 @@ apiClient.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      // Leaving a note before the reload, so the login page can explain the
+      // bounce rather than looking like the app simply forgot them.
+      try {
+        sessionStorage.setItem('invoicier-signed-out', 'expired');
+      } catch {
+        // private mode, or storage full: the redirect still has to happen
+      }
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

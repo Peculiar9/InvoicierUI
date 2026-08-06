@@ -32,6 +32,7 @@ export const useCreateInvoice = () => {
 
   return useMutation({
     mutationFn: (data: CreateInvoiceDto) => invoicesApi.create(data),
+    meta: { doing: 'Saving the invoice' },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
@@ -45,6 +46,7 @@ export const useUpdateInvoice = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateInvoiceDto }) =>
       invoicesApi.update(id, data),
+    meta: { doing: 'Saving your changes' },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
@@ -58,6 +60,7 @@ export const useDeleteInvoice = () => {
 
   return useMutation({
     mutationFn: (id: string) => invoicesApi.delete(id),
+    meta: { doing: 'Deleting the invoice' },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
@@ -73,6 +76,7 @@ export const useSendInvoice = () => {
       typeof vars === 'string'
         ? invoicesApi.send(vars)
         : invoicesApi.send(vars.id, { channel: vars.channel ?? 'email', to: vars.to }),
+    meta: { doing: 'Sending the invoice' },
     onSuccess: (_, vars) => {
       const id = typeof vars === 'string' ? vars : vars.id;
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
@@ -87,6 +91,7 @@ export const useMarkInvoicePaid = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data?: MarkPaidDto }) =>
       invoicesApi.markAsPaid(id, data),
+    meta: { doing: 'Recording the payment' },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
@@ -100,6 +105,7 @@ export const useDuplicateInvoice = () => {
 
   return useMutation({
     mutationFn: (id: string) => invoicesApi.duplicate(id),
+    meta: { doing: 'Duplicating the invoice' },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
     },

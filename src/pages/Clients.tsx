@@ -9,6 +9,7 @@ import type { DateRangeValue } from '@/utils/dateRange';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 import { useClients, useCreateClient } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useListStateStore } from '@/stores/listStateStore';
@@ -18,7 +19,7 @@ import { isEmail, isFilled, isPhone } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 
 export const Clients = () => {
-  const { data, isLoading } = useClients();
+  const { data, isLoading, isError, error, refetch, isFetching } = useClients();
   const createClient = useCreateClient();
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const clients = data?.data ?? [];
@@ -173,6 +174,13 @@ export const Clients = () => {
               </div>
             ))}
           </div>
+        ) : isError ? (
+          <ErrorState
+            doing="Loading your clients"
+            error={error}
+            retrying={isFetching}
+            onRetry={() => refetch()}
+          />
         ) : filtered.length === 0 ? (
           clients.length === 0 ? (
             <EmptyState

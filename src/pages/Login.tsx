@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,6 +19,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
  * and nothing else asking for attention.
  */
 export const Login = () => {
+  // the interceptor leaves this behind when a 401 bounced them here
+  const [expired] = useState(() => {
+    try {
+      const flag = sessionStorage.getItem('invoicier-signed-out');
+      if (flag) sessionStorage.removeItem('invoicier-signed-out');
+      return flag === 'expired';
+    } catch {
+      return false;
+    }
+  });
+
   const { mutate: login, isPending, error } = useLogin();
   const {
     register,
@@ -38,6 +50,11 @@ export const Login = () => {
           <p>Two fields and you're in. Your ledger kept everything warm.</p>
 
           <form className="ob-auth-form" onSubmit={handleSubmit((data) => login(data))}>
+            {expired && !error && (
+              <p className="ob-auth-banner ob-auth-banner--info">
+                Your session expired, so we signed you out. Nothing was lost.
+              </p>
+            )}
             {error && (
               <p className="ob-auth-banner">
                 {error instanceof Error

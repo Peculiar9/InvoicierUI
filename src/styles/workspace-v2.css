@@ -5646,3 +5646,22 @@
     width: 100%;
   }
 }
+
+/* ---- when something could not load, it must not look like nothing ------ */
+.error-state .error-state__icon {
+  background: rgba(212, 69, 60, 0.1);
+  color: var(--danger, #d4453c);
+}
+.error-state .empty-state__text {
+  max-width: 46ch;
+}
+.error-state .error-state__reassure {
+  margin-top: -2px;
+  font-size: 0.8rem;
+  color: var(--ink-faint, #9b99ab);
+}
+.error-state .empty-state__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
