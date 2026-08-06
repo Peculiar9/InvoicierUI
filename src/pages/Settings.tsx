@@ -460,6 +460,8 @@ export const Settings = () => {
                         <button
                           type="button"
                           className="btn btn-danger"
+                          aria-label={`Remove ${a.label}`}
+                          title={`Remove ${a.label}`}
                           onClick={() => removeAccount(a)}
                         >
                           <i className="bx bx-trash" />
