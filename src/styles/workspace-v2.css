@@ -2042,13 +2042,9 @@
   .iw .dash-kpi {
     padding: 16px;
   }
-  /* invoices table: drop Issued + Received, keep the money story */
-  .iw .dash-table--invoices th:nth-child(3),
-  .iw .dash-table--invoices td:nth-child(3),
-  .iw .dash-table--invoices th:nth-child(5),
-  .iw .dash-table--invoices td:nth-child(5) {
-    display: none;
-  }
+  /* The invoice table used to drop columns to fit a phone, which cost the
+     client's name and the dates. It is a card below 720px now, so every
+     field has somewhere to live and nothing needs hiding. */
   .iw .dash-table {
     font-size: 0.8rem;
   }
@@ -2070,10 +2066,6 @@
   }
 }
 @media (max-width: 560px) {
-  .iw .dash-table--invoices th:nth-child(4),
-  .iw .dash-table--invoices td:nth-child(4) {
-    display: none;
-  }
   .iw .dash-table--recent th:nth-child(3),
   .iw .dash-table--recent td:nth-child(3) {
     display: none;
@@ -5664,4 +5656,669 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ============================================================================
+   FILTERS — the date range and the dropdowns
+   Native controls were showing the browser's own chrome and mm/dd/yyyy inside
+   a product that is otherwise entirely ours. These are built from the same
+   pills, brand purple and easing as everything else.
+   ========================================================================== */
+
+.iw .fs,
+.iw .dr {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---- the trigger, shared by both ---- */
+.iw .fs-trigger,
+.iw .dr-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--font);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease,
+    transform 0.14s var(--ease-out);
+}
+.iw .fs-trigger:hover,
+.iw .dr-trigger:hover {
+  border-color: rgba(146, 78, 233, 0.4);
+  box-shadow: 0 4px 14px rgba(146, 78, 233, 0.1);
+}
+.iw .fs-trigger:active,
+.iw .dr-trigger:active {
+  transform: scale(0.985);
+}
+.iw .fs-trigger > .bx:first-child,
+.iw .dr-trigger > .bx:first-child {
+  font-size: 1.15rem;
+  color: var(--ink-faint);
+  transition: color 0.2s ease;
+}
+.iw .fs.is-set .fs-trigger > .bx:first-child,
+.iw .dr.is-set .dr-trigger > .bx:first-child {
+  color: var(--brand);
+}
+
+/* the field name above its value: you can read what is filtered at a glance */
+.iw .fs-trigger-text,
+.iw .dr-trigger-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.15;
+  text-align: left;
+}
+.iw .fs-trigger-text small,
+.iw .dr-trigger-text small {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.iw .fs-trigger-text b,
+.iw .dr-trigger-text b {
+  font-size: 0.83rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* a filter that is doing something says so */
+.iw .fs.is-set .fs-trigger,
+.iw .dr.is-set .dr-trigger {
+  background: var(--brand-tint);
+  border-color: rgba(146, 78, 233, 0.35);
+  padding-right: 34px;
+}
+.iw .fs.is-set .fs-trigger-text b,
+.iw .dr.is-set .dr-trigger-text b {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.iw .fs-caret,
+.iw .dr-caret {
+  font-size: 1.1rem;
+  color: var(--ink-faint);
+  transition: transform 0.24s var(--ease-out);
+}
+.iw .fs-caret.is-open,
+.iw .dr-caret.is-open {
+  transform: rotate(180deg);
+}
+
+.iw .fs-clear,
+.iw .dr-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(146, 78, 233, 0.16);
+  color: var(--brand);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.14s var(--ease-out);
+}
+.iw .fs-clear:hover,
+.iw .dr-clear:hover {
+  background: var(--brand);
+  color: #fff;
+}
+.iw .fs-clear:active,
+.iw .dr-clear:active {
+  transform: translateY(-50%) scale(0.88);
+}
+
+/* ---- the menus ---- */
+.iw .fs-menu,
+.iw .dr-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: var(--nudge, 0);
+  z-index: 60;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(29, 27, 46, 0.16);
+  animation: filter-in 0.2s var(--ease-out);
+  transform-origin: top left;
+}
+@keyframes filter-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+.iw .dr-panel[data-align='right'] {
+  left: auto;
+  right: 0;
+  transform-origin: top right;
+}
+
+.iw .fs-menu {
+  min-width: 240px;
+  max-height: 320px;
+  padding: 6px;
+  overflow-y: auto;
+}
+.iw .fs-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.iw .fs-option span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iw .fs-option.is-active {
+  background: var(--paper);
+  color: var(--ink);
+}
+.iw .fs-option.is-chosen {
+  color: var(--brand);
+  font-weight: 600;
+}
+.iw .fs-option .bx {
+  font-size: 1.05rem;
+  color: var(--brand);
+}
+.iw .fs-hint {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-style: normal;
+  color: var(--ink-faint);
+}
+
+/* ---- the date panel ---- */
+.iw .dr-panel {
+  display: grid;
+  grid-template-columns: 156px 1fr;
+  min-width: 430px;
+  overflow: hidden;
+}
+.iw .dr-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  background: var(--paper);
+  border-right: 1px solid var(--border);
+}
+.iw .dr-preset {
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.14s var(--ease-out);
+}
+.iw .dr-preset:hover {
+  background: var(--card);
+  color: var(--ink);
+  transform: translateX(2px);
+}
+.iw .dr-preset.is-active {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--shadow-brand);
+}
+.iw .dr-preset--any {
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  border-radius: 0 0 10px 10px;
+  color: var(--ink-faint);
+}
+
+.iw .dr-cal {
+  padding: 12px 14px 10px;
+}
+.iw .dr-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.iw .dr-cal-head b {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .dr-cal-head button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+.iw .dr-cal-head button:hover {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.iw .dr-cal-week,
+.iw .dr-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.iw .dr-cal-week span {
+  padding: 4px 0;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.iw .dr-day {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.iw .dr-day.is-pad {
+  cursor: default;
+}
+.iw .dr-day:hover:not(.is-pad) {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+.iw .dr-day.in-range {
+  background: var(--brand-tint);
+  color: var(--brand);
+  border-radius: 0;
+}
+.iw .dr-day.is-end {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 9px;
+  box-shadow: var(--shadow-brand);
+}
+.iw .dr-day.is-today::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateX(-50%);
+}
+.iw .dr-day.is-end.is-today::after {
+  background: #fff;
+}
+/* a date that has not happened cannot have been issued or received */
+.iw .dr-day.is-future {
+  color: var(--ink-faint);
+  opacity: 0.55;
+}
+
+.iw .dr-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+.iw .dr-foot-read {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+.iw .dr-foot-clear {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.73rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+.iw .dr-foot-clear:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* the escape hatch, which only exists while there is something to escape */
+.iw .iw-filters-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px dashed rgba(146, 78, 233, 0.45);
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--brand);
+  cursor: pointer;
+  animation: filter-in 0.2s var(--ease-out);
+  transition: background 0.18s ease, transform 0.14s var(--ease-out);
+}
+.iw .iw-filters-clear:hover {
+  background: var(--brand-tint);
+}
+.iw .iw-filters-clear:active {
+  transform: scale(0.97);
+}
+
+/* ---- filters on a phone --------------------------------------------------
+   The pills stay, because they now say what they are doing. They scroll in
+   one row instead of stacking into a wall, and the panels become bottom
+   sheets: a 430px dropdown anchored to a trigger has nowhere to go on a
+   390px screen. */
+@media (max-width: 720px) {
+  .iw .iw-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* bleed to the screen edge so the row reads as scrollable */
+    margin-inline: -16px;
+    padding-inline: 16px;
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .iw .iw-filters::-webkit-scrollbar {
+    display: none;
+  }
+  .iw .iw-filters > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  /* the panels become sheets */
+  .iw .fs-menu,
+  .iw .dr-panel {
+    position: fixed;
+    inset: auto 0 0 0;
+    left: 0 !important;
+    right: 0;
+    top: auto;
+    width: 100%;
+    min-width: 0;
+    max-height: 82vh;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -18px 50px rgba(29, 27, 46, 0.22);
+    animation: sheet-up 0.28s var(--ease-out);
+    z-index: 1400;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  /* the grab handle that says "this pulls down" */
+  .iw .fs-menu::before,
+  .iw .dr-panel::before {
+    content: '';
+    position: sticky;
+    top: 0;
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 2px auto 10px;
+    border-radius: 999px;
+    background: var(--border);
+  }
+
+  .iw .dr-panel {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .iw .dr-presets {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 14px;
+    background: transparent;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .iw .dr-preset {
+    flex: 1 1 30%;
+    padding: 11px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    text-align: center;
+    font-size: 0.79rem;
+  }
+  .iw .dr-preset:hover {
+    transform: none;
+  }
+  .iw .dr-preset--any {
+    flex-basis: 100%;
+    margin-top: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 999px;
+    padding-top: 11px;
+  }
+  .iw .dr-cal {
+    padding: 14px 16px 6px;
+  }
+  .iw .dr-day {
+    min-width: 0;
+    font-size: 0.86rem;
+    border-radius: 11px;
+  }
+  .iw .fs-menu {
+    max-height: 70vh;
+    padding: 0 8px 8px;
+  }
+  .iw .fs-option {
+    padding: 14px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* the scrim behind a sheet, so the page below stops competing */
+.iw .filter-scrim {
+  display: none;
+}
+@media (max-width: 720px) {
+  .iw .filter-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1300;
+    border: 0;
+    background: rgba(29, 27, 46, 0.4);
+    backdrop-filter: blur(2px);
+    animation: scrim-in 0.24s ease;
+  }
+  @keyframes scrim-in {
+    from { opacity: 0; }
+  }
+}
+
+/* status tabs: scrollable, with an edge that admits there is more */
+@media (max-width: 720px) {
+  .iw .view-tabs {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, #000 88%, transparent);
+  }
+  .iw .view-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .iw .view-tab {
+    flex: 0 0 auto;
+  }
+}
+
+/* ---- the invoice list becomes cards on a phone ---------------------------
+   A seven-column table on a 390px screen clips whichever columns lose, and
+   the ones that lost here were the client's name and the status — the two
+   things you scan for. Each row becomes a card instead, laid out by position
+   so the markup stays a table for everything wider. */
+@media (max-width: 720px) {
+  .iw .dash-table--invoices,
+  .iw .dash-table--invoices tbody,
+  .iw .dash-table--invoices tr {
+    display: block;
+    width: 100%;
+  }
+  .iw .dash-table--invoices thead {
+    display: none;
+  }
+  .iw .dash-table--invoices tr.dash-row-click {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'tick number status'
+      'tick client amount'
+      'tick issued due';
+    gap: 2px 10px;
+    padding: 14px 14px 14px 12px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .iw .dash-table--invoices tr.dash-row-click:hover td {
+    background: transparent;
+  }
+  .iw .dash-table--invoices tr.dash-row-click:hover td:first-child {
+    box-shadow: none;
+  }
+  .iw .dash-table--invoices td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .iw .dash-table--invoices td:nth-child(1) { grid-area: tick; align-self: center; }
+  .iw .dash-table--invoices td:nth-child(2) { grid-area: number; font-size: 0.86rem; }
+  .iw .dash-table--invoices td:nth-child(3) {
+    grid-area: client;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  /* Each date gets its own cell rather than sharing one area: grid items in
+     the same area stack on top of each other, which is how the client's name
+     ended up buried under a pile of overlapping dates. */
+  .iw .dash-table--invoices td:nth-child(4) {
+    grid-area: issued;
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+  }
+  .iw .dash-table--invoices td:nth-child(5) {
+    grid-area: due;
+    font-size: 0.74rem;
+    text-align: right;
+    color: var(--ink-faint);
+  }
+  .iw .dash-table--invoices td:nth-child(4)::before { content: 'Issued '; }
+  .iw .dash-table--invoices td:nth-child(5)::before { content: 'Due '; }
+  /* the date received is in the panel; the status badge already says paid */
+  .iw .dash-table--invoices td:nth-child(6) {
+    display: none;
+  }
+  .iw .dash-table--invoices td:nth-child(7) {
+    grid-area: amount;
+    align-self: end;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-align: right;
+    color: var(--ink);
+  }
+  .iw .dash-table--invoices td:nth-child(8) {
+    grid-area: status;
+    text-align: right;
+  }
+  /* the row actions sit under the thumb, not hidden behind a hover */
+  .iw .dash-table--invoices td.iw-rowact-cell {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+  .iw .dash-table--invoices .iw-rowact {
+    gap: 6px;
+  }
+  .iw .dash-table--invoices .iw-rowact button {
+    width: 38px;
+    height: 38px;
+    border-color: var(--border);
+  }
+  .iw .iw-tick-cell {
+    width: auto;
+  }
+
+  /* nothing scrolls sideways any more, so the swipe hint retires */
+  .iw .dash-table-wrap {
+    overflow-x: visible;
+  }
+  .iw .swipe-hint,
+  .iw .dash-table-wrap .swipe-cue {
+    display: none;
+  }
 }

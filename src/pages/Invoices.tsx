@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
-import { DateRange } from '@/components/DateRange';
-import { inDateRange } from '@/utils/dateRange';
+import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { FilterSelect } from '@/components/ui/FilterSelect';
+import { inDateRange, rangeIsSet } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
@@ -127,6 +128,14 @@ export const Invoices = () => {
   });
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
+  // what is narrowing the list right now, so it can be seen and undone
+  const activeFilters =
+    (status !== 'all' ? 1 : 0) +
+    (query.trim() ? 1 : 0) +
+    (clientFilter ? 1 : 0) +
+    (currencyFilter ? 1 : 0) +
+    (rangeIsSet(range) ? 1 : 0);
+
   const paged = sorted.slice((current - 1) * pageSize, current * pageSize);
 
   // ticked rows, kept to this visit only: a stale selection is a hazard
@@ -201,54 +210,43 @@ export const Invoices = () => {
             ))}
           </div>
           <div className="iw-filters">
-            <select
-              className="iw-select"
+            <FilterSelect
+              label="Client"
+              placeholder="All clients"
+              icon="bx-user"
               value={clientFilter}
-              aria-label="Filter by client"
-              onChange={(e) => {
-                setClientFilter(e.target.value);
+              options={clientOptions.map((c) => ({ value: c.id, label: c.name }))}
+              onChange={(v) => {
+                setClientFilter(v);
                 setPage(1);
               }}
-            >
-              <option value="">All clients</option>
-              {clientOptions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="iw-select"
+            />
+            <FilterSelect
+              label="Currency"
+              placeholder="All currencies"
+              icon="bx-coin"
               value={currencyFilter}
-              aria-label="Filter by currency"
-              onChange={(e) => {
-                setCurrencyFilter(e.target.value);
+              options={currencyOptions.map((cur) => ({ value: cur, label: cur }))}
+              onChange={(v) => {
+                setCurrencyFilter(v);
                 setPage(1);
               }}
-            >
-              <option value="">All currencies</option>
-              {currencyOptions.map((cur) => (
-                <option key={cur} value={cur}>
-                  {cur}
-                </option>
-              ))}
-            </select>
-            <select
-              className="iw-select"
-              value={dateField}
-              aria-label="Which date to filter on"
-              onChange={(e) => {
-                setDateField(e.target.value as DateField);
+            />
+            <FilterSelect
+              label="Filter dates by"
+              placeholder="Issued date"
+              icon="bx-calendar-event"
+              value={dateField === 'issue_date' ? '' : dateField}
+              options={DATE_FIELDS.filter((f) => f.key !== 'issue_date').map((f) => ({
+                value: f.key,
+                label: `${f.label} date`,
+              }))}
+              onChange={(v) => {
+                setDateField((v || 'issue_date') as DateField);
                 setPage(1);
               }}
-            >
-              {DATE_FIELDS.map((f) => (
-                <option key={f.key} value={f.key}>
-                  {f.label} date
-                </option>
-              ))}
-            </select>
-            <DateRange
+            />
+            <DateRangePicker
               label={DATE_FIELDS.find((f) => f.key === dateField)?.label ?? 'Dates'}
               value={range}
               onChange={(next) => {
@@ -256,6 +254,11 @@ export const Invoices = () => {
                 setPage(1);
               }}
             />
+            {activeFilters > 0 && (
+              <button type="button" className="iw-filters-clear" onClick={() => resetList()}>
+                <i className="bx bx-eraser" /> Clear {activeFilters}
+              </button>
+            )}
           </div>
         </div>
 
