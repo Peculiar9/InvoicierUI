@@ -61,24 +61,19 @@ export const DateRangePicker = ({
     setHovered(null);
   }, [open, value.from, value.to]);
 
-  // close on an outside click or Escape, the way every other overlay here does
+  // Escape closes; outside clicks are the Overlay scrim's job. The old
+  // mousedown handler treated the portalled panel as "outside" and unmounted
+  // it before a click on a day or preset could land.
   useEffect(() => {
     if (!open) return;
-    const onDown = (event: MouseEvent) => {
-      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
-    };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey, true);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey, true);
-    };
+    return () => document.removeEventListener('keydown', onKey, true);
   }, [open]);
 
   const commit = (next: DateRangeValue) => {

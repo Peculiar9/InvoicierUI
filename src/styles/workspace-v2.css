@@ -6813,16 +6813,6 @@
 .iw .iw-pager .fs-trigger-text b {
   font-size: 0.79rem;
 }
-.iw .iw-pager .fs-trigger-text b::after {
-  content: ' per page';
-  color: var(--ink-faint);
-  font-weight: 400;
-}
-@media (max-width: 560px) {
-  .iw .iw-pager .fs-trigger-text b::after {
-    content: '/page';
-  }
-}
 
 /* ============================================================================
    SETTINGS — sections that read as a document, not a stack of identical boxes

@@ -51,14 +51,14 @@ export const FilterSelect = ({
 
   const chosen = options.find((option) => option.value === value) ?? null;
 
+  // No document-level outside-click handler here. The menu is portalled into
+  // <body>, so every option is "outside" wrapRef — a mousedown listener that
+  // closed on that unmounted the menu before the click could land, which made
+  // every option in the product unclickable. The Overlay's scrim owns
+  // outside-close now.
   useEffect(() => {
     if (!open) return;
     setActive(Math.max(0, options.findIndex((option) => option.value === value)));
-    const onDown = (event: MouseEvent) => {
-      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
   }, [open, options, value]);
 
   // keep the highlighted row in view when arrowing through a long client list
