@@ -150,8 +150,14 @@ export const Invoices = () => {
     for (const tab of tabs) counts[tab.key] = 0;
     for (const inv of withoutStatusFilter) {
       counts.all += 1;
-      counts[inv.status] = (counts[inv.status] ?? 0) + 1;
-      if (isOverdue(inv)) counts.overdue = (counts.overdue ?? 0) + 1;
+      // Overdue is derived, so it is counted once by the rule and never by the
+      // stored status. Counting both gave an invoice stored as `overdue` two
+      // votes, and the tab claimed one more row than the list could show.
+      if (isOverdue(inv)) {
+        counts.overdue = (counts.overdue ?? 0) + 1;
+      } else if (inv.status !== 'overdue') {
+        counts[inv.status] = (counts[inv.status] ?? 0) + 1;
+      }
     }
     return counts;
   }, [withoutStatusFilter]);

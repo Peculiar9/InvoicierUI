@@ -6816,3 +6816,162 @@
     content: '/page';
   }
 }
+
+/* ============================================================================
+   SETTINGS — sections that read as a document, not a stack of identical boxes
+   ========================================================================== */
+
+/* a comfortable measure: settings is reading and typing, not scanning */
+.iw .settings-page,
+.iw .view > .settings-body {
+  max-width: 880px;
+}
+
+.iw .settings-page .dash-card {
+  position: relative;
+  padding: 26px 28px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+/* a hairline of brand down the left edge, so a section has a spine */
+.iw .settings-page .dash-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--brand), transparent 70%);
+  opacity: 0.5;
+}
+
+.iw .cinv-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.iw .settings-lead {
+  max-width: 62ch;
+  margin-bottom: 22px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+/* form fields get room to breathe and a focus ring worth seeing */
+.iw .settings-page .cinv-field input,
+.iw .settings-page .cinv-field select,
+.iw .settings-page .cinv-field textarea {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.iw .settings-page .cinv-field input:focus,
+.iw .settings-page .cinv-field select:focus,
+.iw .settings-page .cinv-field textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+  outline: none;
+}
+
+/* the save row sits on a rule, so it reads as the end of the section */
+.iw .settings-save {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+/* the destructive section looks destructive without shouting */
+.iw .settings-page .dash-card--danger::before {
+  background: linear-gradient(180deg, var(--danger), transparent 70%);
+}
+
+@media (max-width: 720px) {
+  .iw .settings-page .dash-card {
+    padding: 20px 18px;
+    border-radius: 16px;
+  }
+  .iw .settings-save {
+    justify-content: stretch;
+  }
+  .iw .settings-save .btn {
+    flex: 1;
+  }
+}
+
+/* ---- the tax tiles become one card, not three lonely ones --------------
+   VAT, WHT and days-to-paid are one thought: where this business stands with
+   March. Three separate cards for three numbers made the right column read as
+   a junk drawer. */
+.iw .iw-tiles {
+  display: block;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.iw .iw-tiles::before {
+  content: 'Your tax position';
+  display: block;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .iw-tile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 14px;
+  padding: 12px 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: none;
+}
+.iw .iw-tile:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.iw .iw-tile:hover {
+  transform: none;
+  box-shadow: none;
+}
+.iw .iw-tile-label {
+  grid-column: 1;
+  font-size: 0.79rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.iw .iw-tile b {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .iw-tile small {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+
+/* March readiness: a line of record, not a warning strip */
+.iw .iw-march {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.iw .iw-march-fill {
+  background: linear-gradient(90deg, var(--brand), #b47cff);
+}
