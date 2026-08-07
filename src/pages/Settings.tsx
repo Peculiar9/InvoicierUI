@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
 import { TemplatePicker } from '@/components/TemplatePicker';
@@ -281,22 +282,16 @@ export const Settings = () => {
       <div className="view view--narrow">
         {/* v1 scope: Payouts is hidden, not wired. The tab returns with the
             payment rails; the code below stays intact. */}
-        <div className="settings-tabs">
-          <button
-            type="button"
-            className={tab === 'profile' ? 'active' : ''}
-            onClick={() => setTab('profile')}
-          >
-            Business profile
-          </button>
-          <button
-            type="button"
-            className={tab === 'paid' ? 'active' : ''}
-            onClick={() => setTab('paid')}
-          >
-            Getting paid
-          </button>
-        </div>
+        <Segmented
+          ariaLabel="Settings sections"
+          variant="underline"
+          value={tab}
+          options={[
+            { key: 'profile', label: 'Business profile' },
+            { key: 'paid', label: 'Getting paid' },
+          ]}
+          onChange={(key) => setTab(key as typeof tab)}
+        />
 
         {tab === 'profile' && (
           <div className="dash-card">

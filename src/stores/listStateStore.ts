@@ -81,6 +81,26 @@ export const useListStateStore = create<ListStateStore>()(
     }),
     {
       name: 'invoicier-list-state',
+      // No version bump: raising it without a `migrate` makes zustand discard
+      // the stored state outright, which is a worse answer to shape drift than
+      // the merge below, and loses the filters the person had set.
+      /**
+       * Merge over the defaults rather than replacing them.
+       *
+       * Persisted state is written by whichever version of the app the person
+       * last used. Adding a filter field meant their stored object had no
+       * `query`, and the first `query.trim()` threw before anything rendered:
+       * a white screen after a deploy, cleared only by wiping site data. Now a
+       * missing field falls back to its default and the page just works.
+       */
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<ListStateStore>;
+        return {
+          ...current,
+          invoices: { ...INVOICE_DEFAULTS, ...(saved.invoices ?? {}) },
+          clients: { ...CLIENT_DEFAULTS, ...(saved.clients ?? {}) },
+        };
+      },
       // the search box is the one thing that should not greet you tomorrow
       partialize: (s) => ({
         invoices: { ...s.invoices, query: '' },

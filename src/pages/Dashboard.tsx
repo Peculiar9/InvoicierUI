@@ -24,7 +24,8 @@ import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
-import { DateRange } from '@/components/DateRange';
+import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { Segmented } from '@/components/ui/Segmented';
 import { EMPTY_RANGE, inDateRange, rangeIsSet } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import type { Invoice, InvoiceStatus } from '@/types';
@@ -443,25 +444,18 @@ export const Dashboard = () => {
         ) : (
           <>
         {/* reporting period */}
-        <div className="iw-period" role="group" aria-label="Reporting period">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              className={period === p.key ? 'active' : ''}
-              onClick={() => setPeriod(p.key)}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="dash-period">
+          <Segmented
+            ariaLabel="Reporting period"
+            value={period}
+            options={PERIODS.map((p) => ({ key: p.key, label: p.label }))}
+            onChange={(key) => setPeriod(key as Period)}
+          />
           {period === 'custom' && (
-            <DateRange
+            <DateRangePicker
               label="Received"
               value={range}
-              onChange={(next) => {
-                setRange(next);
-                setPeriod('custom');
-              }}
+              onChange={(next) => setRange(next)}
             />
           )}
         </div>

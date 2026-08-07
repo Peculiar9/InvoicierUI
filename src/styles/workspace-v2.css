@@ -6516,3 +6516,303 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   SEGMENTED — one control for status tabs, dashboard periods and page tabs
+   ========================================================================== */
+.iw .seg {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.iw .seg::-webkit-scrollbar {
+  display: none;
+}
+
+/* the indicator slides, so the eye follows the change */
+.iw .seg-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: var(--shadow-brand);
+  transition: transform 0.34s var(--ease-out), width 0.34s var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iw .seg-indicator {
+    transition: none;
+  }
+}
+
+.iw .seg-item {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.81rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.22s ease;
+}
+.iw .seg-item:hover {
+  color: var(--ink);
+}
+.iw .seg-item[data-active='true'] {
+  color: #fff;
+  font-weight: 600;
+}
+.iw .seg-item:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* the dot carries the status colour, so a tab reads like the badge it filters */
+.iw .seg-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  transition: background 0.22s ease, transform 0.22s var(--ease-out);
+}
+.iw .seg-item[data-tone='paid'] .seg-dot,
+.iw .seg-item[data-tone='receipted'] .seg-dot { background: var(--paid); }
+.iw .seg-item[data-tone='overdue'] .seg-dot { background: var(--danger); }
+.iw .seg-item[data-tone='pending'] .seg-dot,
+.iw .seg-item[data-tone='awaiting'] .seg-dot { background: var(--warn); }
+.iw .seg-item[data-tone='sent'] .seg-dot,
+.iw .seg-item[data-tone='viewed'] .seg-dot { background: var(--brand); }
+.iw .seg-item[data-active='true'] .seg-dot {
+  background: #fff;
+  transform: scale(1.15);
+}
+
+/* the count answers the tab's own question without anyone clicking it */
+.iw .seg-count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-align: center;
+  transition: background 0.22s ease, color 0.22s ease;
+}
+.iw .seg-item[data-active='true'] .seg-count {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+/* a tab with nothing behind it is still reachable, just quieter */
+.iw .seg-item:not([data-active='true']) .seg-count:empty,
+.iw .seg-item[data-count='0']:not([data-active='true']) {
+  opacity: 0.55;
+}
+
+.iw .seg--sm .seg-item {
+  padding: 7px 13px;
+  font-size: 0.77rem;
+}
+
+/* page-level tabs: an underline reads as navigation, a pill as a filter */
+.iw .seg--underline {
+  gap: 4px;
+  padding: 0 0 10px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+.iw .seg--underline .seg-indicator {
+  top: auto;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  box-shadow: none;
+}
+.iw .seg--underline .seg-item {
+  padding: 8px 14px;
+  border-radius: 10px 10px 0 0;
+  color: var(--ink-faint);
+}
+.iw .seg--underline .seg-item[data-active='true'] {
+  color: var(--brand);
+}
+.iw .seg--underline .seg-item[data-active='true'] .seg-count {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+@media (max-width: 720px) {
+  .iw .seg {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, #000 90%, transparent);
+  }
+  .iw .seg--pill .seg-item {
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .iw .seg--pill .seg-item[data-active='true'] {
+    border-color: transparent;
+  }
+  .iw .seg--pill .seg-indicator {
+    top: 0;
+    bottom: 0;
+  }
+}
+
+/* the period row, with the custom range appearing beside it */
+.iw .dash-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+/* ---- the list footer ---------------------------------------------------- */
+.iw .iw-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding-top: 16px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.iw .iw-pager-count {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+.iw .iw-pager-count b {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .iw-pager-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iw .iw-pages {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.iw .iw-page,
+.iw .iw-page-arrow {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.79rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.14s var(--ease-out);
+}
+.iw .iw-page:hover:not(.is-current),
+.iw .iw-page-arrow:hover:not(:disabled) {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+.iw .iw-page:active,
+.iw .iw-page-arrow:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.iw .iw-page.is-current {
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--shadow-brand);
+}
+.iw .iw-page-arrow {
+  font-size: 1.15rem;
+}
+.iw .iw-page-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.iw .iw-page-gap {
+  padding: 0 2px;
+  color: var(--ink-faint);
+  user-select: none;
+}
+
+@media (max-width: 720px) {
+  .iw .iw-pager {
+    justify-content: center;
+  }
+  .iw .iw-pager-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+  /* the numbers are the reason to have a pager on a phone; keep them */
+  .iw .iw-pages {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .iw .iw-pages::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* the per-page control is a footer control, so it drops its stacked label */
+.iw .iw-pager .fs-trigger {
+  min-height: 40px;
+  padding: 4px 12px;
+  gap: 6px;
+}
+.iw .iw-pager .fs-trigger-text small {
+  display: none;
+}
+.iw .iw-pager .fs-trigger-text b {
+  font-size: 0.79rem;
+}
+.iw .iw-pager .fs-trigger-text b::after {
+  content: ' per page';
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+@media (max-width: 560px) {
+  .iw .iw-pager .fs-trigger-text b::after {
+    content: '/page';
+  }
+}

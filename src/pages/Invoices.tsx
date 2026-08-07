@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { Segmented } from '@/components/ui/Segmented';
 import { FilterSelect } from '@/components/ui/FilterSelect';
 import { inDateRange, rangeIsSet } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
@@ -15,9 +16,9 @@ import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { copyInvoiceLink } from '@/lib/invoiceActions';
 import { toast } from '@/lib/toast';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
+import { todayLocal } from '@/utils/day';
 import { useListStateStore } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { todayLocal } from '@/utils/day';
 import type { Invoice, InvoiceStatus } from '@/types';
 
 const tabs: { key: InvoiceStatus | 'all'; label: string }[] = [
@@ -70,6 +71,12 @@ const sortValue = (inv: Invoice, key: SortKey): string | number => {
   return (inv[key] as string | undefined) ?? '';
 };
 
+/** Unpaid, sent, and past its due date. Derived, never stored. */
+const isOverdue = (inv: Invoice): boolean =>
+  !isSettled(inv.status) &&
+  inv.status !== 'draft' &&
+  inv.due_date.slice(0, 10) < todayLocal();
+
 export const Invoices = () => {
   // the list keeps its place: opening an invoice and coming back, or
   // reloading, should not throw away the filters that found it
@@ -110,8 +117,8 @@ export const Invoices = () => {
   ];
   const currencyOptions = [...new Set(invoices.map((i) => i.currency))];
 
-  const filtered = invoices.filter((inv) => {
-    const matchesStatus = status === 'all' || inv.status === status;
+  // Everything except the status filter, which the tab counts are drawn from.
+  const withoutStatusFilter = invoices.filter((inv) => {
     const matchesClient = !clientFilter || inv.client.id === clientFilter;
     const matchesCurrency = !currencyFilter || inv.currency === currencyFilter;
     const matchesDates = inDateRange(inv[dateField], range);
@@ -119,7 +126,14 @@ export const Invoices = () => {
     const matchesQuery =
       inv.client.name.toLowerCase().includes(q) ||
       inv.invoice_number.toLowerCase().includes(q);
-    return matchesStatus && matchesClient && matchesCurrency && matchesDates && matchesQuery;
+    return matchesClient && matchesCurrency && matchesDates && matchesQuery;
+  });
+
+  const filtered = withoutStatusFilter.filter((inv) => {
+    if (status === 'all') return true;
+    // overdue is derived, not a stored status: unpaid and past its due date
+    if (status === 'overdue') return isOverdue(inv);
+    return inv.status === status;
   });
   const sorted = [...filtered].sort((a, b) => {
     const va = sortValue(a, sort.key);
@@ -128,6 +142,20 @@ export const Invoices = () => {
   });
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const current = Math.min(page, pages);
+  // How many sit behind each tab, counted after the *other* filters but
+  // before the status one: a tab that changed its own count as you clicked
+  // through would be telling you about a list you are no longer looking at.
+  const tabCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: 0 };
+    for (const tab of tabs) counts[tab.key] = 0;
+    for (const inv of withoutStatusFilter) {
+      counts.all += 1;
+      counts[inv.status] = (counts[inv.status] ?? 0) + 1;
+      if (isOverdue(inv)) counts.overdue = (counts.overdue ?? 0) + 1;
+    }
+    return counts;
+  }, [withoutStatusFilter]);
+
   // what is narrowing the list right now, so it can be seen and undone
   const activeFilters =
     (status !== 'all' ? 1 : 0) +
@@ -194,21 +222,20 @@ export const Invoices = () => {
               }}
             />
           </label>
-          <div className="view-tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`view-tab${status === tab.key ? ' active' : ''}`}
-                onClick={() => {
-                  setStatus(tab.key);
-                  setPage(1);
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            ariaLabel="Filter invoices by status"
+            value={status}
+            options={tabs.map((tab) => ({
+              key: tab.key,
+              label: tab.label,
+              count: tabCounts[tab.key] ?? 0,
+              tone: tab.key === 'all' ? undefined : tab.key,
+            }))}
+            onChange={(key) => {
+              setStatus(key as InvoiceStatus | 'all');
+              setPage(1);
+            }}
+          />
           <div className="iw-filters">
             <FilterSelect
               label="Client"
@@ -442,8 +469,15 @@ export const Invoices = () => {
                       </td>
                       <td className="dash-amount">{formatCurrency(inv.total, inv.currency)}</td>
                       <td>
-                        <span className={`dash-badge is-${inv.status}`}>
-                          {statusLabel[inv.status]}
+                        {/* Overdue is derived, so the badge has to derive it too.
+                            The stored status still says "sent" on an invoice
+                            whose due date passed last month, and a row sitting
+                            under the Overdue tab wearing a SENT badge is the
+                            list arguing with itself. */}
+                        <span
+                          className={`dash-badge is-${isOverdue(inv) ? 'overdue' : inv.status}`}
+                        >
+                          {isOverdue(inv) ? 'Overdue' : statusLabel[inv.status]}
                         </span>
                       </td>
                       {/* the three things you do most, without opening anything */}

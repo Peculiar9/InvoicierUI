@@ -3,8 +3,9 @@ import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
 import { Pager } from '@/components/Pager';
-import { DateRange } from '@/components/DateRange';
-import { inDateRange } from '@/utils/dateRange';
+import { DateRangePicker } from '@/components/ui/DateRangePicker';
+import { FilterSelect } from '@/components/ui/FilterSelect';
+import { inDateRange, rangeIsSet, EMPTY_RANGE } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
@@ -102,21 +103,22 @@ export const Clients = () => {
               }}
             />
           </label>
-          <select
-            className="iw-select"
-            value={sortKey}
-            aria-label="Sort clients"
-            onChange={(e) => {
-              setSortKey(e.target.value as typeof sortKey);
+          <FilterSelect
+            label="Sort"
+            placeholder="Name, A to Z"
+            icon="bx-sort-alt-2"
+            value={sortKey === 'name-asc' ? '' : sortKey}
+            options={[
+              { value: 'name-desc', label: 'Name, Z to A' },
+              { value: 'newest', label: 'Newest first' },
+              { value: 'oldest', label: 'Oldest first' },
+            ]}
+            onChange={(v) => {
+              setSortKey((v || 'name-asc') as ClientSortKey);
               setPage(1);
             }}
-          >
-            <option value="name-asc">Name, A to Z</option>
-            <option value="name-desc">Name, Z to A</option>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-          <DateRange
+          />
+          <DateRangePicker
             label="Added"
             value={range}
             onChange={(next) => {
@@ -124,6 +126,20 @@ export const Clients = () => {
               setPage(1);
             }}
           />
+          {(query.trim() || rangeIsSet(range) || sortKey !== 'name-asc') && (
+            <button
+              type="button"
+              className="iw-filters-clear"
+              onClick={() => {
+                setQuery('');
+                setRange(EMPTY_RANGE);
+                setSortKey('name-asc');
+                setPage(1);
+              }}
+            >
+              <i className="bx bx-eraser" /> Clear
+            </button>
+          )}
           <div className="view-toolbar-side">
             <div className="view-switch" role="group" aria-label="View mode">
               <button
