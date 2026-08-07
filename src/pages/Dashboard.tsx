@@ -454,7 +454,6 @@ export const Dashboard = () => {
           {period === 'custom' && (
             <DateRangePicker
               label="Received"
-              presets={false}
               value={range}
               onChange={(next) => setRange(next)}
             />

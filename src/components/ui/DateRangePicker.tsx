@@ -17,12 +17,6 @@ interface DateRangePickerProps {
   /** which date is being filtered, e.g. "Issued" */
   label?: string;
   align?: 'left' | 'right';
-  /**
-   * Hide the preset column. On the dashboard the periods are already the tabs
-   * beside it, so offering "This month" twice makes the panel argue with the
-   * control that opened it.
-   */
-  presets?: boolean;
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -43,7 +37,6 @@ export const DateRangePicker = ({
   onChange,
   label = 'Dates',
   align = 'left',
-  presets = true,
 }: DateRangePickerProps) => {
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(() => new Date());
@@ -152,11 +145,10 @@ export const DateRangePicker = ({
         <Overlay
           anchorRef={wrapRef}
           onClose={() => setOpen(false)}
-          className={`dr-panel${presets ? '' : ' dr-panel--calendar-only'}`}
+          className="dr-panel"
           align={align}
           ariaLabel={`${label} range`}
         >
-          {presets && (
           <div className="dr-presets">
             {RANGE_PRESETS.map((preset) => (
               <button
@@ -176,7 +168,6 @@ export const DateRangePicker = ({
               Any time
             </button>
           </div>
-          )}
 
           <div className="dr-cal">
             <div className="dr-cal-head">

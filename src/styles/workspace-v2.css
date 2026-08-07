@@ -7016,12 +7016,6 @@
   min-width: 430px;
   overflow: hidden;
 }
-/* the dashboard already has its periods as tabs, so the panel is just a calendar */
-.dr-panel.is-portal.dr-panel--calendar-only {
-  grid-template-columns: 1fr;
-  min-width: 320px;
-}
-
 @media (max-width: 720px) {
   .overlay-scrim {
     background: rgba(29, 27, 46, 0.42);
