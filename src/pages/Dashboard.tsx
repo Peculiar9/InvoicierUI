@@ -11,12 +11,13 @@ import {
 import type { ChartOptions } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { LegacyWorkspace } from '@/components/static';
 import type { CSSProperties } from 'react';
 import { Skeleton } from '@/components/Skeleton';
 import { ErrorState } from '@/components/ErrorState';
 import { CountUp } from '@/components/CountUp';
+import { Sparkline } from '@/components/ui/Sparkline';
 import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
@@ -90,6 +91,7 @@ export const Dashboard = () => {
   const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const navigate = useNavigate();
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   // the fallback when there is no money at all yet
   const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
@@ -280,6 +282,14 @@ export const Dashboard = () => {
   const owedMoney = (n: number) => formatCurrency(n, outstandingCurrency);
   const whole = (n: number) => formatNumber(Math.round(n));
 
+  // The shape of the last few months, and how this one compares. A number
+  // with no direction is half a fact.
+  const series: number[] = (revenue_chart.datasets[0]?.data ?? []).map(Number);
+  const thisPeriod = series[series.length - 1] ?? 0;
+  const lastPeriod = series[series.length - 2] ?? 0;
+  const delta =
+    lastPeriod > 0 ? Math.round(((thisPeriod - lastPeriod) / lastPeriod) * 100) : null;
+
   const kpis = [
     {
       label: 'Collected',
@@ -292,6 +302,9 @@ export const Dashboard = () => {
           : `received ${periodSub}, cash basis`,
       icon: 'bx-wallet',
       tone: 'green',
+      spark: series.length > 1 ? series : null,
+      delta,
+      to: undefined as string | undefined,
     },
     {
       label: 'Outstanding',
@@ -304,6 +317,10 @@ export const Dashboard = () => {
           : `${stats.overdue_invoices} overdue`,
       icon: 'bx-time-five',
       tone: 'amber',
+      spark: null,
+      delta: null,
+      // the number is a to-do list, so it opens the list it describes
+      to: '/invoices',
     },
     {
       label: 'Invoices',
@@ -313,6 +330,10 @@ export const Dashboard = () => {
       sub: `issued ${periodSub}, ${stats.pending_invoices} pending`,
       icon: 'bx-receipt',
       tone: 'purple',
+      spark: null,
+      delta: null,
+      // the number is a to-do list, so it opens the list it describes
+      to: '/invoices',
     },
     {
       label: 'Clients',
@@ -322,6 +343,9 @@ export const Dashboard = () => {
       sub: 'active',
       icon: 'bx-group',
       tone: 'blue',
+      spark: null,
+      delta: null,
+      to: '/clients',
     },
   ];
 
@@ -445,12 +469,33 @@ export const Dashboard = () => {
         {/* KPI cards */}
         <section className="dash-kpis">
           {kpis.map((kpi) => (
-            <article className={`dash-kpi dash-kpi--${kpi.tone}`} key={kpi.label}>
+            <article
+              className={`dash-kpi dash-kpi--${kpi.tone}${kpi.to ? ' is-linked' : ''}`}
+              key={kpi.label}
+              onClick={kpi.to ? () => navigate({ to: kpi.to as string }) : undefined}
+              role={kpi.to ? 'link' : undefined}
+              tabIndex={kpi.to ? 0 : undefined}
+              onKeyDown={
+                kpi.to
+                  ? (e) => {
+                      if (e.key === 'Enter') navigate({ to: kpi.to as string });
+                    }
+                  : undefined
+              }
+            >
               <span className="dash-kpi-icon">
                 <i className={`bx ${kpi.icon}`} />
               </span>
               <div className="dash-kpi-body">
-                <span className="dash-kpi-label">{kpi.label}</span>
+                <span className="dash-kpi-label">
+                  {kpi.label}
+                  {kpi.delta !== null && kpi.delta !== undefined && (
+                    <em className={`dash-kpi-delta${kpi.delta < 0 ? ' is-down' : ''}`}>
+                      <i className={`bx ${kpi.delta < 0 ? 'bx-trending-down' : 'bx-trending-up'}`} />
+                      {Math.abs(kpi.delta)}%
+                    </em>
+                  )}
+                </span>
                 <span className="dash-kpi-value">
                   <CountUp value={kpi.amount} format={kpi.format} />
                 </span>
@@ -463,6 +508,17 @@ export const Dashboard = () => {
                   </span>
                 )}
               </div>
+              {kpi.spark && (
+                <span className="dash-kpi-spark" aria-hidden="true">
+                  <Sparkline
+                    points={kpi.spark}
+                    tone={kpi.tone === 'green' ? 'good' : 'brand'}
+                    width={72}
+                    height={24}
+                  />
+                </span>
+              )}
+              {kpi.to && <i className="bx bx-right-arrow-alt dash-kpi-go" aria-hidden="true" />}
             </article>
           ))}
         </section>

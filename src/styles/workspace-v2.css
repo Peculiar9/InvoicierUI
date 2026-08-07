@@ -6322,3 +6322,197 @@
     display: none;
   }
 }
+
+/* ---- the line at the top that says we are talking to the server ---------- */
+.route-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 2000;
+  height: 3px;
+  pointer-events: none;
+  background: transparent;
+}
+.route-progress-bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  background: linear-gradient(90deg, #924ee9, #b47cff 55%, #ff5a5f);
+  box-shadow: 0 0 12px rgba(146, 78, 233, 0.55);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* a soft comet at the leading edge, so movement reads even when it creeps */
+.route-progress-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 90px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75));
+  opacity: 0.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-progress-bar {
+    transition: none;
+  }
+  .route-progress-bar::after {
+    display: none;
+  }
+}
+
+/* ---- skeletons: one shimmer, used everywhere -------------------------- */
+.iw .skel,
+.skel {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    rgba(29, 27, 46, 0.055) 25%,
+    rgba(146, 78, 233, 0.1) 37%,
+    rgba(29, 27, 46, 0.055) 63%
+  );
+  background-size: 400% 100%;
+  animation: skel-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skel-sweep {
+  from { background-position: 100% 50%; }
+  to   { background-position: 0 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iw .skel,
+  .skel {
+    animation: none;
+  }
+}
+
+/* a card-shaped placeholder, so a loading list has the shape of the real one */
+.iw .skel-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+.iw .skel-rows {
+  display: grid;
+  gap: 10px;
+}
+
+/* ---- KPI cards that carry a direction and a destination ---------------- */
+.iw .dash-kpi {
+  position: relative;
+  overflow: hidden;
+}
+.iw .dash-kpi.is-linked {
+  cursor: pointer;
+}
+.iw .dash-kpi.is-linked:hover {
+  border-color: rgba(146, 78, 233, 0.3);
+  box-shadow: 0 10px 30px rgba(146, 78, 233, 0.12);
+}
+.iw .dash-kpi.is-linked:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.iw .dash-kpi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* how this period compares with the one before it */
+.iw .dash-kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(12, 141, 111, 0.12);
+  color: var(--paid);
+  font-family: var(--font);
+  font-size: 0.63rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.iw .dash-kpi-delta.is-down {
+  background: rgba(212, 69, 60, 0.11);
+  color: var(--danger);
+}
+.iw .dash-kpi-delta .bx {
+  font-size: 0.85rem;
+}
+
+.iw .dash-kpi-spark {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  opacity: 0.85;
+  pointer-events: none;
+}
+/* the caption stops before the sparkline rather than running under it */
+.iw .dash-kpi:has(.dash-kpi-spark) .dash-kpi-sub {
+  padding-right: 84px;
+}
+@media (max-width: 900px) {
+  .iw .dash-kpi-spark {
+    display: none;
+  }
+  .iw .dash-kpi:has(.dash-kpi-spark) .dash-kpi-sub {
+    padding-right: 0;
+  }
+}
+.iw .spark-line {
+  stroke: var(--brand);
+}
+.iw .spark-dot {
+  fill: var(--brand);
+}
+.iw .spark--good .spark-line,
+.iw .spark--good .spark-dot {
+  stroke: var(--paid);
+  fill: var(--paid);
+}
+.iw .spark-stop-a {
+  stop-color: var(--brand);
+  stop-opacity: 0.22;
+}
+.iw .spark-stop-b {
+  stop-color: var(--brand);
+  stop-opacity: 0;
+}
+.iw .spark--good .spark-stop-a {
+  stop-color: var(--paid);
+  stop-opacity: 0.22;
+}
+.iw .spark--good .spark-stop-b {
+  stop-color: var(--paid);
+  stop-opacity: 0;
+}
+
+/* the arrow only appears when there is somewhere to go */
+.iw .dash-kpi-go {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 1.1rem;
+  color: var(--ink-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s ease, transform 0.2s var(--ease-out), color 0.2s ease;
+}
+.iw .dash-kpi.is-linked:hover .dash-kpi-go {
+  opacity: 1;
+  transform: none;
+  color: var(--brand);
+}
+@media (hover: none) {
+  .iw .dash-kpi-go {
+    opacity: 0.5;
+    transform: none;
+  }
+}

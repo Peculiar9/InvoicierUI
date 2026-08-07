@@ -26,6 +26,14 @@ export const invoicesApi = {
     return response.data.data;
   },
 
+  /** What a payer's browser fetches. No token, and a narrower shape. */
+  getPublic: async (id: string): Promise<Invoice> => {
+    const response = await apiClient.get<ApiResponse<{ invoice: Invoice }>>(
+      `/public/invoices/${id}`
+    );
+    return response.data.data.invoice;
+  },
+
   getById: async (id: string): Promise<Invoice> => {
     const response = await apiClient.get<ApiResponse<Invoice>>(`/invoices/${id}`);
     return response.data.data;
@@ -65,7 +73,7 @@ export const invoicesApi = {
     data: { reference?: string; note?: string; payer_email?: string }
   ): Promise<Invoice> => {
     const response = await apiClient.post<ApiResponse<Invoice>>(
-      `/invoices/${id}/payment-claimed`,
+      `/public/invoices/${id}/payment-claimed`,
       data
     );
     return response.data.data;
@@ -99,7 +107,7 @@ export const invoicesApi = {
 
   /** Public: the payer opened the link. Fire-and-forget, never blocks the page. */
   registerView: async (id: string): Promise<void> => {
-    await apiClient.post(`/invoices/${id}/viewed`);
+    await apiClient.post(`/public/invoices/${id}/viewed`);
   },
 
   markAsPaid: async (id: string, data?: MarkPaidDto): Promise<Invoice> => {

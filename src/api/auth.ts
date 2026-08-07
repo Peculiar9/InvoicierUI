@@ -33,8 +33,9 @@ export const authApi = {
   },
 
   updateProfile: async (data: Partial<User>): Promise<User> => {
-    const response = await apiClient.patch<ApiResponse<User>>(
-      '/auth/me',
+    // the account surface owns the user record; /auth/me only reads it
+    const response = await apiClient.put<ApiResponse<User>>(
+      '/accounts/profile',
       data
     );
     return response.data.data;

@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { routeTree } from './routeTree.gen';
+import { RouteProgress } from './components/ui/RouteProgress';
 import './index.css';
 import './styles/legacy-static.css';
 import './styles/workspace-v2.css';
@@ -94,6 +95,8 @@ enableMocking()
     root.render(
       <StrictMode>
         <QueryClientProvider client={queryClient}>
+          {/* one line, every fetch: see components/ui/RouteProgress */}
+          <RouteProgress />
           <RouterProvider router={router} />
           {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
