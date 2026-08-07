@@ -7058,3 +7058,128 @@
     background: var(--border, #ece8f6);
   }
 }
+
+/* ---- the clients list ---------------------------------------------------
+   A name and a phone number tell you nothing you could act on. This says how
+   much work you have done for someone and what they still owe. */
+.iw .client-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.iw .client-ident {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.iw .client-ident b {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .client-ident small {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 26ch;
+}
+.iw .client-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.iw .client-money {
+  font-variant-numeric: tabular-nums;
+}
+/* money still owed is the one figure worth a colour */
+.iw .client-owed {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--warn);
+}
+.iw .dash-row-click.selected {
+  background: var(--brand-tint);
+}
+
+/* the clients list as cards on a phone, matching the invoice list */
+@media (max-width: 720px) {
+  .iw .view .dash-table:not(.dash-table--invoices),
+  .iw .view .dash-table:not(.dash-table--invoices) tbody,
+  .iw .view .dash-table:not(.dash-table--invoices) tr {
+    display: block;
+    width: 100%;
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) thead {
+    display: none;
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) tr.dash-row-click {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'who  count'
+      'paid owed';
+    gap: 10px 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(1) { grid-area: who; }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(2) { grid-area: count; align-self: center; }
+  /* Collected and owed sit side by side on a footer line, each labelled so
+     they are not two bare numbers. They need their own areas: grid items
+     sharing one area stack on top of each other. */
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(3),
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(4) {
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.88rem;
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(3) { grid-area: paid; }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(4) { grid-area: owed; }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(3)::before {
+    content: 'Collected';
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(4)::before {
+    content: 'Owed';
+    display: block;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  /* "since" is the least useful thing on a small card */
+  .iw .view .dash-table:not(.dash-table--invoices) td:nth-child(5) {
+    display: none;
+  }
+  .iw .client-ident small {
+    max-width: 20ch;
+  }
+}

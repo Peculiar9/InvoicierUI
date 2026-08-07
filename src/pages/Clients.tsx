@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
@@ -11,11 +11,13 @@ import { SwipeScroll } from '@/components/SwipeScroll';
 import { Skeleton } from '@/components/Skeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { useInvoices } from '@/hooks';
+import { isPaid } from '@/utils/invoiceStatus';
 import { useClients, useCreateClient } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useListStateStore } from '@/stores/listStateStore';
 import type { ClientSortKey } from '@/stores/listStateStore';
-import { formatDate } from '@/utils/format';
+import { formatCurrency, formatDate } from '@/utils/format';
 import { isEmail, isFilled, isPhone } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 
@@ -24,6 +26,23 @@ export const Clients = () => {
   const createClient = useCreateClient();
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const clients = data?.data ?? [];
+
+  // What each client is actually worth to the business. A list of names and
+  // phone numbers says nothing you could act on; this says who owes you.
+  const { data: invoiceData } = useInvoices();
+  const stats = useMemo(() => {
+    const map = new Map<string, { count: number; collected: number; owed: number; currency: string }>();
+    for (const inv of invoiceData?.data ?? []) {
+      const id = inv.client?.id;
+      if (!id) continue;
+      const row = map.get(id) ?? { count: 0, collected: 0, owed: 0, currency: inv.currency };
+      row.count += 1;
+      if (isPaid(inv.status)) row.collected += inv.amount_received ?? inv.total;
+      else if (inv.status !== 'cancelled' && inv.status !== 'draft') row.owed += inv.total;
+      map.set(id, row);
+    }
+    return map;
+  }, [invoiceData]);
 
   // how you left this list is how you find it
   const listState = useListStateStore((s) => s.clients);
@@ -251,9 +270,10 @@ export const Clients = () => {
               <table className="dash-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
+                    <th>Client</th>
+                    <th>Invoices</th>
+                    <th>Collected</th>
+                    <th>Owed</th>
                     <th>Since</th>
                   </tr>
                 </thead>
@@ -268,10 +288,28 @@ export const Clients = () => {
                         <span className="client-avatar client-avatar--sm">
                           {c.name.charAt(0).toUpperCase()}
                         </span>
-                        {c.name}
+                        <span className="client-ident">
+                          <b>{c.name}</b>
+                          <small>{c.email || c.phone || 'No contact details'}</small>
+                        </span>
                       </td>
-                      <td className="dash-muted">{c.email}</td>
-                      <td className="dash-muted">{c.phone ?? '-'}</td>
+                      <td>
+                        <span className="client-chip">{stats.get(c.id)?.count ?? 0}</span>
+                      </td>
+                      <td className="dash-amount client-money">
+                        {stats.get(c.id)?.collected
+                          ? formatCurrency(stats.get(c.id)!.collected, stats.get(c.id)!.currency)
+                          : '—'}
+                      </td>
+                      <td className="dash-amount client-money">
+                        {stats.get(c.id)?.owed ? (
+                          <em className="client-owed">
+                            {formatCurrency(stats.get(c.id)!.owed, stats.get(c.id)!.currency)}
+                          </em>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
                       <td className="dash-muted">
                         {formatDate(c.created_at, { month: 'short', year: 'numeric' })}
                       </td>
