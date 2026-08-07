@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Overlay } from './Overlay';
 
 export interface FilterOption {
   value: string;
@@ -15,6 +16,12 @@ interface FilterSelectProps {
   placeholder: string;
   label: string;
   icon?: string;
+  /**
+   * Whether "no choice" is a real option. A client filter can be cleared;
+   * a page size cannot, and offering an empty row there produced a bare "8"
+   * sitting above "8 per page" that silently reset the list.
+   */
+  clearable?: boolean;
 }
 
 /**
@@ -35,6 +42,7 @@ export const FilterSelect = ({
   placeholder,
   label,
   icon,
+  clearable = true,
 }: FilterSelectProps) => {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -129,7 +137,7 @@ export const FilterSelect = ({
         <i className={`bx bx-chevron-down fs-caret${open ? ' is-open' : ''}`} aria-hidden="true" />
       </button>
 
-      {chosen && (
+      {chosen && clearable && (
         <button
           type="button"
           className="fs-clear"
@@ -141,24 +149,26 @@ export const FilterSelect = ({
       )}
 
       {open && (
-        <>
-          <button
-            type="button"
-            className="filter-scrim"
-            aria-label="Close"
-            onClick={() => setOpen(false)}
-          />
-          <div className="fs-menu" role="listbox" aria-label={label} ref={listRef}>
-          <button
-            type="button"
-            role="option"
-            aria-selected={!chosen}
-            className={`fs-option${!chosen ? ' is-chosen' : ''}`}
-            onClick={() => pick('')}
-          >
-            <span>{placeholder}</span>
-            {!chosen && <i className="bx bx-check" />}
-          </button>
+        <Overlay
+          anchorRef={wrapRef}
+          onClose={() => setOpen(false)}
+          className="fs-menu"
+          role="listbox"
+          ariaLabel={label}
+        >
+          <div ref={listRef} className="fs-menu-inner">
+          {clearable && (
+            <button
+              type="button"
+              role="option"
+              aria-selected={!chosen}
+              className={`fs-option${!chosen ? ' is-chosen' : ''}`}
+              onClick={() => pick('')}
+            >
+              <span>{placeholder}</span>
+              {!chosen && <i className="bx bx-check" />}
+            </button>
+          )}
           {options.map((option, i) => (
             <button
               key={option.value}
@@ -180,8 +190,8 @@ export const FilterSelect = ({
               {option.value === value && <i className="bx bx-check" />}
             </button>
           ))}
-        </div>
-          </>
+          </div>
+        </Overlay>
       )}
     </div>
   );

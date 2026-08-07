@@ -61,7 +61,8 @@ export const Pager = ({
             label="Per page"
             placeholder={`${pageSize}`}
             icon="bx-list-ul"
-            value=""
+            clearable={false}
+            value={String(pageSize)}
             options={sizes.map((size) => ({ value: String(size), label: `${size} per page` }))}
             onChange={(v) => onPageSize(Number(v) || sizes[0])}
           />

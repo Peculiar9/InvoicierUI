@@ -6099,7 +6099,8 @@
     box-shadow: 0 -18px 50px rgba(29, 27, 46, 0.22);
     animation: sheet-up 0.28s var(--ease-out);
     z-index: 1400;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    /* clear the floating nav rail, which sits ~78px off the bottom */
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
   @keyframes sheet-up {
     from {
@@ -6674,16 +6675,22 @@
     -webkit-mask-image: linear-gradient(90deg, #000 90%, transparent);
     mask-image: linear-gradient(90deg, #000 90%, transparent);
   }
+  /* On a phone each tab is its own pill, so the active one is coloured
+     directly and the sliding indicator stands down. It used to paint a white
+     background over the indicator and then write white text on it, which
+     rendered the selected tab as an empty outline. */
   .iw .seg--pill .seg-item {
     border: 1px solid var(--border);
     background: var(--card);
   }
   .iw .seg--pill .seg-item[data-active='true'] {
     border-color: transparent;
+    background: var(--brand);
+    color: #fff;
+    box-shadow: var(--shadow-brand);
   }
   .iw .seg--pill .seg-indicator {
-    top: 0;
-    bottom: 0;
+    display: none;
   }
 }
 
@@ -6974,4 +6981,80 @@
 }
 .iw .iw-march-fill {
   background: linear-gradient(90deg, var(--brand), #b47cff);
+}
+
+/* ---- portalled overlays -------------------------------------------------
+   These render into <body>, so they cannot be trapped by an ancestor's
+   transform. Position comes from the trigger's own rectangle. */
+.overlay-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+.fs-menu.is-portal,
+.dr-panel.is-portal {
+  position: fixed;
+  z-index: 1400;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #ece8f6);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(29, 27, 46, 0.16);
+  animation: filter-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fs-menu.is-portal {
+  min-width: 240px;
+  max-height: 340px;
+  padding: 6px;
+  overflow-y: auto;
+}
+.dr-panel.is-portal {
+  display: grid;
+  grid-template-columns: 156px 1fr;
+  min-width: 430px;
+  overflow: hidden;
+}
+/* the dashboard already has its periods as tabs, so the panel is just a calendar */
+.dr-panel.is-portal.dr-panel--calendar-only {
+  grid-template-columns: 1fr;
+  min-width: 320px;
+}
+
+@media (max-width: 720px) {
+  .overlay-scrim {
+    background: rgba(29, 27, 46, 0.42);
+    backdrop-filter: blur(2px);
+    animation: scrim-in 0.24s ease;
+  }
+  .fs-menu.is-portal,
+  .dr-panel.is-portal {
+    inset: auto 0 0 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100%;
+    min-width: 0;
+    max-height: 78vh;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -18px 50px rgba(29, 27, 46, 0.22);
+    animation: sheet-up 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    /* clear the floating nav rail rather than hiding the last row behind it */
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  .dr-panel.is-portal {
+    grid-template-columns: 1fr;
+  }
+  .fs-menu.is-portal::before,
+  .dr-panel.is-portal::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 10px auto 12px;
+    border-radius: 999px;
+    background: var(--border, #ece8f6);
+  }
 }

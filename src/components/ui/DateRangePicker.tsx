@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Overlay } from './Overlay';
 import { EMPTY_RANGE, rangeIsSet } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import {
@@ -16,6 +17,12 @@ interface DateRangePickerProps {
   /** which date is being filtered, e.g. "Issued" */
   label?: string;
   align?: 'left' | 'right';
+  /**
+   * Hide the preset column. On the dashboard the periods are already the tabs
+   * beside it, so offering "This month" twice makes the panel argue with the
+   * control that opened it.
+   */
+  presets?: boolean;
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -36,6 +43,7 @@ export const DateRangePicker = ({
   onChange,
   label = 'Dates',
   align = 'left',
+  presets = true,
 }: DateRangePickerProps) => {
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(() => new Date());
@@ -43,7 +51,6 @@ export const DateRangePicker = ({
   const [picking, setPicking] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const isSet = rangeIsSet(value);
   const activePreset = matchPreset(value);
@@ -79,16 +86,6 @@ export const DateRangePicker = ({
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey, true);
     };
-  }, [open]);
-
-  // never let the panel hang off the right edge of a narrow window
-  useLayoutEffect(() => {
-    if (!open || !panelRef.current) return;
-    const panel = panelRef.current;
-    panel.style.removeProperty('--nudge');
-    const box = panel.getBoundingClientRect();
-    const overflow = box.right - (window.innerWidth - 12);
-    if (overflow > 0) panel.style.setProperty('--nudge', `${-overflow}px`);
   }, [open]);
 
   const commit = (next: DateRangeValue) => {
@@ -152,14 +149,14 @@ export const DateRangePicker = ({
       )}
 
       {open && (
-        <>
-          <button
-            type="button"
-            className="filter-scrim"
-            aria-label="Close"
-            onClick={() => setOpen(false)}
-          />
-          <div className="dr-panel" role="dialog" aria-label={`${label} range`} ref={panelRef} data-align={align}>
+        <Overlay
+          anchorRef={wrapRef}
+          onClose={() => setOpen(false)}
+          className={`dr-panel${presets ? '' : ' dr-panel--calendar-only'}`}
+          align={align}
+          ariaLabel={`${label} range`}
+        >
+          {presets && (
           <div className="dr-presets">
             {RANGE_PRESETS.map((preset) => (
               <button
@@ -179,6 +176,7 @@ export const DateRangePicker = ({
               Any time
             </button>
           </div>
+          )}
 
           <div className="dr-cal">
             <div className="dr-cal-head">
@@ -242,8 +240,7 @@ export const DateRangePicker = ({
               </button>
             </div>
           </div>
-        </div>
-          </>
+        </Overlay>
       )}
     </div>
   );
