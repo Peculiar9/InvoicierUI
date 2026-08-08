@@ -185,8 +185,8 @@ export const MarketingNav = () => {
               Log in
             </Link>
           )}
-          <a href="#waitlist" className="lp-btn">
-            Join waitlist <i className="bx bx-right-arrow-alt" />
+          <a href={CTA.href} className="lp-btn">
+            {CTA.nav} <i className="bx bx-right-arrow-alt" />
           </a>
           <button
             type="button"
@@ -203,7 +203,7 @@ export const MarketingNav = () => {
           <Link to="/how-it-works">How it works</Link>
           <a href="/#pricing" onClick={() => setOpen(false)}>Pricing</a>
           <Link to="/docs">Docs</Link>
-          <a href="#waitlist" onClick={() => setOpen(false)}>Join waitlist</a>
+          <a href={WAITLIST_MODE ? '#waitlist' : '/signup'} onClick={() => setOpen(false)}>{CTA.nav}</a>
           {!WAITLIST_MODE && <Link to="/login">Log in</Link>}
         </div>
       </nav>
@@ -767,8 +767,8 @@ const Faq = () => {
           <span className="lp-kicker">The straight answers</span>
           <h2>You ask, we don't dodge.</h2>
           <p>Five questions everyone asks before they join.</p>
-          <a href="#waitlist" className="lp-faq-more">
-            Still curious? Ask us from the inside
+          <a href={CTA.href} className="lp-faq-more">
+            {CTA.faqMore}
             <i className="bx bx-right-arrow-alt" aria-hidden="true" />
           </a>
         </div>
@@ -826,7 +826,7 @@ const useTravelOk = () => {
 const PriceCardFaces = () => (
   <>
     <div className="lp-morph-face lp-morph-front lp-price-card">
-      <span className="lp-price-badge">Beta</span>
+      <span className="lp-price-badge">{CTA.pricingBadge}</span>
       <h4>Everything plan</h4>
       <div className="lp-price">
         <strong>&#8358;0.00</strong>
@@ -839,10 +839,10 @@ const PriceCardFaces = () => (
         <li><i className="bx bx-check" />Dashboard, insights &amp; exports</li>
         <li><i className="bx bx-check" />SSL security, PDF downloads</li>
       </ul>
-      <a href="/#waitlist" className="lp-btn">
-        Join the waitlist <i className="bx bx-right-arrow-alt" />
+      <a href={WAITLIST_MODE ? '/#waitlist' : '/signup'} className="lp-btn">
+        {CTA.pricing} <i className="bx bx-right-arrow-alt" />
       </a>
-      <p className="lp-price-note">Free for waitlist members during beta. No card, no gotchas.</p>
+      <p className="lp-price-note">{CTA.pricingNote}</p>
     </div>
     <div className="lp-morph-face lp-morph-back">
       <svg className="lp-morph-check" viewBox="0 0 72 72">
@@ -1126,6 +1126,59 @@ const useEasedAnchors = () => {
  */
 const WAITLIST_MODE = import.meta.env.VITE_WAITLIST_MODE === 'true';
 
+/**
+ * Every call to action on this page, resolved once from the launch switch.
+ * Waitlist mode sells the list; launched mode sells the signup, and the
+ * email capture at the bottom becomes the newsletter.
+ */
+const CTA = WAITLIST_MODE
+  ? {
+      href: '#waitlist',
+      nav: 'Join waitlist',
+      hero: 'Join the waitlist',
+      fcta: 'Join the waitlist',
+      fctaLine: 'Free while we are in beta. Your invite takes thirty seconds.',
+      pricing: 'Join the waitlist',
+      pricingBadge: 'Beta',
+      pricingNote: 'Free for waitlist members during beta. No card, no gotchas.',
+      footer: 'Join the waitlist',
+      footerLine: 'Free invoicing now, painless filing later. Your invite takes thirty seconds.',
+      footerLink: 'Join the waitlist',
+      faqMore: 'Still curious? Ask us from the inside',
+      capture: {
+        stamp: 'Early access',
+        headline: 'Stay in the loop. Be first in line when Invoicier opens up.',
+        body: "We're letting people in as we go. Drop your email and you'll get your invite before anyone else, plus the early-bird price when the filing pack lands. No unnecessary noise, just the good stuff for your business.",
+        button: 'Join the waitlist',
+        busy: 'Joining…',
+        successLead: 'on the list. Every friend who joins through your link moves you up:',
+        perks: ['Early-bird filing pack price', 'Vote on the roadmap', 'One email a month, no spam'],
+      },
+    }
+  : {
+      href: '/signup',
+      nav: 'Sign up',
+      hero: 'Send an invoice today',
+      fcta: 'Send your first invoice',
+      fctaLine: 'Free while we are in beta. Signing up takes thirty seconds.',
+      pricing: 'Get started free',
+      pricingBadge: 'Live',
+      pricingNote: 'Free during beta. Early users keep the best price when paid plans arrive.',
+      footer: 'Join us today',
+      footerLine: 'Free invoicing now, painless filing later. Signing up takes thirty seconds.',
+      footerLink: 'Sign up',
+      faqMore: 'Still curious? Join us and ask from the inside',
+      capture: {
+        stamp: 'Newsletter',
+        headline: 'Subscribe to our newsletter.',
+        body: 'Product news that matters, tax season reminders before they hurt, and the occasional trick for getting paid faster. Written for people who run their own books.',
+        button: 'Subscribe',
+        busy: 'Subscribing…',
+        successLead: 'subscribed. Know someone drowning in receipts? Share:',
+        perks: ['Product updates that matter', 'Tax season reminders', 'One email a month, no spam'],
+      },
+    };
+
 const WAITLIST_KEY = 'invoicier-waitlist';
 
 const INTRO_KEY = 'invoicier-intro-played';
@@ -1245,8 +1298,8 @@ export const Landing = () => {
                 `Write it once. They pay by card or transfer, in naira, dollars, euros or pounds. Every payment lands with its date, VAT and WHT already worked out. March finds your books ready.`}
               </p>
               <div className="lp-hero-actions" data-reveal data-delay="4">
-                <a href="#waitlist" className="lp-btn lp-btn--lg">
-                  Join the waitlist <i className="bx bx-right-arrow-alt" />
+                <a href={CTA.href} className="lp-btn lp-btn--lg">
+                  {CTA.hero} <i className="bx bx-right-arrow-alt" />
                 </a>
                 <Link to="/how-it-works" className="lp-btn lp-btn--ghost lp-btn--lg">
                   See everything you get <i className="bx bx-right-arrow-alt" />
@@ -1416,10 +1469,10 @@ export const Landing = () => {
                 <span className="lp-fcta-dots" aria-hidden="true" />
                 <div>
                   <h3>Ready to send one?</h3>
-                  <p>Free while we are in beta. Your invite takes thirty seconds.</p>
+                  <p>{CTA.fctaLine}</p>
                 </div>
-                <a href="#waitlist" className="lp-fcta-btn">
-                  Join the waitlist
+                <a href={CTA.href} className="lp-fcta-btn">
+                  {CTA.fcta}
                   <i className="bx bx-right-arrow-alt" />
                 </a>
               </article>
@@ -1496,24 +1549,19 @@ export const Landing = () => {
                 <i className="bx bx-check-circle" />
               </span>
 
-              <span className="lp-stamp">Early access</span>
-              <h2>
-                {site.waitlistHeadline ??
-                  'Stay in the loop. Be first in line when Invoicier opens up.'}
-              </h2>
-              <p>
-                We're letting people in as we go. Drop your email and you'll get
-                your invite before anyone else, plus the early-bird price when
-                the filing pack lands. No unnecessary noise, just the good stuff
-                for your business.
-              </p>
+              <span className="lp-stamp">{CTA.capture.stamp}</span>
+              <h2>{site.waitlistHeadline ?? CTA.capture.headline}</h2>
+              <p>{CTA.capture.body}</p>
 
               {waitlisted && waitlistJoin ? (
                 <div className="lp-waitlist-done" role="status">
                   <i className="bx bx-check" />
                   <span>
-                    You are <b>№{waitlistJoin.position}</b> on the list. Every friend
-                    who joins through your link moves you up:
+                    {WAITLIST_MODE ? (
+                      <>You are <b>№{waitlistJoin.position}</b> {CTA.capture.successLead}</>
+                    ) : (
+                      <>You are {CTA.capture.successLead}</>
+                    )}
                   </span>
                   <button
                     type="button"
@@ -1546,7 +1594,7 @@ export const Landing = () => {
                       aria-label="Email address"
                     />
                     <button type="submit" className="lp-btn">
-                      {waitlistBusy ? 'Joining…' : 'Join the waitlist'} <i className="bx bx-right-arrow-alt" />
+                      {waitlistBusy ? CTA.capture.busy : CTA.capture.button} <i className="bx bx-right-arrow-alt" />
                     </button>
                   </form>
                   {waitlistError && <p className="lp-waitlist-error">{waitlistError}</p>}
@@ -1554,18 +1602,12 @@ export const Landing = () => {
               )}
 
               <div className="lp-waitlist-perks">
-                <span>
-                  <i className="bx bx-check" />
-                  Early-bird filing pack price
-                </span>
-                <span>
-                  <i className="bx bx-check" />
-                  Vote on the roadmap
-                </span>
-                <span>
-                  <i className="bx bx-check" />
-                  One email a month, no spam
-                </span>
+                {CTA.capture.perks.map((perk) => (
+                  <span key={perk}>
+                    <i className="bx bx-check" />
+                    {perk}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -1583,12 +1625,9 @@ export const MarketingFooter = () => (
   <footer className="lp-footer">
     <div className="lp-footer-cta" data-reveal>
       <h2>Invoice today. Thank yourself in March.</h2>
-      <p>
-        Free invoicing now, painless filing later. Your invite takes thirty
-        seconds.
-      </p>
-      <a href="/#waitlist" className="lp-btn lp-btn--lg">
-        Join the waitlist <i className="bx bx-right-arrow-alt" />
+      <p>{CTA.footerLine}</p>
+      <a href={WAITLIST_MODE ? '/#waitlist' : '/signup'} className="lp-btn lp-btn--lg">
+        {CTA.footer} <i className="bx bx-right-arrow-alt" />
       </a>
     </div>
 
@@ -1614,7 +1653,7 @@ export const MarketingFooter = () => (
             <li><a href="/#pricing">Pricing</a></li>
             <li><a href="/#features">Features</a></li>
             <li><Link to="/how-it-works">How it works</Link></li>
-            <li><a href="/#waitlist">Join the waitlist</a></li>
+            <li><a href={WAITLIST_MODE ? '/#waitlist' : '/signup'}>{CTA.footerLink}</a></li>
           </ul>
         </div>
         <div className="lp-footer-col">
