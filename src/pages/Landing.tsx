@@ -180,9 +180,11 @@ export const MarketingNav = () => {
           <li><Link to="/docs">Docs</Link></li>
         </ul>
         <div className="lp-nav-actions">
-          <Link to="/login" className="lp-nav-login">
-            Log in
-          </Link>
+          {!WAITLIST_MODE && (
+            <Link to="/login" className="lp-nav-login">
+              Log in
+            </Link>
+          )}
           <a href="#waitlist" className="lp-btn">
             Join waitlist <i className="bx bx-right-arrow-alt" />
           </a>
@@ -202,7 +204,7 @@ export const MarketingNav = () => {
           <a href="/#pricing" onClick={() => setOpen(false)}>Pricing</a>
           <Link to="/docs">Docs</Link>
           <a href="#waitlist" onClick={() => setOpen(false)}>Join waitlist</a>
-          <Link to="/login">Log in</Link>
+          {!WAITLIST_MODE && <Link to="/login">Log in</Link>}
         </div>
       </nav>
     </div>
@@ -1001,8 +1003,7 @@ const DevPreviewBar = () => {
   //  - waitlist mode: one button, the list; login stays out of sight
   //  - dev, waitlist off: the test shortcuts
   //  - production, waitlist off: nothing at all
-  const waitlistMode = import.meta.env.VITE_WAITLIST === 'true';
-  if (waitlistMode) {
+  if (WAITLIST_MODE) {
     return (
       <div className="lp-devbar lp-devbar--waitlist">
         <a href="#waitlist" className="lp-devbar-item">
@@ -1117,6 +1118,13 @@ const useEasedAnchors = () => {
     return () => document.removeEventListener('click', onClick);
   }, []);
 };
+
+/**
+ * The one switch marketing flips at launch time. True: the site sells the
+ * list, and every road to login disappears. False: login is back, and the
+ * dev shortcuts show only in dev builds.
+ */
+const WAITLIST_MODE = import.meta.env.VITE_WAITLIST === 'true';
 
 const WAITLIST_KEY = 'invoicier-waitlist';
 
@@ -1623,7 +1631,9 @@ export const MarketingFooter = () => (
           <ul>
             <li><Link to="/docs">Help center</Link></li>
             <li><Link to="/docs">Guides</Link></li>
-            <li><Link to="/login">Sign in</Link></li>
+            {!WAITLIST_MODE && (
+              <li><Link to="/login">Sign in</Link></li>
+            )}
             <li><Link to="/legal">Terms &amp; Privacy</Link></li>
           </ul>
         </div>
