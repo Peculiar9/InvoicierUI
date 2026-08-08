@@ -1124,7 +1124,7 @@ const useEasedAnchors = () => {
  * list, and every road to login disappears. False: login is back, and the
  * dev shortcuts show only in dev builds.
  */
-const WAITLIST_MODE = import.meta.env.VITE_WAITLIST === 'true';
+const WAITLIST_MODE = import.meta.env.VITE_WAITLIST_MODE === 'true';
 
 const WAITLIST_KEY = 'invoicier-waitlist';
 
