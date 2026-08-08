@@ -7,7 +7,7 @@ import { ReceiptDocument } from '@/components/ReceiptDocument';
 import { useMarkInvoicePaid } from '@/hooks';
 import { usePublicInvoice } from '@/hooks/useInvoices';
 import { invoicesApi } from '@/api/invoices';
-import { resolveRoutes, PROVIDER_LABELS } from '@/utils/paymentRoutes';
+import { resolveRoutes, PROVIDER_LABELS, accountDisplayRows } from '@/utils/paymentRoutes';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
@@ -135,11 +135,40 @@ export const Payment = ({
       .catch(() => setStage('method'));
   };
 
-  const senderName = profile.name || 'Your supplier';
+  // On the payer's machine the sender's identity and account come from the
+  // PUBLIC PAYLOAD — their localStorage knows nothing. The store only feeds
+  // the sender's own preview.
+  const payloadAccount = invoice?.payment_account
+    ? {
+        id: 'public',
+        label: invoice.payment_account.label ?? 'Account',
+        provider: (invoice.payment_account.provider ?? 'bank') as never,
+        currency: invoice.payment_account.currency ?? invoice.currency,
+        account_name: invoice.payment_account.account_name ?? '',
+        account_number: invoice.payment_account.account_number ?? undefined,
+        bank_name: invoice.payment_account.bank_name ?? undefined,
+        routing_number: invoice.payment_account.routing_number ?? undefined,
+        swift: invoice.payment_account.swift_code ?? undefined,
+        iban: invoice.payment_account.iban ?? undefined,
+        instructions: invoice.payment_account.instructions ?? undefined,
+      }
+    : null;
+  const effectiveProfile = preview
+    ? profile
+    : {
+        ...profile,
+        name: invoice?.sender_business?.business_name ?? profile.name,
+        email: invoice?.sender_business?.email ?? profile.email,
+        phone: invoice?.sender_business?.phone ?? profile.phone,
+        address: invoice?.sender_business?.address ?? profile.address,
+        receivingAccounts: payloadAccount ? [payloadAccount] : [],
+        defaultAccountByCurrency: {},
+      };
+  const senderName = effectiveProfile.name || 'Your supplier';
   // what this invoice actually offers: its own choice, then the sender's
   // default for the currency
   const routes = invoice
-    ? resolveRoutes(invoice, profile)
+    ? resolveRoutes(invoice, effectiveProfile)
     : { instant: true, transfer: false, account: null };
 
   return (
@@ -241,7 +270,20 @@ export const Payment = ({
                 {isPaid(invoice.status) ? (
                   <ReceiptDocument invoice={invoice} />
                 ) : (
-                  <InvoiceDocument data={invoice} />
+                  <InvoiceDocument
+                    data={{
+                      ...invoice,
+                      business: preview ? null : {
+                        name: invoice.sender_business?.business_name,
+                        email: invoice.sender_business?.email,
+                        phone: invoice.sender_business?.phone,
+                        address: invoice.sender_business?.address,
+                      },
+                      payment_account: routes.account
+                        ? { ...routes.account, swift_code: routes.account.swift }
+                        : invoice.payment_account ?? null,
+                    }}
+                  />
                 )}
               </div>
 
@@ -363,14 +405,7 @@ export const Payment = ({
                         </div>
                         <dl className="pay-transfer-rows">
                           {[
-                            ['Account name', routes.account.account_name],
-                            [
-                              routes.account.provider === 'paypal' ? 'PayPal email' : 'Account number',
-                              routes.account.account_number,
-                            ],
-                            ['Bank', routes.account.bank_name],
-                            ['Routing / sort code', routes.account.routing_number],
-                            ['SWIFT / BIC', routes.account.swift],
+                            ...accountDisplayRows(routes.account),
                             ['Reference', invoice.invoice_number],
                           ]
                             .filter(([, v]) => Boolean(v))

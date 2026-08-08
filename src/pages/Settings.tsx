@@ -21,6 +21,8 @@ import {
   digitsOnly,
 } from '@/lib/validate';
 import { toast } from '@/lib/toast';
+import { settingsApi } from '@/api/settings';
+import { accountFieldsFor } from '@/utils/paymentRoutes';
 
 interface MethodForm {
   type: PayoutType;
@@ -119,35 +121,56 @@ export const Settings = () => {
     setAcctErrors({});
     setAcctOpen(true);
   };
-  const saveAccount = () => {
+  const saveAccount = async () => {
     const errs: Record<string, string> = {};
     if (!isFilled(acctForm.label)) errs.label = 'Give this account a name';
     if (!isFilled(acctForm.account_name)) errs.account_name = 'Required';
     if (!isFilled(acctForm.currency)) errs.currency = 'Required';
-    if (acctForm.provider === 'paypal') {
-      if (!isEmail(acctForm.account_number ?? '')) errs.account_number = 'Enter the PayPal email';
-    } else if (!isFilled(acctForm.account_number ?? '')) {
-      errs.account_number = 'Required';
+    // the spec that drew the form is the spec that judges it
+    for (const field of accountFieldsFor(acctForm.provider, acctForm.currency)) {
+      const value = ((acctForm[field.key] as string | undefined) ?? '').trim();
+      if (field.required && !value) {
+        errs[field.key] = 'Required';
+      } else if (value && field.kind === 'email' && !isEmail(value)) {
+        errs[field.key] = 'That does not look like an email';
+      } else if (value && field.kind === 'digits' && field.digits &&
+                 value.replace(/\D/g, '').length !== field.digits) {
+        errs[field.key] = `${field.digits} digits`;
+      }
     }
     setAcctErrors(errs);
     if (Object.keys(errs).length) return;
 
-    const next = acctEditingId
-      ? accounts.map((a) => (a.id === acctEditingId ? { ...acctForm, id: acctEditingId } : a))
-      : [...accounts, { ...acctForm, id: `rcv_${Date.now()}` }];
-    setProfile({ receivingAccounts: next });
-    toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
-    setAcctOpen(false);
+    try {
+      const saved = acctEditingId
+        ? await settingsApi.updateAccount(acctEditingId, acctForm)
+        : await settingsApi.createAccount(acctForm);
+      const next = acctEditingId
+        ? accounts.map((a) => (a.id === acctEditingId ? saved : a))
+        : [...accounts, saved];
+      setProfile({ receivingAccounts: next });
+      toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
+      setAcctOpen(false);
+    } catch {
+      toast.error('That did not save. Check the details and try again.');
+    }
   };
   const removeAccount = (a: ReceivingAccount) => {
     // put it back where it was, not on the end, so the list does not reshuffle
     const at = accounts.findIndex((x) => x.id === a.id);
     setProfile({ receivingAccounts: accounts.filter((x) => x.id !== a.id) });
+    void settingsApi.deleteAccount(a.id).catch(() => undefined);
     toast.undo(`${a.label} removed. Clients will stop seeing these details.`, () => {
-      const restored = accounts.filter((x) => x.id !== a.id);
-      restored.splice(at < 0 ? restored.length : at, 0, a);
-      setProfile({ receivingAccounts: restored });
-      toast.success(`${a.label} is back`);
+      // undo re-creates on the server; the row keeps its details, not its id
+      void settingsApi
+        .createAccount(a)
+        .then((restoredRow) => {
+          const restored = accounts.filter((x) => x.id !== a.id);
+          restored.splice(at < 0 ? restored.length : at, 0, restoredRow);
+          setProfile({ receivingAccounts: restored });
+          toast.success(`${a.label} is back`);
+        })
+        .catch(() => toast.error('Could not restore the account'));
     });
   };
   const setRoute = (currency: string, route: PaymentRoute) => {
@@ -815,49 +838,31 @@ export const Settings = () => {
             )}
           </label>
 
-          <label className="cinv-field">
-            <span>{acctForm.provider === 'paypal' ? 'PayPal email' : 'Account number'}</span>
-            <input
-              value={acctForm.account_number ?? ''}
-              placeholder={acctForm.provider === 'paypal' ? 'you@example.com' : '0123456789'}
-              className={acctErrors.account_number ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, account_number: e.target.value })}
-            />
-            {acctErrors.account_number && (
-              <small className="field-error">{acctErrors.account_number}</small>
-            )}
-          </label>
-
-          {acctForm.provider !== 'paypal' && (
-            <>
-              <label className="cinv-field">
-                <span>Bank</span>
-                <input
-                  value={acctForm.bank_name ?? ''}
-                  placeholder="Bank name"
-                  onChange={(e) => setAcctForm({ ...acctForm, bank_name: e.target.value })}
-                />
-              </label>
-              <div className="iw-paid-grid">
-                <label className="cinv-field">
-                  <span>Routing / sort code</span>
-                  <input
-                    value={acctForm.routing_number ?? ''}
-                    onChange={(e) =>
-                      setAcctForm({ ...acctForm, routing_number: e.target.value })
-                    }
-                  />
-                </label>
-                <label className="cinv-field">
-                  <span>SWIFT / BIC</span>
-                  <input
-                    value={acctForm.swift ?? ''}
-                    onChange={(e) => setAcctForm({ ...acctForm, swift: e.target.value })}
-                  />
-                </label>
-              </div>
-            </>
-          )}
+          {/* the fields this KIND of account, in THIS currency, is made of —
+              a Nigerian NUBAN is not an IBAN is not a PayPal email */}
+          {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
+            <label className="cinv-field" key={field.key}>
+              <span>
+                {field.label}
+                {!field.required && <em className="iw-optional"> optional</em>}
+              </span>
+              <input
+                value={(acctForm[field.key] as string | undefined) ?? ''}
+                placeholder={field.placeholder}
+                inputMode={field.kind === 'digits' ? 'numeric' : undefined}
+                className={acctErrors[field.key] ? 'is-invalid' : ''}
+                onChange={(e) =>
+                  setAcctForm({ ...acctForm, [field.key]: e.target.value })
+                }
+              />
+              {field.hint && !acctErrors[field.key] && (
+                <small className="iw-field-hint">{field.hint}</small>
+              )}
+              {acctErrors[field.key] && (
+                <small className="field-error">{acctErrors[field.key]}</small>
+              )}
+            </label>
+          ))}
 
           <label className="cinv-field">
             <span>Anything they should know</span>

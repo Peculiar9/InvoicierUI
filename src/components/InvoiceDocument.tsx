@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { accountDisplayRows } from '@/utils/paymentRoutes';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Client, InvoiceStatus } from '@/types';
 
@@ -8,6 +9,13 @@ export interface InvoiceDocLine {
   quantity: number;
   unit_price: number;
   total: number;
+}
+
+export interface InvoiceDocBusiness {
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
 }
 
 export interface InvoiceDocData {
@@ -24,6 +32,10 @@ export interface InvoiceDocData {
   due_date?: string;
   notes?: string;
   terms?: string;
+  /** on the payer's machine the sender comes from the payload, not the store */
+  business?: InvoiceDocBusiness | null;
+  /** the account this invoice is paid into — printed on every PDF */
+  payment_account?: Record<string, string | null | undefined> | import('@/types').PublicPaymentAccount | null;
 }
 
 const statusLabel: Record<InvoiceStatus, string> = {
@@ -39,8 +51,17 @@ const statusLabel: Record<InvoiceStatus, string> = {
 };
 
 export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
-  const profile = useSettingsStore((s) => s.profile);
+  const storeProfile = useSettingsStore((s) => s.profile);
+  // payload wins: a stranger's localStorage knows nothing about the sender
+  const profile = data.business
+    ? { ...storeProfile, name: data.business.name ?? storeProfile.name,
+        email: data.business.email ?? '', phone: data.business.phone ?? '',
+        address: data.business.address ?? '' }
+    : storeProfile;
   const { currency } = data;
+  const payRows = data.payment_account
+    ? accountDisplayRows(data.payment_account as Record<string, string | null | undefined>)
+    : [];
 
   return (
     <article
@@ -142,6 +163,27 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
           <span>{formatCurrency(data.total, currency)}</span>
         </div>
       </div>
+
+      {payRows.length > 0 && (
+        <section className="invoice-doc-pay">
+          <h4>How to pay</h4>
+          <div className="invoice-doc-pay-rows">
+            {payRows.map(([label, value]) => (
+              <div key={label}>
+                <span>{label}</span>
+                <b>{value}</b>
+              </div>
+            ))}
+            <div>
+              <span>Reference</span>
+              <b>{data.invoice_number}</b>
+            </div>
+          </div>
+          {(data.payment_account as { instructions?: string | null } | null)?.instructions && (
+            <p className="invoice-doc-pay-note">{(data.payment_account as { instructions?: string | null }).instructions}</p>
+          )}
+        </section>
+      )}
 
       {(data.notes || data.terms) && (
         <footer className="invoice-doc-foot">

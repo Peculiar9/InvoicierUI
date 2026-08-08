@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useLogout, useRecentActivities } from '@/hooks';
 import { useHotkeys } from '@/hooks/useHotkeys';
+import { useServerSettings } from '@/hooks/useServerSettings';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/lib/toast';
@@ -70,6 +71,7 @@ export const LegacyWorkspace = ({
   actions,
 }: LegacyWorkspaceProps) => {
   const { mutate: logout } = useLogout();
+  useServerSettings();
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);

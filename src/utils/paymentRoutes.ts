@@ -50,3 +50,90 @@ export const PROVIDER_LABELS: Record<string, string> = {
   paypal: 'PayPal',
   other: 'Other',
 };
+
+/* ============================================================================
+   THE FIELD SPEC — one description of what each (provider, currency) account
+   actually consists of. The add-account modal renders its inputs from this,
+   the validator checks against it, and the payer-facing displays (payment
+   page, PDF "How to pay" block) print exactly the fields it names. One
+   spec, three consumers, zero drift.
+   ========================================================================== */
+
+export interface AccountFieldSpec {
+  key: 'account_number' | 'bank_name' | 'routing_number' | 'swift' | 'iban';
+  label: string;
+  placeholder?: string;
+  required?: boolean;
+  /** how to validate what was typed */
+  kind?: 'email' | 'digits' | 'text';
+  /** exact digit count when kind is digits */
+  digits?: number;
+  hint?: string;
+}
+
+/**
+ * What this kind of account, in this currency, is made of. NUBAN for Nigerian
+ * banks, sort codes for GBP, IBAN+BIC for EUR, ABA routing for USD — and
+ * PayPal is just an email wearing a trench coat.
+ */
+export const accountFieldsFor = (provider: string, currency: string): AccountFieldSpec[] => {
+  if (provider === 'paypal') {
+    return [{ key: 'account_number', label: 'PayPal email', placeholder: 'you@example.com', required: true, kind: 'email' }];
+  }
+  if (provider === 'grey' || provider === 'fincra') {
+    return [
+      { key: 'account_number', label: `${PROVIDER_LABELS[provider]} account number`, placeholder: '0123456789', required: true },
+      { key: 'bank_name', label: 'Issuing bank (as shown in the app)', placeholder: 'e.g. Community Federal Savings Bank' },
+      ...(currency === 'USD' ? [{ key: 'routing_number', label: 'ACH routing number', placeholder: '026073150' } as AccountFieldSpec] : []),
+    ];
+  }
+  if (provider === 'dom') {
+    return [
+      { key: 'account_number', label: 'Domiciliary account number', placeholder: '0123456789', required: true, kind: 'digits', digits: 10, hint: 'Your Nigerian bank, foreign-currency account' },
+      { key: 'bank_name', label: 'Bank', placeholder: 'Zenith Bank', required: true },
+      { key: 'swift', label: 'SWIFT / BIC', placeholder: 'ZEIBNGLA', required: true },
+    ];
+  }
+  // bank / wise / other — shaped by the currency's own rails
+  switch (currency) {
+    case 'NGN':
+      return [
+        { key: 'account_number', label: 'Account number (NUBAN)', placeholder: '0123456789', required: true, kind: 'digits', digits: 10 },
+        { key: 'bank_name', label: 'Bank', placeholder: 'GTBank', required: true },
+      ];
+    case 'GBP':
+      return [
+        { key: 'account_number', label: 'Account number', placeholder: '12345678', required: true, kind: 'digits', digits: 8 },
+        { key: 'routing_number', label: 'Sort code', placeholder: '04-00-04', required: true },
+        { key: 'bank_name', label: 'Bank', placeholder: 'Monzo' },
+      ];
+    case 'EUR':
+      return [
+        { key: 'iban', label: 'IBAN', placeholder: 'BE12 3456 7890 1234', required: true },
+        { key: 'swift', label: 'BIC', placeholder: 'TRWIBEB1' },
+        { key: 'bank_name', label: 'Bank' },
+      ];
+    case 'USD':
+    default:
+      return [
+        { key: 'account_number', label: 'Account number', placeholder: '9600000000', required: true },
+        { key: 'routing_number', label: 'ACH routing number (ABA)', placeholder: '026073150', required: true },
+        { key: 'swift', label: 'SWIFT (for wires)', placeholder: 'CMFGUS33' },
+        { key: 'bank_name', label: 'Bank', placeholder: 'Community Federal Savings Bank' },
+      ];
+  }
+};
+
+/** the payer-facing rows, derived from the same spec the form used */
+export const accountDisplayRows = (
+  account: Partial<Record<'provider' | 'currency' | 'account_name' | 'account_number' | 'bank_name' | 'routing_number' | 'swift' | 'iban' | 'instructions', string | null | undefined>>
+): [string, string][] => {
+  const spec = accountFieldsFor(account.provider ?? 'bank', account.currency ?? 'USD');
+  const rows: [string, string][] = [];
+  if (account.account_name) rows.push(['Account name', account.account_name]);
+  for (const field of spec) {
+    const value = account[field.key];
+    if (value) rows.push([field.label, value]);
+  }
+  return rows;
+};

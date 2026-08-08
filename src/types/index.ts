@@ -51,6 +51,10 @@ export interface Invoice {
   invoice_number: string;
   client: Client;
   items: InvoiceItem[];
+  /** public payload only: who sent this, for a stranger's browser */
+  sender_business?: { business_name?: string | null; email?: string | null; phone?: string | null; address?: string | null; logo_url?: string | null } | null;
+  /** public payload only: the account this invoice should be paid into */
+  payment_account?: PublicPaymentAccount | null;
   subtotal: number;
   tax: number;
   tax_rate: number;
@@ -264,6 +268,20 @@ export interface MarkPaidDto {
   /** set when the payer pays through the public link */
   payment_method?: string;
   payer_email?: string;
+}
+
+/** what the public payload says about the sender, for a stranger's browser */
+export interface PublicPaymentAccount {
+  label?: string | null;
+  provider?: string | null;
+  currency?: string | null;
+  account_name?: string | null;
+  account_number?: string | null;
+  bank_name?: string | null;
+  routing_number?: string | null;
+  swift_code?: string | null;
+  iban?: string | null;
+  instructions?: string | null;
 }
 
 /** the generated account a payer pays into, and the clock it lives on */

@@ -4373,7 +4373,9 @@
     visibility: hidden !important;
   }
   .invoice-doc,
-  .invoice-doc * {
+  .invoice-doc *,
+  .rcpt,
+  .rcpt * {
     visibility: visible !important;
   }
   .ipanel,
@@ -4911,4 +4913,41 @@ textarea.is-invalid {
   .pay-btn--primary {
     width: 100%;
   }
+}
+
+/* ---- the document's "How to pay" block: on screen AND on every PDF ------ */
+.invoice-doc-pay {
+  margin-top: 22px;
+  border: 1px solid var(--border, #ece8f6);
+  border-radius: 12px;
+  padding: 14px 18px;
+  page-break-inside: avoid;
+}
+.invoice-doc-pay h4 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--acc, #924ee9);
+}
+.invoice-doc-pay-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 20px;
+}
+.invoice-doc-pay-rows > div { font-size: 12.5px; }
+.invoice-doc-pay-rows span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #9b99ab;
+}
+.invoice-doc-pay-rows b { font-weight: 600; }
+.invoice-doc-pay-note {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  font-style: italic;
+  color: #5f5d72;
 }

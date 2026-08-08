@@ -6,6 +6,7 @@ import { Confetti } from '@/components/Confetti';
 import type { InvoiceDocData } from '@/components/InvoiceDocument';
 import { Modal } from '@/components/Modal';
 import { FieldSelect } from '@/components/ui/FieldSelect';
+import { resolveRoutes } from '@/utils/paymentRoutes';
 import { DateField } from '@/components/ui/DateField';
 import {
   useClients,
@@ -243,6 +244,20 @@ export const InvoicePanel = () => {
       ? { step: '2 of 2', text: 'Add at least one item with a price' }
       : null;
 
+  /** the account this document should print, resolved like the payer sees it */
+  const docAccountFor = (inv: {
+    currency: string;
+    payment_route?: PaymentRoute | null;
+    receiving_account_id?: string | null;
+  }) => {
+    const r = resolveRoutes(
+      { currency: inv.currency, payment_route: inv.payment_route ?? undefined,
+        receiving_account_id: inv.receiving_account_id ?? undefined } as never,
+      profile
+    );
+    return r.account ? { ...r.account, swift_code: r.account.swift } : null;
+  };
+
   const draftDoc: InvoiceDocData = {
     invoice_number: invoice?.invoice_number ?? 'DRAFT',
     status: 'draft',
@@ -260,6 +275,11 @@ export const InvoicePanel = () => {
     due_date: due_date || undefined,
     terms,
     notes,
+    payment_account: docAccountFor({
+      currency,
+      payment_route: payment_route || undefined,
+      receiving_account_id: receiving_account_id || undefined,
+    }),
   };
 
   const updateItem = (i: number, patch: Partial<DraftItem>) => {
@@ -840,7 +860,9 @@ export const InvoicePanel = () => {
                     </div>
                   )}
                   {invoice ? (
-                    <InvoiceDocument data={invoice} />
+                    <InvoiceDocument
+                      data={{ ...invoice, payment_account: docAccountFor(invoice) }}
+                    />
                   ) : (
                     <p className="view-empty">Loading invoice…</p>
                   )}

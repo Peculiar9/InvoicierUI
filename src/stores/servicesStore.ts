@@ -11,6 +11,8 @@ export interface ServiceItem {
 interface ServicesState {
   services: ServiceItem[];
   addService: (service: Omit<ServiceItem, 'id'>) => void;
+  /** the server's list wholesale — the mirror accepts what the truth says */
+  replaceAll: (services: ServiceItem[]) => void;
   updateService: (id: string, updates: Partial<ServiceItem>) => void;
   removeService: (id: string) => void;
 }
@@ -32,6 +34,7 @@ export const useServicesStore = create<ServicesState>()(
         set((state) => ({
           services: [{ id: nextId(), ...service }, ...state.services],
         })),
+      replaceAll: (services) => set({ services }),
       updateService: (id, updates) =>
         set((state) => ({
           services: state.services.map((s) => (s.id === id ? { ...s, ...updates } : s)),

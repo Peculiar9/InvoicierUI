@@ -1,5 +1,6 @@
 import apiClient from './client';
-import type { Client, ApiResponse, PaginatedResponse } from '@/types';
+import type {
+  Invoice, Client, ApiResponse, PaginatedResponse } from '@/types';
 
 interface CreateClientDto {
   name: string;
@@ -52,8 +53,8 @@ export const clientsApi = {
   getInvoices: async (
     id: string,
     params?: { page?: number; limit?: number }
-  ): Promise<PaginatedResponse<Client>> => {
-    const response = await apiClient.get<ApiResponse<PaginatedResponse<Client>>>(
+  ): Promise<PaginatedResponse<Invoice>> => {
+    const response = await apiClient.get<ApiResponse<PaginatedResponse<Invoice>>>(
       `/clients/${id}/invoices`,
       { params }
     );
