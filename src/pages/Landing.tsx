@@ -999,21 +999,10 @@ const DevPreviewBar = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setSession = useAuthStore((s) => s.setSession);
 
-  // configuration decides what floats here:
-  //  - waitlist mode: one button, the list; login stays out of sight
-  //  - dev, waitlist off: the test shortcuts
-  //  - production, waitlist off: nothing at all
-  if (WAITLIST_MODE) {
-    return (
-      <div className="lp-devbar lp-devbar--waitlist">
-        <a href="#waitlist" className="lp-devbar-item">
-          <i className="bx bx-envelope" aria-hidden="true" />
-          <span>Join the waitlist</span>
-        </a>
-      </div>
-    );
-  }
-  if (!import.meta.env.DEV) return null;
+  // The floating bar answers to ONE variable: VITE_ENVIRONMENT. Development
+  // shows the test shortcuts, production shows nothing, and the waitlist
+  // switch has no say here at all.
+  if (import.meta.env.VITE_ENVIRONMENT !== 'development') return null;
 
   const goOnboarding = () => {
     if (!isAuthenticated) {
