@@ -88,8 +88,10 @@ describe('InvoicePanel', () => {
   it('pre-fills the client when opened via openCreate(client_id)', () => {
     useInvoicePanelStore.getState().openCreate('cli_1');
     render(<InvoicePanel />);
-    const client = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
-    expect(client.value).toBe('cli_1');
+    // the native select became a FieldSelect: the trigger shows the chosen
+    // client's name instead of holding a value attribute
+    const trigger = screen.getByRole('button', { name: 'Bill to' });
+    expect(trigger).toHaveTextContent('Acme');
   });
 
   it('renders the invoice document and actions when opened in view mode', () => {
