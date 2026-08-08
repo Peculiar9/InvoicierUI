@@ -80,6 +80,12 @@ export const handlers = [
   http.post('*/api/auth/refresh', () => ok(session(mockUser))),
 
   /* ---- payment windows: the generated account with its strict clock ---- */
+  /* the payer's read: same record the owner sees, mock-side */
+  http.get('*/api/public/invoices/:id', ({ params }) => {
+    const inv = invoices.find((i) => i.id === String(params.id));
+    if (!inv) return HttpResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+    return ok(inv);
+  }),
   http.post('*/api/public/invoices/:id/payment-session', ({ params }) => {
     const id = String(params.id);
     const existing = paymentWindows.get(id);

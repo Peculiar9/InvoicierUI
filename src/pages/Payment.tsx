@@ -291,7 +291,8 @@ export const Payment = ({
 
                     <div className="pay-methods">
                       {[
-                        ...(!routes.transfer
+                        // instant rails when the sender takes them
+                        ...(routes.instant
                           ? methodsFor(invoice.currency).map((m) => ({
                               key: m.key,
                               icon: m.icon,
@@ -299,6 +300,7 @@ export const Payment = ({
                               line: m.line,
                             }))
                           : []),
+                        // their own account, two ways, when one exists
                         ...(routes.transfer && routes.account
                           ? [
                               {
@@ -442,7 +444,7 @@ export const Payment = ({
                           </>
                         )}
                       </button>
-                    ) : method && method !== 'custom' && !routes.transfer ? (
+                    ) : method && method !== 'custom' && method !== 'transfer' ? (
                       <button
                         type="button"
                         className="pay-btn pay-btn--primary pay-btn--block"
