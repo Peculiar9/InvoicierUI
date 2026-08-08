@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { Overlay } from './Overlay';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EMPTY_RANGE, rangeIsSet } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
 import {
@@ -44,6 +43,7 @@ export const DateRangePicker = ({
   const [picking, setPicking] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const isSet = rangeIsSet(value);
   const activePreset = matchPreset(value);
@@ -61,19 +61,34 @@ export const DateRangePicker = ({
     setHovered(null);
   }, [open, value.from, value.to]);
 
-  // Escape closes; outside clicks are the Overlay scrim's job. The old
-  // mousedown handler treated the portalled panel as "outside" and unmounted
-  // it before a click on a day or preset could land.
+  // close on an outside click or Escape, the way every other overlay here does
   useEffect(() => {
     if (!open) return;
+    const onDown = (event: MouseEvent) => {
+      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
+    };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation();
         setOpen(false);
       }
     };
+    document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey, true);
+    };
+  }, [open]);
+
+  // never let the panel hang off the right edge of a narrow window
+  useLayoutEffect(() => {
+    if (!open || !panelRef.current) return;
+    const panel = panelRef.current;
+    panel.style.removeProperty('--nudge');
+    const box = panel.getBoundingClientRect();
+    const overflow = box.right - (window.innerWidth - 12);
+    if (overflow > 0) panel.style.setProperty('--nudge', `${-overflow}px`);
   }, [open]);
 
   const commit = (next: DateRangeValue) => {
@@ -137,13 +152,14 @@ export const DateRangePicker = ({
       )}
 
       {open && (
-        <Overlay
-          anchorRef={wrapRef}
-          onClose={() => setOpen(false)}
-          className="dr-panel"
-          align={align}
-          ariaLabel={`${label} range`}
-        >
+        <>
+          <button
+            type="button"
+            className="filter-scrim"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+          />
+          <div className="dr-panel" role="dialog" aria-label={`${label} range`} ref={panelRef} data-align={align}>
           <div className="dr-presets">
             {RANGE_PRESETS.map((preset) => (
               <button
@@ -226,7 +242,8 @@ export const DateRangePicker = ({
               </button>
             </div>
           </div>
-        </Overlay>
+        </div>
+          </>
       )}
     </div>
   );

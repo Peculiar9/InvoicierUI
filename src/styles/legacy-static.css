@@ -4643,7 +4643,12 @@
 
 /* gentle content entrance */
 .ws-content > * {
-  animation: ws-fade-up 0.35s ease both;
+  /* `backwards`, not `both`: a forwards fill keeps the animated transform on
+     the element forever, and any transform — even identity — turns it into
+     the containing block for position: fixed. That silently re-anchored every
+     fixed-position panel (the mobile filter sheets) to this container instead
+     of the viewport. The entrance still plays; nothing is retained after it. */
+  animation: ws-fade-up 0.35s ease backwards;
 }
 @keyframes ws-fade-up {
   from { opacity: 0; transform: translateY(8px); }
