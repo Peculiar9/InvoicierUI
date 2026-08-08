@@ -26,10 +26,16 @@ const paginate = <T>(items: T[], page = 1, limit = 20) => ({
 });
 
 const token = 'mock-jwt-token';
+const refreshToken = 'mock-refresh-token';
+const session = (user: typeof mockUser) => ({
+  user,
+  accessToken: token,
+  refreshToken,
+});
 
 export const handlers = [
   // ---- auth ----
-  http.post('*/api/auth/login', () => ok({ user: mockUser, token })),
+  http.post('*/api/auth/login', () => ok(session(mockUser))),
 
   /* ---- the business profile, which is also the onboarding record ---- */
   http.get('*/api/business-profile', () => ok(demoBusinessProfile)),
@@ -43,7 +49,14 @@ export const handlers = [
     const body = (await request.json().catch(() => ({}))) as Partial<typeof mockUser>;
     // the verification email goes out in the background right here, so it
     // lands while onboarding runs
-    return ok({ user: { ...mockUser, ...body, email_verified: false }, token });
+    return ok({
+      ...session({ ...mockUser, ...body, email_verified: false }),
+      verification: {
+        reference: 'MOCK-REFERENCE',
+        expiry: Math.floor(Date.now() / 1000) + 1800,
+        email: (body as { email?: string }).email ?? mockUser.email,
+      },
+    });
   }),
   http.post('*/api/auth/logout', () => new HttpResponse(null, { status: 200 })),
   http.get('*/api/auth/me', () => ok(mockUser)),
@@ -53,8 +66,10 @@ export const handlers = [
   }),
   http.post('*/api/auth/forgot-password', () => new HttpResponse(null, { status: 200 })),
   http.post('*/api/auth/resend-email-verification', () => new HttpResponse(null, { status: 200 })),
-  http.post('*/api/auth/verify-email', () => ok({ verified: true }, 'Email verified')),
+  // any 4 digits verify against the mock; the shape mirrors the real wire
+  http.post('*/api/auth/verify-email', () => ok(session({ ...mockUser, email_verified: true }), 'Email verified')),
   http.post('*/api/auth/reset-password', () => new HttpResponse(null, { status: 200 })),
+  http.post('*/api/auth/refresh', () => ok(session(mockUser))),
 
   // ---- dashboard (computed live from the local DB) ----
   http.get('*/api/dashboard/stats', () => ok(computeStats())),

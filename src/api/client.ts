@@ -24,21 +24,69 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+/**
+ * One refresh in flight at a time. Ten queries hitting 401 together should
+ * produce one token rotation, not ten — and nine retries waiting on it.
+ */
+let refreshing: Promise<string> | null = null;
+
+const refreshSession = async (): Promise<string> => {
+  const { refreshToken } = useAuthStore.getState();
+  if (!refreshToken) throw new Error('no refresh token');
+  // a bare client: the interceptors on apiClient would recurse
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    { refresh_token: refreshToken },
+    { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+  );
+  const data = response.data?.data ?? response.data;
+  useAuthStore.getState().setTokens(data.accessToken, data.refreshToken);
+  return data.accessToken as string;
+};
+
+const signOutHard = () => {
+  useAuthStore.getState().logout();
+  // Leaving a note before the reload, so the login page can explain the
+  // bounce rather than looking like the app simply forgot them.
+  try {
+    sessionStorage.setItem('invoicier-signed-out', 'expired');
+  } catch {
+    // private mode, or storage full: the redirect still has to happen
+  }
+  if (!window.location.pathname.startsWith('/login')) {
+    window.location.href = '/login';
+  }
+};
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      // Leaving a note before the reload, so the login page can explain the
-      // bounce rather than looking like the app simply forgot them.
+  async (error: AxiosError) => {
+    const original = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
+    const status = error.response?.status;
+
+    // 401 on a request that has not been retried, with a session to save:
+    // rotate the tokens once and replay. Anything else falls through.
+    if (
+      status === 401 &&
+      original &&
+      !original._retried &&
+      useAuthStore.getState().refreshToken &&
+      !original.url?.includes('/auth/refresh') &&
+      !original.url?.includes('/auth/login')
+    ) {
+      original._retried = true;
       try {
-        sessionStorage.setItem('invoicier-signed-out', 'expired');
+        refreshing ??= refreshSession().finally(() => {
+          refreshing = null;
+        });
+        const token = await refreshing;
+        original.headers.Authorization = `Bearer ${token}`;
+        return apiClient(original);
       } catch {
-        // private mode, or storage full: the redirect still has to happen
+        signOutHard();
       }
-      if (!window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
-      }
+    } else if (status === 401) {
+      signOutHard();
     }
     return Promise.reject(error);
   }

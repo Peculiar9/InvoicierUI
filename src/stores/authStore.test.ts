@@ -26,7 +26,7 @@ describe('authStore', () => {
     };
     const mockToken = 'mock-jwt-token';
 
-    useAuthStore.getState().setUser(mockUser, mockToken);
+    useAuthStore.getState().setSession(mockUser, mockToken, 'mock-refresh');
 
     const state = useAuthStore.getState();
     expect(state.user).toEqual(mockUser);
@@ -42,7 +42,7 @@ describe('authStore', () => {
       created_at: '2024-01-01',
     };
 
-    useAuthStore.getState().setUser(mockUser, 'token');
+    useAuthStore.getState().setSession(mockUser, 'token', 'refresh');
     useAuthStore.getState().logout();
 
     const state = useAuthStore.getState();
@@ -59,7 +59,7 @@ describe('authStore', () => {
       created_at: '2024-01-01',
     };
 
-    useAuthStore.getState().setUser(mockUser, 'token');
+    useAuthStore.getState().setSession(mockUser, 'token', 'refresh');
     useAuthStore.getState().updateUser({ username: 'newusername' });
 
     const state = useAuthStore.getState();

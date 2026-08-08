@@ -12,7 +12,10 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
+  /** the access token; short-lived, sent on every request */
   token: string | null;
+  /** long-lived; traded for a new access token when one expires */
+  refreshToken: string | null;
   isAuthenticated: boolean;
 }
 

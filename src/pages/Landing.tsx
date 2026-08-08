@@ -996,20 +996,21 @@ const DEV_INVOICE_ID = 'inv_4'; // seeded, status: sent, ready to be paid
 const DevPreviewBar = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const setUser = useAuthStore((s) => s.setUser);
+  const setSession = useAuthStore((s) => s.setSession);
 
   if (!import.meta.env.DEV) return null;
 
   const goOnboarding = () => {
     if (!isAuthenticated) {
-      setUser(
+      setSession(
         {
           id: 'usr_demo',
           email: 'demo@invoicier.app',
           username: 'demo',
           created_at: new Date().toISOString(),
         },
-        'mock-jwt-token'
+        'mock-jwt-token',
+        'mock-refresh-token'
       );
     }
     navigate({ to: '/welcome' });

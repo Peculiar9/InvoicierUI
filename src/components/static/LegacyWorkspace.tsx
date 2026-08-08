@@ -108,7 +108,16 @@ export const LegacyWorkspace = ({
   const [verifyOpen, setVerifyOpen] = useState(false);
   const unverified = Boolean(user) && user?.email_verified === false;
   const resendVerification = async () => {
-    await authApi.resendVerification();
+    let pending: { email?: string; reference?: string } = {};
+    try {
+      pending = JSON.parse(
+        sessionStorage.getItem('invoicier-pending-verification') ?? '{}'
+      ) as { email?: string; reference?: string };
+    } catch {
+      // fall through to the account email with no reference
+    }
+    if (!pending.email || !pending.reference) return;
+    await authApi.resendVerification(pending.email, pending.reference);
     toast.success(`Verification link resent to ${user?.email}`);
     setVerifyOpen(false);
   };

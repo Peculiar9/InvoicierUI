@@ -6,8 +6,11 @@ import { businessProfileKey, hasOnboarded } from '@/hooks/useBusinessProfile';
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginCredentials, SignupCredentials } from '@/types';
 
+/** Where the verify-email page finds its handle after signup. */
+export const PENDING_VERIFICATION_KEY = 'invoicier-pending-verification';
+
 export const useLogin = () => {
-  const { setUser } = useAuthStore();
+  const { setSession } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -15,7 +18,7 @@ export const useLogin = () => {
     mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
     meta: { doing: 'Signing you in' },
     onSuccess: async (data) => {
-      setUser(data.user, data.token);
+      setSession(data.user, data.accessToken, data.refreshToken);
       queryClient.invalidateQueries({ queryKey: ['user'] });
 
       // Where they land is a fact about their account, not about this
@@ -40,14 +43,29 @@ export const useLogin = () => {
 };
 
 export const useSignup = () => {
-  const { setUser } = useAuthStore();
+  const { setSession } = useAuthStore();
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (credentials: SignupCredentials) => authApi.signup(credentials),
     meta: { doing: 'Creating your account' },
     onSuccess: (data) => {
-      setUser(data.user, data.token);
+      setSession(data.user, data.accessToken, data.refreshToken);
+      // the verify-email page needs the reference the backend just minted;
+      // sessionStorage survives the redirect without polluting the store
+      if (data.verification) {
+        try {
+          sessionStorage.setItem(
+            PENDING_VERIFICATION_KEY,
+            JSON.stringify({
+              email: data.verification.email,
+              reference: data.verification.reference,
+            })
+          );
+        } catch {
+          // private mode: the page falls back to asking for a resend
+        }
+      }
       // a new account has a profile but no details in it yet, so onboarding
       // is always next
       navigate({ to: '/welcome' });
