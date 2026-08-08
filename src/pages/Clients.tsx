@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { Client } from '@/types';
 import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
 import { Modal } from '@/components/Modal';
@@ -13,18 +14,23 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { useInvoices } from '@/hooks';
 import { isPaid } from '@/utils/invoiceStatus';
-import { useClients, useCreateClient } from '@/hooks';
+import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useListStateStore } from '@/stores/listStateStore';
 import type { ClientSortKey } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { isEmail, isFilled, isPhone } from '@/lib/validate';
 import { toast } from '@/lib/toast';
+import { ClientAvatar } from '@/components/ClientAvatar';
+import { ClientInsights } from '@/components/ClientInsights';
 
 export const Clients = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useClients();
   const createClient = useCreateClient();
+  const updateClient = useUpdateClient();
+  const deleteClient = useDeleteClient();
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const openView = useInvoicePanelStore((s) => s.openView);
   const clients = data?.data ?? [];
 
   // What each client is actually worth to the business. A list of names and
@@ -56,8 +62,48 @@ export const Clients = () => {
   const setPageSize = (v: number) => patch({ pageSize: v });
   const [selected, setSelected] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [insightsId, setInsightsId] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', logo: '' });
   const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
+
+  const openAdd = () => {
+    setEditingId(null);
+    setForm({ name: '', email: '', phone: '', logo: '' });
+    setErrors({});
+    setOpen(true);
+  };
+  const openEdit = (c: Client) => {
+    setEditingId(c.id);
+    setForm({ name: c.name, email: c.email ?? '', phone: c.phone ?? '', logo: c.logo_url ?? '' });
+    setErrors({});
+    setOpen(true);
+  };
+  const onLogoPick = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, logo: String(reader.result) }));
+    reader.readAsDataURL(file);
+  };
+
+  /**
+   * Remove acts now and offers the way back, like everything else here.
+   * The mock mints a fresh id on the way back; the address book cares about
+   * the person's details, not our key for them.
+   */
+  const removeClient = (c: Client) => {
+    deleteClient.mutate(c.id, {
+      onSuccess: () => {
+        setSelected((cur) => (cur === c.id ? null : cur));
+        toast.undo(`${c.name} removed from your clients`, () => {
+          createClient.mutate(
+            { name: c.name, email: c.email, phone: c.phone, logo_url: c.logo_url } as never,
+            { onSuccess: () => toast.success(`${c.name} is back`) }
+          );
+        });
+      },
+    });
+  };
 
   const filtered = clients.filter((c) => {
     const q = query.toLowerCase();
@@ -86,11 +132,29 @@ export const Clients = () => {
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    createClient.mutate(form, {
+    const payload = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || undefined,
+      logo_url: form.logo || null,
+    };
+    if (editingId) {
+      updateClient.mutate(
+        { id: editingId, data: payload as never },
+        {
+          onSuccess: () => {
+            toast.success('Client updated');
+            setOpen(false);
+          },
+        }
+      );
+      return;
+    }
+    createClient.mutate(payload as never, {
       onSuccess: () => {
         toast.success('Client added');
         setOpen(false);
-        setForm({ name: '', email: '', phone: '' });
+        setForm({ name: '', email: '', phone: '', logo: '' });
         setErrors({});
       },
     });
@@ -103,7 +167,7 @@ export const Clients = () => {
       className: selectedClient ? 'is-highlight' : '',
       onClick: () => openCreate(selected ?? undefined),
     },
-    { label: 'New client', bx: 'bx-user-plus', onClick: () => setOpen(true) },
+    { label: 'New client', bx: 'bx-user-plus', onClick: openAdd },
   ];
 
   return (
@@ -178,7 +242,7 @@ export const Clients = () => {
                 <i className="bx bx-list-ul" />
               </button>
             </div>
-            <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+            <button type="button" className="btn btn-primary" onClick={openAdd}>
               <i className="bx bx-plus" /> Add client
             </button>
           </div>
@@ -235,20 +299,56 @@ export const Clients = () => {
           <>
             <div className="client-grid">
               {paged.map((c) => (
-              <button
-                type="button"
+              <div
+                role="button"
+                tabIndex={0}
                 className={`client-card${selected === c.id ? ' selected' : ''}`}
                 key={c.id}
                 onClick={() => toggleSelect(c.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') toggleSelect(c.id);
+                }}
               >
-                <span className="client-avatar">{c.name.charAt(0).toUpperCase()}</span>
+                <ClientAvatar name={c.name} logo_url={c.logo_url} />
                 <div className="client-info">
                   <h3>{c.name}</h3>
                   <p>{c.email}</p>
                   {c.phone && <p className="dash-muted">{c.phone}</p>}
                 </div>
                 {selected === c.id && <i className="bx bx-check client-check" />}
-              </button>
+                {/* the card click selects-to-invoice; these do everything else */}
+                <span
+                  className="client-actions"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    title={`Insights on ${c.name}`}
+                    aria-label={`Insights on ${c.name}`}
+                    onClick={() => setInsightsId(c.id)}
+                  >
+                    <i className="bx bx-line-chart" />
+                  </button>
+                  <button
+                    type="button"
+                    title={`Edit ${c.name}`}
+                    aria-label={`Edit ${c.name}`}
+                    onClick={() => openEdit(c)}
+                  >
+                    <i className="bx bx-pencil" />
+                  </button>
+                  <button
+                    type="button"
+                    className="is-danger"
+                    title={`Remove ${c.name}`}
+                    aria-label={`Remove ${c.name}`}
+                    onClick={() => removeClient(c)}
+                  >
+                    <i className="bx bx-trash" />
+                  </button>
+                </span>
+              </div>
             ))}
             </div>
             <Pager
@@ -275,6 +375,7 @@ export const Clients = () => {
                     <th>Collected</th>
                     <th>Owed</th>
                     <th>Since</th>
+                    <th className="iw-rowact-cell" aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
@@ -285,9 +386,7 @@ export const Clients = () => {
                       onClick={() => toggleSelect(c.id)}
                     >
                       <td className="client-cell">
-                        <span className="client-avatar client-avatar--sm">
-                          {c.name.charAt(0).toUpperCase()}
-                        </span>
+                        <ClientAvatar name={c.name} logo_url={c.logo_url} size="sm" />
                         <span className="client-ident">
                           <b>{c.name}</b>
                           <small>{c.email || c.phone || 'No contact details'}</small>
@@ -313,6 +412,34 @@ export const Clients = () => {
                       <td className="dash-muted">
                         {formatDate(c.created_at, { month: 'short', year: 'numeric' })}
                       </td>
+                      <td className="iw-rowact-cell" onClick={(e) => e.stopPropagation()}>
+                        <div className="iw-rowact">
+                          <button
+                            type="button"
+                            title={`Insights on ${c.name}`}
+                            aria-label={`Insights on ${c.name}`}
+                            onClick={() => setInsightsId(c.id)}
+                          >
+                            <i className="bx bx-line-chart" />
+                          </button>
+                          <button
+                            type="button"
+                            title={`Edit ${c.name}`}
+                            aria-label={`Edit ${c.name}`}
+                            onClick={() => openEdit(c)}
+                          >
+                            <i className="bx bx-pencil" />
+                          </button>
+                          <button
+                            type="button"
+                            title={`Remove ${c.name}`}
+                            aria-label={`Remove ${c.name}`}
+                            onClick={() => removeClient(c)}
+                          >
+                            <i className="bx bx-trash" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -334,22 +461,67 @@ export const Clients = () => {
         )}
       </div>
 
+      {insightsId && clients.find((c) => c.id === insightsId) && (
+        <ClientInsights
+          client={clients.find((c) => c.id === insightsId)!}
+          invoices={invoiceData?.data ?? []}
+          onClose={() => setInsightsId(null)}
+          onInvoiceThem={() => {
+            setInsightsId(null);
+            openCreate(insightsId);
+          }}
+          onEdit={() => {
+            const c = clients.find((x) => x.id === insightsId);
+            setInsightsId(null);
+            if (c) openEdit(c);
+          }}
+          onOpenInvoice={(id) => {
+            setInsightsId(null);
+            openView(id);
+          }}
+        />
+      )}
+
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Add client"
+        title={editingId ? 'Edit client' : 'Add client'}
         footer={
           <>
             <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
               Cancel
             </button>
             <button type="button" className="btn btn-primary" onClick={submit}>
-              Add client
+              {editingId ? 'Save changes' : 'Add client'}
             </button>
           </>
         }
       >
         <div className="cinv-fields cinv-fields--stack">
+          {/* their mark: a logo when they have one, initials meanwhile */}
+          <div className="client-logo-row">
+            <ClientAvatar name={form.name || 'C'} logo_url={form.logo || null} size="lg" />
+            <div className="client-logo-actions">
+              <label className="btn btn-ghost client-logo-pick">
+                <i className="bx bx-image-add" /> {form.logo ? 'Change logo' : 'Add a logo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => onLogoPick(e.target.files?.[0])}
+                />
+              </label>
+              {form.logo && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setForm((f) => ({ ...f, logo: '' }))}
+                >
+                  Use initials
+                </button>
+              )}
+            </div>
+          </div>
           <label className="cinv-field">
             <span>Name</span>
             <input

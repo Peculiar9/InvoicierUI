@@ -389,6 +389,28 @@ export const handlers = [
       ? ok(client)
       : HttpResponse.json({ message: 'Not found', success: false }, { status: 404 });
   }),
+  http.patch('*/api/clients/:id', async ({ params, request }) => {
+    const client = clients.find((c) => c.id === params.id);
+    if (!client) {
+      return HttpResponse.json({ message: 'Not found', success: false }, { status: 404 });
+    }
+    const body = (await request.json().catch(() => ({}))) as Partial<Client>;
+    // the id and the clock are ours; everything else is theirs to change
+    delete (body as Record<string, unknown>).id;
+    delete (body as Record<string, unknown>).created_at;
+    Object.assign(client, body);
+    saveDb();
+    return ok(client);
+  }),
+  http.delete('*/api/clients/:id', ({ params }) => {
+    const at = clients.findIndex((c) => c.id === params.id);
+    if (at < 0) {
+      return HttpResponse.json({ message: 'Not found', success: false }, { status: 404 });
+    }
+    clients.splice(at, 1);
+    saveDb();
+    return new HttpResponse(null, { status: 200 });
+  }),
   http.post('*/api/clients', async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as Partial<Client>;
     const client: Client = {
@@ -397,6 +419,7 @@ export const handlers = [
       email: body.email ?? '',
       phone: body.phone,
       address: body.address,
+      logo_url: body.logo_url ?? null,
       created_at: new Date().toISOString(),
     };
     clients.push(client);

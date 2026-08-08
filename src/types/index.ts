@@ -22,6 +22,8 @@ export interface Client {
   email: string;
   phone?: string;
   address?: Address;
+  /** their mark, shown where they appear; initials stand in without one */
+  logo_url?: string | null;
   created_at: string;
 }
 

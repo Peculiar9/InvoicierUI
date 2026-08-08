@@ -7143,3 +7143,266 @@
     display: none;
   }
 }
+
+/* ============================================================================
+   CLIENTS — logos, the actions cluster, and the insights briefing
+   ========================================================================== */
+
+/* a real logo sits in the same frame the initials do */
+.iw .client-avatar--logo {
+  padding: 0;
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.iw .client-avatar--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.iw .client-avatar--lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  font-size: 1.3rem;
+}
+/* the mark answers a hover, gently */
+.iw .client-card .client-avatar,
+.iw .dash-row-click .client-avatar {
+  transition: transform 0.22s var(--ease-out);
+}
+.iw .client-card:hover .client-avatar,
+.iw .dash-row-click:hover .client-avatar {
+  transform: scale(1.07) rotate(-2deg);
+}
+
+/* the cluster: everything that is not "invoice them" */
+.iw .client-card {
+  position: relative;
+}
+.iw .client-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.iw .client-card:hover .client-actions,
+.iw .client-actions:focus-within {
+  opacity: 1;
+  transform: none;
+}
+.iw .client-actions button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, transform 0.14s var(--ease-out);
+}
+.iw .client-actions button:hover {
+  color: var(--brand);
+  border-color: rgba(146, 78, 233, 0.4);
+}
+.iw .client-actions button.is-danger:hover {
+  color: var(--danger);
+  border-color: rgba(212, 69, 60, 0.4);
+}
+.iw .client-actions button:active {
+  transform: scale(0.9);
+}
+@media (hover: none) {
+  .iw .client-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the logo row in the add/edit modal */
+.iw .client-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 6px;
+}
+.iw .client-logo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.iw .client-logo-pick {
+  cursor: pointer;
+}
+
+/* ---- the insights briefing ---- */
+.iw .ci-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.iw .ci-who {
+  min-width: 0;
+  flex: 1;
+}
+.iw .ci-who h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .ci-who p {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+}
+.iw .ci-who small {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+.iw .ci-head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.iw .ci-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  padding: 16px 0;
+}
+.iw .ci-stat {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--paper);
+  animation: filter-in 0.24s var(--ease-out) both;
+}
+.iw .ci-stat:nth-child(2) { animation-delay: 40ms; }
+.iw .ci-stat:nth-child(3) { animation-delay: 80ms; }
+.iw .ci-stat:nth-child(4) { animation-delay: 120ms; }
+.iw .ci-stat span {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.iw .ci-stat b {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.iw .ci-stat b.is-owed {
+  color: var(--warn);
+}
+.iw .ci-stat small {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+.iw .ci-currencies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+.iw .ci-currency {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.iw .ci-recent h4 {
+  margin-bottom: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.iw .ci-recent ul {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.iw .ci-recent li button {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.16s ease, transform 0.16s var(--ease-out);
+}
+.iw .ci-recent li button:hover {
+  border-color: rgba(146, 78, 233, 0.4);
+  transform: translateX(2px);
+}
+.iw .ci-inv-num {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .ci-inv-date {
+  color: var(--ink-faint);
+  text-align: left;
+}
+.iw .ci-inv-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+}
+.iw .ci-recent li button .bx-right-arrow-alt {
+  color: var(--ink-faint);
+  transition: transform 0.18s var(--ease-out), color 0.18s ease;
+}
+.iw .ci-recent li button:hover .bx-right-arrow-alt {
+  transform: translateX(2px);
+  color: var(--brand);
+}
+.iw .ci-empty {
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+@media (max-width: 560px) {
+  .iw .ci-head-actions {
+    width: 100%;
+  }
+  .iw .ci-head-actions .btn {
+    flex: 1;
+  }
+  .iw .ci-recent li button {
+    grid-template-columns: auto 1fr auto;
+  }
+  .iw .ci-inv-date,
+  .iw .ci-recent li button .bx-right-arrow-alt {
+    display: none;
+  }
+}
