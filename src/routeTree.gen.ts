@@ -14,6 +14,7 @@ import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as InvoicesRouteImport } from './routes/invoices'
@@ -50,6 +51,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/reset-password'
     | '/services'
     | '/settings'
     | '/signup'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/reset-password'
     | '/services'
     | '/settings'
     | '/signup'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/reset-password'
     | '/services'
     | '/settings'
     | '/signup'
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRoute
   LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRoute,
   LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,

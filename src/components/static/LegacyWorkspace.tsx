@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useLogout, useRecentActivities } from '@/hooks';
 import { useHotkeys } from '@/hooks/useHotkeys';
 import { useServerSettings } from '@/hooks/useServerSettings';
+import { useUIStore } from '@/stores/uiStore';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/lib/toast';
@@ -72,6 +73,8 @@ export const LegacyWorkspace = ({
 }: LegacyWorkspaceProps) => {
   const { mutate: logout } = useLogout();
   useServerSettings();
+  const theme = useUIStore((s) => s.theme);
+  const toggleTheme = useUIStore((s) => s.toggleTheme);
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
@@ -182,6 +185,15 @@ export const LegacyWorkspace = ({
             </Link>
           ))}
         </nav>
+        <button
+          type="button"
+          className="ws-rail-item ws-theme-toggle"
+          title={theme === 'dark' ? 'Lights on' : 'Lights off'}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          onClick={() => toggleTheme()}
+        >
+          <i className={`bx ${theme === 'dark' ? 'bx-sun' : 'bx-moon'}`} aria-hidden="true" />
+        </button>
         <button
           type="button"
           className="ws-rail-item ws-rail-logout"

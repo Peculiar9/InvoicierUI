@@ -6,7 +6,6 @@ import { Typewriter } from '@/components/static';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
 import { useCmsFaqs, useCmsTestimonials, useSiteSettings } from '@/hooks/useCms';
-import { cms } from '@/lib/cms';
 import '@/styles/landing-v2.css';
 
 /* ----------------------------------------------------------------- loader */
@@ -998,6 +997,21 @@ const DevPreviewBar = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const setSession = useAuthStore((s) => s.setSession);
 
+  // configuration decides what floats here:
+  //  - waitlist mode: one button, the list — login stays out of sight
+  //  - dev, waitlist off: the test shortcuts
+  //  - production, waitlist off: nothing at all
+  const waitlistMode = import.meta.env.VITE_WAITLIST === 'true';
+  if (waitlistMode) {
+    return (
+      <div className="lp-devbar lp-devbar--waitlist">
+        <a href="#waitlist" className="lp-devbar-item">
+          <i className="bx bx-envelope" aria-hidden="true" />
+          <span>Join the waitlist</span>
+        </a>
+      </div>
+    );
+  }
   if (!import.meta.env.DEV) return null;
 
   const goOnboarding = () => {
@@ -1068,6 +1082,42 @@ const MARQUEE_ITEMS = [
   'Tax estimator coming soon',
 ];
 
+import { waitlistApi, REF_KEY, type WaitlistJoin } from '@/api/waitlist';
+
+/**
+ * In-page anchors glide instead of jump: ~380ms of ease-out, which reads as
+ * intentional without ever feeling slow. JS-driven so the curve is ours;
+ * reduced-motion users get the instant jump they asked their OS for.
+ */
+const useEasedAnchors = () => {
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement).closest('a[href^="#"], a[href^="/#"]');
+      if (!target) return;
+      const href = target.getAttribute('href') ?? '';
+      const id = href.replace(/^\/?#/, '');
+      const destination = id ? document.getElementById(id) : null;
+      if (!destination) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      event.preventDefault();
+      const startY = window.scrollY;
+      const endY = destination.getBoundingClientRect().top + startY - 88;
+      const duration = 380;
+      const start = performance.now();
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        window.scrollTo(0, startY + (endY - startY) * easeOutCubic(t));
+        if (t < 1) requestAnimationFrame(step);
+        else history.replaceState(null, '', `#${id}`);
+      };
+      requestAnimationFrame(step);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
+};
+
 const WAITLIST_KEY = 'invoicier-waitlist';
 
 const INTRO_KEY = 'invoicier-intro-played';
@@ -1093,25 +1143,53 @@ export const Landing = () => {
 
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [waitlistError, setWaitlistError] = useState('');
-  const [waitlisted, setWaitlisted] = useState(
-    () => localStorage.getItem(WAITLIST_KEY) !== null
-  );
+  const [waitlistJoin, setWaitlistJoin] = useState<WaitlistJoin | null>(() => {
+    try {
+      const raw = localStorage.getItem(WAITLIST_KEY);
+      return raw ? (JSON.parse(raw) as WaitlistJoin) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [waitlistBusy, setWaitlistBusy] = useState(false);
+  const [refCopied, setRefCopied] = useState(false);
+  const waitlisted = waitlistJoin !== null;
 
-  const joinWaitlist = (event: FormEvent) => {
+  useEasedAnchors();
+
+  // a shared link's ?ref= waits in localStorage until its owner signs up
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref && /^[A-Za-z0-9]{4,16}$/.test(ref)) {
+      try {
+        localStorage.setItem(REF_KEY, ref);
+      } catch {
+        // private mode: the visit still counts, the attribution does not
+      }
+    }
+  }, []);
+
+  const joinWaitlist = async (event: FormEvent) => {
     event.preventDefault();
     const email = waitlistEmail.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setWaitlistError('That email does not look right. Give it another go.');
       return;
     }
-    const entries: Array<{ email: string; at: string }> = JSON.parse(
-      localStorage.getItem(WAITLIST_KEY) ?? '[]'
-    );
-    entries.push({ email, at: new Date().toISOString() });
-    localStorage.setItem(WAITLIST_KEY, JSON.stringify(entries));
-    setWaitlisted(true);
-    // the CMS is the real list; local storage just keeps the demo honest
-    void cms.joinWaitlist(email, 'landing');
+    setWaitlistBusy(true);
+    try {
+      const join = await waitlistApi.join(email);
+      setWaitlistJoin(join);
+      try {
+        localStorage.setItem(WAITLIST_KEY, JSON.stringify(join));
+      } catch {
+        // private mode: the server remembers even if this browser cannot
+      }
+    } catch {
+      setWaitlistError('Could not reach the list just now. Try again in a moment.');
+    } finally {
+      setWaitlistBusy(false);
+    }
   };
 
   useEffect(() => {
@@ -1156,7 +1234,7 @@ export const Landing = () => {
               </h1>
               <p className="lp-hero-sub" data-reveal data-delay="3">
                 {site.heroSubline ??
-                  `You write it once. Your client pays by card or bank transfer, in naira, dollars, euros or pounds. Every payment is filed with the date it landed, the VAT and the WHT already worked out. So when March asks, your books already have the answers.`}
+                `Write it once. They pay by card or transfer — naira, dollars, euros or pounds. Every payment lands with its date, VAT and WHT already worked out. March finds your books ready.`}
               </p>
               <div className="lp-hero-actions" data-reveal data-delay="4">
                 <a href="#waitlist" className="lp-btn lp-btn--lg">
@@ -1422,10 +1500,29 @@ export const Landing = () => {
                 for your business.
               </p>
 
-              {waitlisted ? (
+              {waitlisted && waitlistJoin ? (
                 <div className="lp-waitlist-done" role="status">
                   <i className="bx bx-check" />
-                  You're on the list. Watch your inbox for your invite.
+                  <span>
+                    You are <b>№{waitlistJoin.position}</b> on the list. Every friend
+                    who joins through your link moves you up:
+                  </span>
+                  <button
+                    type="button"
+                    className="lp-waitlist-ref"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(waitlistJoin.referral_url).then(
+                        () => {
+                          setRefCopied(true);
+                          setTimeout(() => setRefCopied(false), 1600);
+                        },
+                        () => {}
+                      );
+                    }}
+                  >
+                    <code>{waitlistJoin.referral_url}</code>
+                    <i className={`bx ${refCopied ? 'bx-check' : 'bx-copy'}`} />
+                  </button>
                 </div>
               ) : (
                 <>
@@ -1441,7 +1538,7 @@ export const Landing = () => {
                       aria-label="Email address"
                     />
                     <button type="submit" className="lp-btn">
-                      Join the waitlist <i className="bx bx-right-arrow-alt" />
+                      {waitlistBusy ? 'Joining…' : 'Join the waitlist'} <i className="bx bx-right-arrow-alt" />
                     </button>
                   </form>
                   {waitlistError && <p className="lp-waitlist-error">{waitlistError}</p>}
@@ -1534,15 +1631,16 @@ export const MarketingFooter = () => (
     </div>
 
     <div className="lp-footer-bottom">
-      <span>© 2026 Invoicier. All rights reserved.</span>
+      <span>© {new Date().getFullYear()} Invoicier. All rights reserved.</span>
       <a
-        className="lp-footer-credit"
+        className="lp-footer-credit lp-steeze"
         href="https://peculiarlabs.com"
         target="_blank"
         rel="noreferrer"
       >
-        Made with <i className="bx bxs-heart lp-heart" aria-hidden="true" /> by
-        peculiarlabs
+        Made with <em className="lp-steeze-word">steeze</em> by{' '}
+        <b className="lp-steeze-name">PeculiarLabs</b>
+        <i className="bx bx-right-arrow-alt lp-steeze-arrow" aria-hidden="true" />
       </a>
       <span>Made for businesses and individuals that move fast.</span>
     </div>

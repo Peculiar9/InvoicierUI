@@ -1,4 +1,15 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+/**
+ * The theme leaves the store through the DOM: everything CSS needs is one
+ * attribute on <html>, flipped here and only here.
+ */
+const applyTheme = (theme: 'light' | 'dark') => {
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+};
 
 interface UIState {
   sidebarOpen: boolean;
@@ -21,6 +32,7 @@ interface UIActions {
   setSidebarOpen: (open: boolean) => void;
   toggleSidebarCollapse: () => void;
   setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
   addNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
@@ -30,7 +42,9 @@ type UIStore = UIState & UIActions;
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-export const useUIStore = create<UIStore>((set) => ({
+export const useUIStore = create<UIStore>()(
+  persist(
+    (set) => ({
   sidebarOpen: true,
   sidebarCollapsed: false,
   theme: 'light',
@@ -43,7 +57,16 @@ export const useUIStore = create<UIStore>((set) => ({
   toggleSidebarCollapse: () =>
     set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) => {
+    applyTheme(theme);
+    set({ theme });
+  },
+  toggleTheme: () =>
+    set((state) => {
+      const theme = state.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(theme);
+      return { theme };
+    }),
 
   addNotification: (notification) =>
     set((state) => ({
@@ -59,4 +82,17 @@ export const useUIStore = create<UIStore>((set) => ({
     })),
 
   clearNotifications: () => set({ notifications: [] }),
-}));
+    }),
+    {
+      name: 'invoicier-ui',
+      storage: createJSONStorage(() => localStorage),
+      // notifications are moments, not preferences
+      partialize: (state) => ({ theme: state.theme }),
+      merge: (persisted, current) => {
+        const next = { ...current, ...(persisted as object) } as UIStore;
+        applyTheme(next.theme);
+        return next;
+      },
+    }
+  )
+);

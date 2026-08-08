@@ -4964,3 +4964,75 @@
     transform: none;
   }
 }
+
+/* ---- the maker's mark: clickable, shimmering, unmissable ---------------- */
+.lp .lp-steeze {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  color: inherit;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(146, 78, 233, 0.25);
+  background: rgba(146, 78, 233, 0.06);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.lp .lp-steeze:hover {
+  border-color: rgba(146, 78, 233, 0.55);
+  background: rgba(146, 78, 233, 0.12);
+  transform: translateY(-1px);
+}
+.lp .lp-steeze-word {
+  font-style: normal;
+  font-weight: 700;
+  background: linear-gradient(100deg, #924ee9 10%, #ff5a5f 50%, #924ee9 90%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: steeze-shimmer 3.2s linear infinite;
+}
+@keyframes steeze-shimmer {
+  to { background-position: 200% center; }
+}
+.lp .lp-steeze-name { font-weight: 700; }
+.lp .lp-steeze-arrow {
+  font-size: 15px;
+  transition: transform 0.2s;
+}
+.lp .lp-steeze:hover .lp-steeze-arrow { transform: translateX(3px); }
+
+/* waitlist success: the referral link, copyable */
+.lp .lp-waitlist-done { flex-wrap: wrap; }
+.lp .lp-waitlist-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  max-width: 100%;
+  border: 1px dashed rgba(146, 78, 233, 0.45);
+  background: rgba(146, 78, 233, 0.07);
+  border-radius: 12px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: background 0.18s;
+}
+.lp .lp-waitlist-ref:hover { background: rgba(146, 78, 233, 0.14); }
+.lp .lp-waitlist-ref code {
+  font-size: 12.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lp .lp-waitlist-ref i { color: #924ee9; flex: none; }
+
+/* the waitlist-mode float wears the brand, not the dev dashes */
+.lp .lp-devbar--waitlist {
+  border: none;
+  background: #1d1b2e;
+  box-shadow: 0 10px 30px rgba(29, 27, 46, 0.35);
+}
+.lp .lp-devbar--waitlist .lp-devbar-item { color: #fff; }

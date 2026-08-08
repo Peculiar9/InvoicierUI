@@ -7682,3 +7682,141 @@
   color: var(--ink-faint);
   padding: 8px 0 2px;
 }
+
+/* ============================================================================
+   DARK MODE — the workspace after hours.
+   One attribute on <html> flips it; the token block does most of the work
+   and the surgical overrides below catch every hardcoded white the tokens
+   cannot reach. Documents (.invoice-doc, .rcpt) deliberately stay paper —
+   an invoice prints white in any mood.
+   ========================================================================== */
+
+[data-theme='dark'] .iw {
+  --brand: #a875f0;
+  --brand-600: #b78af5;
+  --brand-deep: #241b33;
+  --brand-deeper: #1a1426;
+  --brand-tint: rgba(168, 117, 240, 0.16);
+  --accent: #ff6b70;
+  --paid: #2fb695;
+  --warn: #d99a2b;
+  --danger: #e05d54;
+
+  --ink: #f1eff8;
+  --ink-soft: #b9b5cb;
+  --ink-faint: #7d7992;
+  --paper: #131118;
+  --card: #1c1926;
+  --border: #2b2739;
+
+  --shadow-sm: 0 3px 18px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 16px 44px rgba(0, 0, 0, 0.5);
+  --shadow-brand: 0 8px 20px rgba(168, 117, 240, 0.25);
+
+  color-scheme: dark;
+}
+
+/* surfaces that carry a literal white */
+[data-theme='dark'] .iw .fs-menu,
+[data-theme='dark'] .iw .dr-panel,
+[data-theme='dark'] .iw .ffield-menu,
+[data-theme='dark'] .iw .ui-modal,
+[data-theme='dark'] .iw .ipanel,
+[data-theme='dark'] .iw .dash-card,
+[data-theme='dark'] .iw .iw-acct,
+[data-theme='dark'] .iw .pay-card,
+[data-theme='dark'] .iw .pay-window,
+[data-theme='dark'] .iw .cinv-item,
+[data-theme='dark'] .iw .iw-pager,
+[data-theme='dark'] .iw .seg,
+[data-theme='dark'] .iw .ws-create-btn {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--ink-soft);
+}
+[data-theme='dark'] .iw .fs-trigger,
+[data-theme='dark'] .iw .dr-trigger,
+[data-theme='dark'] .iw .ffield-trigger,
+[data-theme='dark'] .iw .iw-page,
+[data-theme='dark'] .iw .iw-page-arrow,
+[data-theme='dark'] .iw input,
+[data-theme='dark'] .iw select,
+[data-theme='dark'] .iw textarea {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--ink);
+}
+[data-theme='dark'] .iw input::placeholder,
+[data-theme='dark'] .iw textarea::placeholder {
+  color: var(--ink-faint);
+}
+[data-theme='dark'] .iw .fs-option:hover,
+[data-theme='dark'] .iw .fs-option.is-active {
+  background: rgba(168, 117, 240, 0.12);
+}
+[data-theme='dark'] .iw .seg-item.is-active,
+[data-theme='dark'] .iw .iw-page.is-current {
+  background: var(--ink);
+  color: var(--paper);
+}
+[data-theme='dark'] .iw .dr-day.is-end { background: var(--brand); color: #fff; }
+[data-theme='dark'] .iw .iw-btn {
+  background: var(--brand);
+  color: #fff;
+}
+[data-theme='dark'] .iw .iw-btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .view,
+[data-theme='dark'] .iw .ws-body,
+[data-theme='dark'] .iw .ws-content {
+  background: var(--paper);
+}
+[data-theme='dark'] .iw table th { color: var(--ink-faint); }
+[data-theme='dark'] .iw table td { border-color: var(--border); }
+[data-theme='dark'] .iw tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+/* glass and scrims flip their base */
+[data-theme='dark'] .iw .filter-scrim,
+[data-theme='dark'] .iw .ipanel-scrim,
+[data-theme='dark'] .iw .ui-modal-overlay,
+[data-theme='dark'] .iw .ws-fab-scrim {
+  background: rgba(0, 0, 0, 0.55);
+}
+[data-theme='dark'] .iw .ws-fab-item { background: var(--card); color: var(--ink); }
+
+/* the documents stay paper — deliberately */
+[data-theme='dark'] .iw .invoice-doc,
+[data-theme='dark'] .iw .rcpt {
+  background: #ffffff;
+  color: #1d1b2e;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+}
+
+/* charts, sparklines, tone dots keep their tints; text on them brightens */
+[data-theme='dark'] .iw .dash-badge { filter: brightness(1.18); }
+[data-theme='dark'] .iw .iw-flowhint {
+  background: var(--brand-tint);
+  color: var(--ink-soft);
+}
+
+/* the payer page follows the workspace's mood when the owner previews it */
+[data-theme='dark'] .iw .pay-page { background: var(--paper); }
+[data-theme='dark'] .iw .pay-transfer { background: var(--card); border-color: var(--border); }
+
+/* the rail was born dark; give its active pill a touch more light */
+[data-theme='dark'] .iw .ws-rail { box-shadow: var(--shadow-md); }
+
+/* smooth the flip itself */
+.iw,
+.iw .dash-card,
+.iw .fs-trigger,
+.iw .ffield-trigger,
+.iw input,
+.iw .ui-modal,
+.iw .cinv-item {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
