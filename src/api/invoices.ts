@@ -1,5 +1,6 @@
 import apiClient from './client';
 import type {
+  PaymentWindow,
   Invoice,
   CreateInvoiceDto,
   UpdateInvoiceDto,
@@ -26,12 +27,47 @@ export const invoicesApi = {
     return response.data.data;
   },
 
+  /** ---- the payment window: a generated account and a strict clock ---- */
+
+  openPaymentSession: async (id: string): Promise<PaymentWindow> => {
+    const response = await apiClient.post<ApiResponse<PaymentWindow>>(
+      `/public/invoices/${id}/payment-session`,
+      { method: 'custom' }
+    );
+    return response.data.data;
+  },
+
+  getPaymentSession: async (id: string): Promise<PaymentWindow | null> => {
+    const response = await apiClient.get<ApiResponse<PaymentWindow | null>>(
+      `/public/invoices/${id}/payment-session`
+    );
+    return response.data.data;
+  },
+
+  paymentSent: async (
+    id: string,
+    input: { window_id: string; payer_email?: string; note?: string }
+  ): Promise<PaymentWindow> => {
+    const response = await apiClient.post<ApiResponse<PaymentWindow>>(
+      `/public/invoices/${id}/payment-sent`,
+      input
+    );
+    return response.data.data;
+  },
+
   /** What a payer's browser fetches. No token, and a narrower shape. */
   getPublic: async (id: string): Promise<Invoice> => {
-    const response = await apiClient.get<ApiResponse<{ invoice: Invoice }>>(
-      `/public/invoices/${id}`
-    );
-    return response.data.data.invoice;
+    const response = await apiClient.get<
+      ApiResponse<{ invoice: Invoice; items?: Invoice['items'] } | Invoice>
+    >(`/public/invoices/${id}`);
+    const data = response.data.data;
+    // the real backend sends { invoice, items, business }; the mock sends the
+    // invoice whole — both end as one Invoice with its items aboard
+    if ('invoice' in (data as Record<string, unknown>)) {
+      const wrapped = data as { invoice: Invoice; items?: Invoice['items'] };
+      return { ...wrapped.invoice, items: wrapped.items ?? wrapped.invoice.items ?? [] };
+    }
+    return data as Invoice;
   },
 
   getById: async (id: string): Promise<Invoice> => {

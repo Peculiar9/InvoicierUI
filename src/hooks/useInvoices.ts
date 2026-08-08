@@ -27,6 +27,18 @@ export const useInvoice = (id: string) => {
   });
 };
 
+/**
+ * The payer's read: no token, and the server decides what a stranger with
+ * the link may see. Same cache key as useInvoice so claims invalidate both.
+ */
+export const usePublicInvoice = (id: string, asOwner: boolean) => {
+  return useQuery({
+    queryKey: ['invoices', id],
+    queryFn: () => (asOwner ? invoicesApi.getById(id) : invoicesApi.getPublic(id)),
+    enabled: !!id,
+  });
+};
+
 export const useCreateInvoice = () => {
   const queryClient = useQueryClient();
 

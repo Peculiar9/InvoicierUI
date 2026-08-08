@@ -265,3 +265,23 @@ export interface MarkPaidDto {
   payment_method?: string;
   payer_email?: string;
 }
+
+/** the generated account a payer pays into, and the clock it lives on */
+export interface PaymentWindow {
+  id: string;
+  invoice_id: string;
+  method: string;
+  reference: string;
+  account: {
+    label?: string | null;
+    provider?: string | null;
+    account_name?: string | null;
+    account_number?: string | null;
+    bank_name?: string | null;
+    instructions?: string | null;
+    currency?: string | null;
+  };
+  expires_at: string;
+  seconds_remaining: number;
+  status: string;
+}

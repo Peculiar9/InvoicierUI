@@ -26,6 +26,14 @@ const paginate = <T>(items: T[], page = 1, limit = 20) => ({
 });
 
 const token = 'mock-jwt-token';
+/* the mock's payment windows, one per invoice, in memory only */
+interface MockWindow {
+  id: string; invoice_id: string; method: string; reference: string;
+  account: Record<string, unknown>; expires_at: string; status: string;
+}
+const paymentWindows = new Map<string, MockWindow>();
+const secondsLeft = (win: MockWindow) =>
+  Math.max(0, Math.floor((new Date(win.expires_at).getTime() - Date.now()) / 1000));
 const refreshToken = 'mock-refresh-token';
 const session = (user: typeof mockUser) => ({
   user,
@@ -70,6 +78,63 @@ export const handlers = [
   http.post('*/api/auth/verify-email', () => ok(session({ ...mockUser, email_verified: true }), 'Email verified')),
   http.post('*/api/auth/reset-password', () => new HttpResponse(null, { status: 200 })),
   http.post('*/api/auth/refresh', () => ok(session(mockUser))),
+
+  /* ---- payment windows: the generated account with its strict clock ---- */
+  http.post('*/api/public/invoices/:id/payment-session', ({ params }) => {
+    const id = String(params.id);
+    const existing = paymentWindows.get(id);
+    if (existing && new Date(existing.expires_at).getTime() > Date.now()) {
+      return ok({ ...existing, seconds_remaining: secondsLeft(existing) });
+    }
+    const inv = invoices.find((i) => i.id === id);
+    const win = {
+      id: `win_${Math.random().toString(36).slice(2, 10)}`,
+      invoice_id: id,
+      method: 'custom',
+      reference: `${inv?.invoice_number ?? 'INV'}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      account: {
+        label: 'GTBank current',
+        provider: 'bank',
+        account_name: 'Demo Freelancer',
+        account_number: '0123456789',
+        bank_name: 'Guaranty Trust Bank',
+        instructions: null,
+        currency: inv?.currency ?? 'NGN',
+      },
+      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      status: 'open',
+    };
+    paymentWindows.set(id, win);
+    return ok({ ...win, seconds_remaining: secondsLeft(win) });
+  }),
+  http.get('*/api/public/invoices/:id/payment-session', ({ params }) => {
+    const win = paymentWindows.get(String(params.id));
+    if (!win || new Date(win.expires_at).getTime() <= Date.now()) return ok(null);
+    return ok({ ...win, seconds_remaining: secondsLeft(win) });
+  }),
+  http.post('*/api/public/invoices/:id/payment-sent', async ({ params, request }) => {
+    const id = String(params.id);
+    const win = paymentWindows.get(id);
+    const body = (await request.json().catch(() => ({}))) as { window_id?: string; payer_email?: string };
+    if (!win || win.id !== body.window_id) {
+      return HttpResponse.json({ success: false, message: 'That payment window does not exist' }, { status: 404 });
+    }
+    if (new Date(win.expires_at).getTime() <= Date.now()) {
+      return HttpResponse.json(
+        { success: false, message: 'This payment window has expired. Open a fresh one and pay within it.' },
+        { status: 410 }
+      );
+    }
+    const inv = invoices.find((i) => i.id === id);
+    if (inv) {
+      inv.status = 'awaiting';
+      inv.claimed_at = new Date().toISOString();
+      inv.claim_reference = win.reference;
+      if (body.payer_email) inv.payer_email = body.payer_email;
+      saveDb();
+    }
+    return ok({ ...win, seconds_remaining: secondsLeft(win) });
+  }),
 
   // ---- dashboard (computed live from the local DB) ----
   http.get('*/api/dashboard/stats', () => ok(computeStats())),

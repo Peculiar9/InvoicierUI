@@ -4,7 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { ReceiptDocument } from '@/components/ReceiptDocument';
-import { useInvoice, useMarkInvoicePaid } from '@/hooks';
+import { useMarkInvoicePaid } from '@/hooks';
+import { usePublicInvoice } from '@/hooks/useInvoices';
 import { invoicesApi } from '@/api/invoices';
 import { resolveRoutes, PROVIDER_LABELS } from '@/utils/paymentRoutes';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -12,6 +13,7 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice } from '@/types';
+import { PaymentWindowCard } from '@/components/PaymentWindowCard';
 
 type Stage = 'review' | 'method' | 'processing' | 'done' | 'reported';
 
@@ -41,8 +43,10 @@ export const Payment = ({
   /** the sender looking over their client's shoulder: show, never record */
   preview?: boolean;
 }) => {
+  // the preview is the owner looking at their own record; a payer is a
+  // stranger with a link and gets the public shape
   const { data: invoice, isLoading, isError, error, refetch, isFetching } =
-    useInvoice(invoiceId);
+    usePublicInvoice(invoiceId, preview);
   // a deleted invoice and an unreachable server are not the same news
   const isGone =
     error instanceof AxiosError && error.response?.status === 404;
@@ -87,11 +91,16 @@ export const Payment = ({
     if (invoice && !payer_email) setPayerEmail(invoice.client?.email ?? '');
   }, [invoice, payer_email]);
 
-  const pay = (inv: Invoice) => {
+  const requireEmail = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer_email.trim())) {
       setEmailError('We need an address to send your receipt to');
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const pay = (inv: Invoice) => {
+    if (!requireEmail()) return;
     setStage('processing');
     markPaid.mutate(
       {
@@ -112,10 +121,7 @@ export const Payment = ({
   };
 
   const reportTransfer = (inv: Invoice) => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer_email.trim())) {
-      setEmailError('We need an address to send your receipt to');
-      return;
-    }
+    if (!requireEmail()) return;
     setStage('processing');
     invoicesApi
       .claimPayment(inv.id, {
@@ -283,9 +289,33 @@ export const Payment = ({
                       {formatCurrency(invoice.total, invoice.currency)}
                     </strong>
 
-                    {!routes.transfer && (
                     <div className="pay-methods">
-                      {methodsFor(invoice.currency).map((m) => (
+                      {[
+                        ...(!routes.transfer
+                          ? methodsFor(invoice.currency).map((m) => ({
+                              key: m.key,
+                              icon: m.icon,
+                              name: m.name,
+                              line: m.line,
+                            }))
+                          : []),
+                        ...(routes.transfer && routes.account
+                          ? [
+                              {
+                                key: 'transfer',
+                                icon: 'bx-bank',
+                                name: 'Bank transfer',
+                                line: 'their account details',
+                              },
+                              {
+                                key: 'custom',
+                                icon: 'bx-timer',
+                                name: 'Custom',
+                                line: 'generated account, timed window',
+                              },
+                            ]
+                          : []),
+                      ].map((m) => (
                         <button
                           key={m.key}
                           type="button"
@@ -302,9 +332,26 @@ export const Payment = ({
                         </button>
                       ))}
                     </div>
+
+                    {method === 'custom' && routes.transfer && routes.account && !preview && (
+                      <PaymentWindowCard
+                        invoice={invoice}
+                        payerEmail={payer_email}
+                        requireEmail={requireEmail}
+                        onReported={() => {
+                          queryClient.invalidateQueries({ queryKey: ['invoices', invoice.id] });
+                          setStage('reported');
+                        }}
+                      />
+                    )}
+                    {method === 'custom' && preview && (
+                      <p className="pay-transfer-note">
+                        <i className="bx bx-info-circle" /> In the live link, a
+                        generated account with a 30-minute window appears here.
+                      </p>
                     )}
 
-                    {routes.transfer && routes.account && (
+                    {method === 'transfer' && routes.transfer && routes.account && (
                       <div className="pay-transfer">
                         <div className="pay-transfer-head">
                           <span className="pay-transfer-tag">
@@ -377,7 +424,7 @@ export const Payment = ({
                       {emailError && <small className="pay-error">{emailError}</small>}
                     </label>
 
-                    {routes.transfer && routes.account ? (
+                    {method === 'transfer' && routes.transfer && routes.account ? (
                       <button
                         type="button"
                         className="pay-btn pay-btn--primary pay-btn--block"
@@ -395,11 +442,11 @@ export const Payment = ({
                           </>
                         )}
                       </button>
-                    ) : (
+                    ) : method && method !== 'custom' && !routes.transfer ? (
                       <button
                         type="button"
                         className="pay-btn pay-btn--primary pay-btn--block"
-                        disabled={!method || stage === 'processing'}
+                        disabled={stage === 'processing'}
                         onClick={() => pay(invoice)}
                       >
                         {stage === 'processing' ? (
@@ -414,7 +461,12 @@ export const Payment = ({
                           </>
                         )}
                       </button>
-                    )}
+                    ) : !method ? (
+                      <p className="pay-choose-hint">
+                        <i className="bx bx-up-arrow-alt" aria-hidden="true" /> Pick
+                        how you want to pay.
+                      </p>
+                    ) : null}
                   </div>
                 )}
 
