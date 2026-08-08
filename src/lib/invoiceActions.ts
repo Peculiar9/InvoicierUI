@@ -12,7 +12,7 @@ export async function copyInvoiceLink(id: string) {
   }
 }
 
-/** Open the browser print dialog (Save as PDF) — scoped to the invoice via @media print. */
+/** Open the browser print dialog (Save as PDF), scoped to the invoice via @media print. */
 export function printInvoice() {
   window.print();
   toast.info('Use “Save as PDF” in the print dialog to download');

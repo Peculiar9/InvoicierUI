@@ -136,7 +136,7 @@ export const Payment = ({
   };
 
   // On the payer's machine the sender's identity and account come from the
-  // PUBLIC PAYLOAD — their localStorage knows nothing. The store only feeds
+  // PUBLIC PAYLOAD, their localStorage knows nothing. The store only feeds
   // the sender's own preview.
   const payloadAccount = invoice?.payment_account
     ? {

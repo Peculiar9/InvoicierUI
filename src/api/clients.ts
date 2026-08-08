@@ -24,7 +24,7 @@ export const clientsApi = {
     sort?: string;
     dir?: string;
   }): Promise<PaginatedResponse<Client>> => {
-    // the real wire: { success, data: rows[], meta } — the search param is q
+    // the real wire: { success, data: rows[], meta }, the search param is q
     const response = await apiClient.get<{
       data: Client[] | PaginatedResponse<Client>;
       meta?: { total: number; page: number; limit: number; total_pages: number };

@@ -6,7 +6,7 @@ const PayRoute = () => {
   return <Payment invoiceId={invoiceId} />;
 };
 
-// Public — no auth guard; this is the link clients open to pay.
+// Public, no auth guard; this is the link clients open to pay.
 export const Route = createFileRoute('/pay/$invoiceId')({
   component: PayRoute,
 });

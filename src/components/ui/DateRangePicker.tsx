@@ -237,7 +237,7 @@ export const DateRangePicker = ({
             <div className="dr-foot">
               <span className="dr-foot-read">
                 {picking
-                  ? `${prettyDay(picking)} — pick the other end`
+                  ? `${prettyDay(picking)}. Pick the other end`
                   : describeRange(value, 'No dates chosen')}
               </span>
               <button type="button" className="dr-foot-clear" onClick={() => commit(EMPTY_RANGE)}>

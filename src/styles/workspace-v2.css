@@ -7835,3 +7835,64 @@
   color: var(--ink-soft);
   border-color: var(--border);
 }
+
+/* the theme switch where nobody can miss it: beside the bell, every page */
+.iw .ws-topbar-theme {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card, #fff);
+  color: var(--ink-soft);
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out), color 0.2s, border-color 0.2s;
+}
+.iw .ws-topbar-theme:hover {
+  color: var(--brand-600);
+  border-color: var(--brand);
+  transform: rotate(-14deg);
+}
+[data-theme='dark'] .iw .ws-topbar-theme:hover { color: #ffd479; border-color: #ffd479; }
+
+/* the invoice panel, fully after hours */
+[data-theme='dark'] .iw .ipanel-head,
+[data-theme='dark'] .iw .ipanel-foot,
+[data-theme='dark'] .iw .ipanel-actions {
+  background: var(--card);
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .ipanel-head-title,
+[data-theme='dark'] .iw .ipanel-head h2 { color: var(--ink); }
+[data-theme='dark'] .iw .ipanel-kicker { color: var(--brand-600); }
+[data-theme='dark'] .iw .ipanel-close {
+  background: var(--paper);
+  color: var(--ink-soft);
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .iw-adhoc {
+  background: var(--card);
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .iw-adhoc input { background: var(--paper); }
+[data-theme='dark'] .iw .iw-adhoc-note { color: var(--ink-faint); }
+[data-theme='dark'] .iw .cinv-item input { background: var(--paper); }
+[data-theme='dark'] .iw .iw-flowhint .step {
+  background: var(--brand);
+  color: #fff;
+}
+[data-theme='dark'] .iw .iw-toggle {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--ink-soft);
+}
+[data-theme='dark'] .iw .cinv-totals,
+[data-theme='dark'] .iw .cinv-grand { color: var(--ink); }
+[data-theme='dark'] .iw .cinv-totals {
+  background: var(--card);
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .cinv-item--head span { color: var(--ink-faint); }

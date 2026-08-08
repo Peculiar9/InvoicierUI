@@ -212,6 +212,15 @@ export const LegacyWorkspace = ({
         <header className="ws-topbar">
           <h1 className="ws-title">{title}</h1>
           <div className="ws-topbar-actions">
+            <button
+              type="button"
+              className="ws-topbar-theme"
+              title={theme === 'dark' ? 'Lights on' : 'Lights off'}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => toggleTheme()}
+            >
+              <i className={`bx ${theme === 'dark' ? 'bx-sun' : 'bx-moon'}`} aria-hidden="true" />
+            </button>
             {unverified && (
               <div className="iw-verify-wrap">
                 <button

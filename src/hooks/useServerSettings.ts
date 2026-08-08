@@ -7,7 +7,7 @@ import { useServicesStore } from '@/stores/servicesStore';
 
 /**
  * The server is the source of truth for payment configuration; the zustand
- * stores are its local mirror — kept because every document and panel
+ * stores are its local mirror, kept because every document and panel
  * already reads them synchronously.
  *
  * On workspace mount (per session), pull the business profile, the receiving

@@ -52,7 +52,7 @@ export const PROVIDER_LABELS: Record<string, string> = {
 };
 
 /* ============================================================================
-   THE FIELD SPEC — one description of what each (provider, currency) account
+   THE FIELD SPEC: one description of what each (provider, currency) account
    actually consists of. The add-account modal renders its inputs from this,
    the validator checks against it, and the payer-facing displays (payment
    page, PDF "How to pay" block) print exactly the fields it names. One
@@ -73,7 +73,7 @@ export interface AccountFieldSpec {
 
 /**
  * What this kind of account, in this currency, is made of. NUBAN for Nigerian
- * banks, sort codes for GBP, IBAN+BIC for EUR, ABA routing for USD — and
+ * banks, sort codes for GBP, IBAN+BIC for EUR, ABA routing for USD, and
  * PayPal is just an email wearing a trench coat.
  */
 export const accountFieldsFor = (provider: string, currency: string): AccountFieldSpec[] => {
@@ -94,7 +94,7 @@ export const accountFieldsFor = (provider: string, currency: string): AccountFie
       { key: 'swift', label: 'SWIFT / BIC', placeholder: 'ZEIBNGLA', required: true },
     ];
   }
-  // bank / wise / other — shaped by the currency's own rails
+  // bank / wise / other: shaped by the currency's own rails
   switch (currency) {
     case 'NGN':
       return [

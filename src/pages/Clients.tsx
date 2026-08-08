@@ -398,7 +398,7 @@ export const Clients = () => {
                       <td className="dash-amount client-money">
                         {stats.get(c.id)?.collected
                           ? formatCurrency(stats.get(c.id)!.collected, stats.get(c.id)!.currency)
-                          : '—'}
+                          : '–'}
                       </td>
                       <td className="dash-amount client-money">
                         {stats.get(c.id)?.owed ? (
@@ -406,7 +406,7 @@ export const Clients = () => {
                             {formatCurrency(stats.get(c.id)!.owed, stats.get(c.id)!.currency)}
                           </em>
                         ) : (
-                          '—'
+                          '–'
                         )}
                       </td>
                       <td className="dash-muted">

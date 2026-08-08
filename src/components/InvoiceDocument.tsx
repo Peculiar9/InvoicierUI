@@ -34,7 +34,7 @@ export interface InvoiceDocData {
   terms?: string;
   /** on the payer's machine the sender comes from the payload, not the store */
   business?: InvoiceDocBusiness | null;
-  /** the account this invoice is paid into — printed on every PDF */
+  /** the account this invoice is paid into, printed on every PDF */
   payment_account?: Record<string, string | null | undefined> | import('@/types').PublicPaymentAccount | null;
 }
 
@@ -111,11 +111,11 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
         <div className="invoice-doc-meta">
           <div>
             <span>Issued</span>
-            <strong>{data.issue_date ? formatDate(data.issue_date) : '—'}</strong>
+            <strong>{data.issue_date ? formatDate(data.issue_date) : '–'}</strong>
           </div>
           <div>
             <span>Due</span>
-            <strong>{data.due_date ? formatDate(data.due_date) : '—'}</strong>
+            <strong>{data.due_date ? formatDate(data.due_date) : '–'}</strong>
           </div>
         </div>
       </div>

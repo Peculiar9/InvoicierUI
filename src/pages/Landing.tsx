@@ -998,7 +998,7 @@ const DevPreviewBar = () => {
   const setSession = useAuthStore((s) => s.setSession);
 
   // configuration decides what floats here:
-  //  - waitlist mode: one button, the list — login stays out of sight
+  //  - waitlist mode: one button, the list; login stays out of sight
   //  - dev, waitlist off: the test shortcuts
   //  - production, waitlist off: nothing at all
   const waitlistMode = import.meta.env.VITE_WAITLIST === 'true';
@@ -1234,7 +1234,7 @@ export const Landing = () => {
               </h1>
               <p className="lp-hero-sub" data-reveal data-delay="3">
                 {site.heroSubline ??
-                `Write it once. They pay by card or transfer — naira, dollars, euros or pounds. Every payment lands with its date, VAT and WHT already worked out. March finds your books ready.`}
+                `Write it once. They pay by card or transfer, in naira, dollars, euros or pounds. Every payment lands with its date, VAT and WHT already worked out. March finds your books ready.`}
               </p>
               <div className="lp-hero-actions" data-reveal data-delay="4">
                 <a href="#waitlist" className="lp-btn lp-btn--lg">

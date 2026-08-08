@@ -19,7 +19,7 @@ interface FieldSelectProps {
 
 /**
  * The form cousin of FilterSelect: a field-shaped trigger that opens the
- * same menu the filters use — same options, same keyboard, same bottom
+ * same menu the filters use, same options, same keyboard, same bottom
  * sheet on small screens. Native selects render the OS's menu; this one
  * renders ours.
  */

@@ -17,7 +17,7 @@ export const ResetPassword = () => {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 10) {
-      setFormError('Ten characters at least — this guards your money.');
+      setFormError('Ten characters at least. This guards your money.');
       return;
     }
     if (password !== confirm) {

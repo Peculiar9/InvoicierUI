@@ -26,7 +26,7 @@ apiClient.interceptors.request.use(
 
 /**
  * One refresh in flight at a time. Ten queries hitting 401 together should
- * produce one token rotation, not ten — and nine retries waiting on it.
+ * produce one token rotation, not ten, and nine retries waiting on it.
  */
 let refreshing: Promise<string> | null = null;
 

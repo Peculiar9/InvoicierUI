@@ -9,7 +9,7 @@ const config = {
   publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
 };
 
-/** Base URL for public links — explicit override, else the current origin
+/** Base URL for public links, explicit override, else the current origin
  *  (localhost in dev, the deployed domain on Vercel/Netlify). */
 export const appBaseUrl = () => {
   const configured = import.meta.env.VITE_APP_URL?.replace(/\/$/, '');
@@ -19,7 +19,7 @@ export const appBaseUrl = () => {
 
 export const invoicePayLink = (invoice: Invoice) => `${appBaseUrl()}/pay/${invoice.id}`;
 
-/** Full, email-client-safe HTML — generated here so EmailJS only needs a {{{content}}} passthrough. */
+/** Full, email-client-safe HTML, generated here so EmailJS only needs a {{{content}}} passthrough. */
 function invoiceEmailHtml(opts: {
   toName: string;
   fromName: string;
@@ -124,7 +124,7 @@ export type EmailResult = 'emailjs' | 'mailto' | 'none';
 /**
  * Sends an invoice email entirely from the client:
  *  - if EmailJS env vars are set, sends for real via the EmailJS browser SDK
- *    (works on the free tier from your origin — no allowlist/subscription needed);
+ *    (works on the free tier from your origin, no allowlist/subscription needed);
  *  - otherwise opens the user's mail composer prefilled (mailto:).
  */
 export async function sendInvoiceEmail(

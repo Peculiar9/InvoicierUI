@@ -52,7 +52,7 @@ export interface ServiceRow {
 }
 
 /**
- * Payment configuration lives on the SERVER — the store is only its mirror.
+ * Payment configuration lives on the SERVER, the store is only its mirror.
  * A payer's browser, a second device, a cleared cache: all of them must see
  * the same accounts the sender configured, and localStorage cannot promise
  * that.

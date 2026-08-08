@@ -110,7 +110,7 @@ export const Services = () => {
                   {services.map((s) => (
                     <tr key={s.id}>
                       <td>{s.name}</td>
-                      <td className="dash-muted">{s.description || '—'}</td>
+                      <td className="dash-muted">{s.description || '–'}</td>
                       <td className="dash-amount">{formatCurrency(s.price)}</td>
                       <td>
                         <button

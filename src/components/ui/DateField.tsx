@@ -12,7 +12,7 @@ interface DateFieldProps {
 }
 
 /**
- * One date, picked from the same calendar the list filters use — not the
+ * One date, picked from the same calendar the list filters use, not the
  * browser's native widget, which matches nothing else on the page. The
  * trigger reads like a field ("Mon, 25 Aug"); the panel is the dr calendar.
  */

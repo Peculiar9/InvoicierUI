@@ -11,7 +11,7 @@ export interface ServiceItem {
 interface ServicesState {
   services: ServiceItem[];
   addService: (service: Omit<ServiceItem, 'id'>) => void;
-  /** the server's list wholesale — the mirror accepts what the truth says */
+  /** the server's list wholesale, the mirror accepts what the truth says */
   replaceAll: (services: ServiceItem[]) => void;
   updateService: (id: string, updates: Partial<ServiceItem>) => void;
   removeService: (id: string) => void;

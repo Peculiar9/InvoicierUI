@@ -21,7 +21,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /**
  * Everything the books know about one client, in one place.
  *
- * Not a profile page — a briefing. What they have paid, what they still owe,
+ * Not a profile page, a briefing. What they have paid, what they still owe,
  * how quickly they settle, and the paper trail behind those figures, each row
  * one click from the invoice itself.
  */

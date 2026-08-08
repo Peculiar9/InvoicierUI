@@ -19,7 +19,7 @@ const initialsOf = (name: string): string => {
 
 /**
  * The client's mark. Their logo when they have one, their initials when they
- * do not — never an empty grey square, and the initials are two letters
+ * do not, never an empty grey square, and the initials are two letters
  * because "O" could be anyone and "OH" is probably Otto Holdings.
  */
 export const ClientAvatar = ({ name, logo_url, size = 'md' }: ClientAvatarProps) => {

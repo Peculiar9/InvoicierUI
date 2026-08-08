@@ -11,7 +11,7 @@ import type {
 /* ----------------------------------------------------------------------
    The real backend answers with FACTS (rows, counts, minor units); chart
    shapes and legacy field names are presentation, so they are built HERE,
-   at the boundary — never on the server.
+   at the boundary, never on the server.
    ---------------------------------------------------------------------- */
 
 const CURRENCY_COLORS: Record<string, string> = {
@@ -132,7 +132,7 @@ export const dashboardApi = {
     return 'by_currency' in data ? statsToLegacy(data as RealStats) : (data as DashboardStats);
   },
 
-  /** everything in ONE currency at today's rate — labelled approximate */
+  /** everything in ONE currency at today's rate, labelled approximate */
   getSummary: async (target: string): Promise<ConvertedSummary> => {
     const response = await apiClient.get<ApiResponse<ConvertedSummary>>(
       '/dashboard/summary',

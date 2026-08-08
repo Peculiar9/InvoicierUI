@@ -572,7 +572,7 @@ export const Settings = () => {
 
               {methods.length === 0 ? (
                 <p className="payout-empty">
-                  <i className="bx bx-wallet" /> No payout methods yet — add a bank account or PayPal
+                  <i className="bx bx-wallet" /> No payout methods yet. Add a bank account or PayPal
                   to receive funds.
                 </p>
               ) : (
@@ -838,7 +838,7 @@ export const Settings = () => {
             )}
           </label>
 
-          {/* the fields this KIND of account, in THIS currency, is made of —
+          {/* the fields this KIND of account, in THIS currency, is made of;
               a Nigerian NUBAN is not an IBAN is not a PayPal email */}
           {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
             <label className="cinv-field" key={field.key}>
@@ -932,7 +932,7 @@ export const Settings = () => {
               {methods.length === 0 && <option value="">No payout method</option>}
               {methods.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.label} — {methodSummary(m)}
+                  {m.label} · {methodSummary(m)}
                 </option>
               ))}
             </select>

@@ -24,7 +24,7 @@ const mmss = (totalSeconds: number): string => {
  * The countdown is the contract, not decoration: the backend refuses a
  * "payment sent" outside the window, so the card counts honestly from the
  * server's expiry timestamp, warns as it runs low, and offers a fresh
- * window — never a stale confirmation — once time is up.
+ * window, never a stale confirmation, once time is up.
  */
 export const PaymentWindowCard = ({
   invoice,
@@ -157,7 +157,7 @@ export const PaymentWindowCard = ({
 
       <p className="pay-window-lede">
         Send <b>{formatCurrency(invoice.total, invoice.currency)}</b> to this
-        account and quote the reference <em>exactly</em> — it is how your
+        account and quote the reference <em>exactly</em>. It is how your
         payment finds this invoice.
       </p>
 

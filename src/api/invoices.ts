@@ -89,7 +89,7 @@ export const invoicesApi = {
     >(`/public/invoices/${id}`);
     const data = response.data.data;
     // the real backend sends { invoice, items, business, payment_account };
-    // the mock sends the invoice whole — both end as one Invoice carrying
+    // the mock sends the invoice whole, both end as one Invoice carrying
     // everything a stranger's browser needs (their localStorage knows nothing)
     if ('invoice' in (data as Record<string, unknown>)) {
       const wrapped = data as {

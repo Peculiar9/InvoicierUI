@@ -151,7 +151,7 @@ export function saveDb() {
       localStorage.setItem(DB_KEY, JSON.stringify({ invoices, clients, activities }));
     }
   } catch {
-    /* storage full / unavailable — ignore */
+    /* storage full / unavailable, ignore */
   }
 }
 
