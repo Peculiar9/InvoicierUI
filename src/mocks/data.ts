@@ -96,12 +96,38 @@ interface Db {
   activities: Activity[];
 }
 
+/**
+ * Heal a db written before the snake_case rename.
+ *
+ * A browser that used the app before the wire format changed still holds
+ * records with `dueDate`, `invoiceNumber` and friends. Read as `due_date`
+ * those fields are undefined, and the first `.slice` on one crashed the whole
+ * invoices page. Keys are converted once here, recursively, and anything
+ * already snake_case passes through untouched.
+ */
+const toSnake = (key: string): string =>
+  key.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+
+const snakeDeep = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(snakeDeep);
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
+      const snake = toSnake(key);
+      // never let a legacy key clobber a value the new shape already has
+      if (!(snake in out) || out[snake] === undefined) out[snake] = snakeDeep(inner);
+    }
+    return out;
+  }
+  return value;
+};
+
 function loadDb(): Db | null {
   try {
     if (typeof localStorage === 'undefined') return null;
     const raw = localStorage.getItem(DB_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<Db>;
+    const parsed = snakeDeep(JSON.parse(raw)) as Partial<Db>;
     if (!Array.isArray(parsed.invoices) || !Array.isArray(parsed.clients)) return null;
     return {
       invoices: parsed.invoices,

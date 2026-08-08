@@ -75,6 +75,9 @@ const sortValue = (inv: Invoice, key: SortKey): string | number => {
 const isOverdue = (inv: Invoice): boolean =>
   !isSettled(inv.status) &&
   inv.status !== 'draft' &&
+  // a record with no due date cannot be past it; also the guard that kept a
+  // legacy-shaped row from crashing the whole page on one .slice
+  Boolean(inv.due_date) &&
   inv.due_date.slice(0, 10) < todayLocal();
 
 export const Invoices = () => {
@@ -463,10 +466,14 @@ export const Invoices = () => {
                       <td className="dash-mono">#{inv.invoice_number}</td>
                       <td>{inv.client.name}</td>
                       <td className="dash-muted">
-                        {formatDate(inv.issue_date, { month: 'short', day: 'numeric' })}
+                        {inv.issue_date
+                          ? formatDate(inv.issue_date, { month: 'short', day: 'numeric' })
+                          : '-'}
                       </td>
                       <td className="dash-muted">
-                        {formatDate(inv.due_date, { month: 'short', day: 'numeric' })}
+                        {inv.due_date
+                          ? formatDate(inv.due_date, { month: 'short', day: 'numeric' })
+                          : '-'}
                       </td>
                       <td className="dash-muted">
                         {inv.date_received
