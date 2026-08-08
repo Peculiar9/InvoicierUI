@@ -7820,3 +7820,18 @@
 .iw .cinv-item {
   transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
+
+/* the topbar joins the night shift */
+[data-theme='dark'] .iw .ws-topbar {
+  background: transparent;
+  border-color: var(--border);
+}
+[data-theme='dark'] .iw .ws-title { color: var(--ink); }
+[data-theme='dark'] .iw .ws-topbar::before,
+[data-theme='dark'] .iw .ws-topbar::after { opacity: 0; }
+[data-theme='dark'] .iw .ws-bell,
+[data-theme='dark'] .iw .ws-bell button {
+  background: var(--card);
+  color: var(--ink-soft);
+  border-color: var(--border);
+}

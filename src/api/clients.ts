@@ -20,12 +20,28 @@ export const clientsApi = {
     page?: number;
     limit?: number;
     search?: string;
+    q?: string;
+    sort?: string;
+    dir?: string;
   }): Promise<PaginatedResponse<Client>> => {
-    const response = await apiClient.get<ApiResponse<PaginatedResponse<Client>>>(
-      '/clients',
-      { params }
-    );
-    return response.data.data;
+    // the real wire: { success, data: rows[], meta } — the search param is q
+    const response = await apiClient.get<{
+      data: Client[] | PaginatedResponse<Client>;
+      meta?: { total: number; page: number; limit: number; total_pages: number };
+    }>('/clients', {
+      params: params?.search ? { ...params, q: params.search, search: undefined } : params,
+    });
+    const body = response.data;
+    if (Array.isArray(body.data)) {
+      return {
+        data: body.data,
+        total: body.meta?.total ?? body.data.length,
+        page: body.meta?.page ?? 1,
+        limit: body.meta?.limit ?? body.data.length,
+        total_pages: body.meta?.total_pages ?? 1,
+      };
+    }
+    return body.data as PaginatedResponse<Client>;
   },
 
   getById: async (id: string): Promise<Client> => {

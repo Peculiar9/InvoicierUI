@@ -255,7 +255,13 @@ export const InvoicePanel = () => {
         receiving_account_id: inv.receiving_account_id ?? undefined } as never,
       profile
     );
-    return r.account ? { ...r.account, swift_code: r.account.swift } : null;
+    if (r.account) return { ...r.account, swift_code: r.account.swift };
+    // instant-routed invoices still print bank details when one exists for
+    // the currency: paper cannot take a card, but it can carry an account
+    const fallback = (profile.receivingAccounts ?? []).find(
+      (a) => a.currency === inv.currency
+    );
+    return fallback ? { ...fallback, swift_code: fallback.swift } : null;
   };
 
   const draftDoc: InvoiceDocData = {
