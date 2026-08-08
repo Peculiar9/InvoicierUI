@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
+import { FieldSelect } from '@/components/ui/FieldSelect';
 import { TemplatePicker } from '@/components/TemplatePicker';
 import { useInvoices } from '@/hooks';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -348,15 +349,12 @@ export const Settings = () => {
               </label>
               <label className="cinv-field">
                 <span>Default currency</span>
-                <select
+                <FieldSelect
                   value={form.currency}
-                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="NGN">NGN</option>
-                </select>
+                  aria-label="Default currency"
+                  options={['NGN', 'USD', 'EUR', 'GBP'].map((c) => ({ value: c, label: c }))}
+                  onChange={(currency) => setForm({ ...form, currency })}
+                />
               </label>
             </div>
             <div className="settings-actions">
@@ -770,31 +768,26 @@ export const Settings = () => {
           <div className="iw-paid-grid">
             <label className="cinv-field">
               <span>Provider</span>
-              <select
+              <FieldSelect
                 value={acctForm.provider}
-                onChange={(e) =>
-                  setAcctForm({ ...acctForm, provider: e.target.value as AccountProvider })
+                aria-label="Provider"
+                options={Object.entries(PROVIDER_LABELS).map(([key, label]) => ({
+                  value: key,
+                  label,
+                }))}
+                onChange={(provider) =>
+                  setAcctForm({ ...acctForm, provider: provider as AccountProvider })
                 }
-              >
-                {Object.entries(PROVIDER_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
             <label className="cinv-field">
               <span>Currency</span>
-              <select
+              <FieldSelect
                 value={acctForm.currency}
-                onChange={(e) => setAcctForm({ ...acctForm, currency: e.target.value })}
-              >
-                {['NGN', 'USD', 'EUR', 'GBP'].map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+                aria-label="Account currency"
+                options={['NGN', 'USD', 'EUR', 'GBP'].map((c) => ({ value: c, label: c }))}
+                onChange={(currency) => setAcctForm({ ...acctForm, currency })}
+              />
             </label>
           </div>
 

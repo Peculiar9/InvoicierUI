@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/Modal';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { useLogout, useRecentActivities } from '@/hooks';
@@ -69,6 +70,8 @@ export const LegacyWorkspace = ({
   actions,
 }: LegacyWorkspaceProps) => {
   const { mutate: logout } = useLogout();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
   const panelOpen = useInvoicePanelStore((s) => s.open);
   const closePanel = useInvoicePanelStore((s) => s.close);
@@ -181,7 +184,7 @@ export const LegacyWorkspace = ({
           type="button"
           className="ws-rail-item ws-rail-logout"
           title="Log out"
-          onClick={() => logout()}
+          onClick={() => setConfirmingLogout(true)}
         >
           <i className="bx bx-door-open" aria-hidden="true" />
           <span className="bye-a">Log out</span>
@@ -335,6 +338,80 @@ export const LegacyWorkspace = ({
           </ul>
         </aside>
       )}
+
+      {/* mobile's one true "new": the page's actions, folded into a disc */}
+      {!panelOpen && actions && actions.length > 0 && (
+        <div className="ws-fab-wrap">
+          {fabOpen && <div className="ws-fab-scrim" onClick={() => setFabOpen(false)} />}
+          {fabOpen && (
+            <div className="ws-fab-menu">
+              {actions.filter((a) => !a.to).map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  className="ws-fab-item"
+                  disabled={action.disabled}
+                  onClick={() => {
+                    setFabOpen(false);
+                    action.onClick?.();
+                  }}
+                >
+                  <i className={`bx ${action.bx ?? 'bx-circle'}`} aria-hidden="true" />
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            className={`ws-fab${fabOpen ? ' is-open' : ''}`}
+            aria-label={actions.length === 1 ? actions[0].label : 'Actions'}
+            aria-expanded={actions.length === 1 ? undefined : fabOpen}
+            onClick={() => {
+              const doers = actions.filter((a) => !a.to);
+              if (doers.length === 1) {
+                doers[0].onClick?.();
+              } else {
+                setFabOpen((o) => !o);
+              }
+            }}
+          >
+            <i className="bx bx-plus" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      <Modal
+        open={confirmingLogout}
+        onClose={() => setConfirmingLogout(false)}
+        title="Log out?"
+      >
+        <div className="iw-paid-form">
+          <p className="hint">
+            Your session ends on this device. Drafts you have saved stay saved;
+            the books close exactly as they stand.
+          </p>
+          <div className="iw-paid-actions">
+            <button
+              type="button"
+              className="iw-btn iw-btn--ghost"
+              onClick={() => setConfirmingLogout(false)}
+            >
+              Stay signed in
+            </button>
+            <button
+              type="button"
+              className="iw-btn"
+              onClick={() => {
+                setConfirmingLogout(false);
+                logout();
+              }}
+            >
+              <i className="bx bx-door-open" aria-hidden="true" /> Log out
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <InvoicePanel />
     </div>

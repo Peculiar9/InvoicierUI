@@ -5,6 +5,8 @@ import { Payment } from '@/pages/Payment';
 import { Confetti } from '@/components/Confetti';
 import type { InvoiceDocData } from '@/components/InvoiceDocument';
 import { Modal } from '@/components/Modal';
+import { FieldSelect } from '@/components/ui/FieldSelect';
+import { DateField } from '@/components/ui/DateField';
 import {
   useClients,
   useCreateInvoice,
@@ -864,39 +866,36 @@ export const InvoicePanel = () => {
                   <div className="cinv-fields">
                     <label className="cinv-field">
                       <span>Bill to</span>
-                      <select
+                      <FieldSelect
                         value={client_id}
-                        className={errors.client ? 'is-invalid' : ''}
-                        onChange={(e) => {
-                          setClientId(e.target.value);
+                        invalid={Boolean(errors.client)}
+                        placeholder="Someone new…"
+                        aria-label="Bill to"
+                        options={clients.map((c) => ({ value: c.id, label: c.name }))}
+                        onChange={(next) => {
+                          setClientId(next);
                           setErrors((er) => ({ ...er, client: undefined }));
                         }}
-                      >
-                        <option value="">Someone new…</option>
-                        {clients.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
+                      />
                       {errors.client && <small className="field-error">{errors.client}</small>}
                     </label>
                     <label className="cinv-field">
                       <span>Currency</span>
-                      <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                        <option value="NGN">NGN, paid via Paystack</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                      </select>
+                      <FieldSelect
+                        value={currency}
+                        aria-label="Currency"
+                        options={[
+                          { value: 'NGN', label: 'NGN', hint: 'paid via Paystack' },
+                          { value: 'USD', label: 'USD' },
+                          { value: 'EUR', label: 'EUR' },
+                          { value: 'GBP', label: 'GBP' },
+                        ]}
+                        onChange={setCurrency}
+                      />
                     </label>
                     <label className="cinv-field">
                       <span>Due date</span>
-                      <input
-                        type="date"
-                        value={due_date}
-                        onChange={(e) => setDueDate(e.target.value)}
-                      />
+                      <DateField value={due_date} onChange={setDueDate} aria-label="Due date" />
                     </label>
                   </div>
 
@@ -933,20 +932,21 @@ export const InvoicePanel = () => {
 
                   <label className="cinv-field cinv-field--mt">
                     <span>How they pay</span>
-                    <select
+                    <FieldSelect
                       value={payment_route}
-                      onChange={(e) => setPaymentRoute(e.target.value as PaymentRoute | '')}
-                    >
-                      <option value="">
-                        My default for {currency}
-                        {profile.routeByCurrency?.[currency]
+                      aria-label="How they pay"
+                      placeholder={`My default for ${currency}${
+                        profile.routeByCurrency?.[currency]
                           ? ` (${profile.routeByCurrency[currency]})`
-                          : ''}
-                      </option>
-                      <option value="instant">Instant only</option>
-                      <option value="transfer">Transfer to my account</option>
-                      <option value="both">Let them choose</option>
-                    </select>
+                          : ''
+                      }`}
+                      options={[
+                        { value: 'instant', label: 'Instant only' },
+                        { value: 'transfer', label: 'Transfer to my account' },
+                        { value: 'both', label: 'Let them choose' },
+                      ]}
+                      onChange={(next) => setPaymentRoute(next as PaymentRoute | '')}
+                    />
                     {(payment_route === 'transfer' || payment_route === 'both') &&
                       !(profile.receivingAccounts ?? []).some((a) => a.currency === currency) && (
                         <small className="field-error">
@@ -969,17 +969,13 @@ export const InvoicePanel = () => {
                     return showsTransfer && forCurrency.length > 1 ? (
                       <label className="cinv-field">
                         <span>Which account</span>
-                        <select
+                        <FieldSelect
                           value={receiving_account_id}
-                          onChange={(e) => setReceivingAccountId(e.target.value)}
-                        >
-                          <option value="">My default {currency} account</option>
-                          {forCurrency.map((a) => (
-                            <option key={a.id} value={a.id}>
-                              {a.label}
-                            </option>
-                          ))}
-                        </select>
+                          aria-label="Which account"
+                          placeholder={`My default ${currency} account`}
+                          options={forCurrency.map((a) => ({ value: a.id, label: a.label }))}
+                          onChange={setReceivingAccountId}
+                        />
                       </label>
                     ) : null;
                   })()}
@@ -1010,18 +1006,19 @@ export const InvoicePanel = () => {
                   <div className="cinv-items-head">
                     <h3 className="cinv-section-title">Items</h3>
                     {services.length > 0 && (
-                      <select
-                        className="cinv-service-pick"
-                        value=""
-                        onChange={(e) => e.target.value && addServiceLine(e.target.value)}
-                      >
-                        <option value="">+ From services</option>
-                        {services.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} · {formatCurrency(s.price, currency)}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="cinv-service-pick-wrap">
+                        <FieldSelect
+                          value=""
+                          aria-label="Add from services"
+                          placeholder="+ From services"
+                          options={services.map((svc) => ({
+                            value: svc.id,
+                            label: svc.name,
+                            hint: formatCurrency(svc.price, currency),
+                          }))}
+                          onChange={(id) => id && addServiceLine(id)}
+                        />
+                      </div>
                     )}
                   </div>
 
@@ -1273,11 +1270,7 @@ export const InvoicePanel = () => {
           <div className="iw-paid-grid">
             <label className="cinv-field">
               <span>Date received</span>
-              <input
-                type="date"
-                value={payDate}
-                onChange={(e) => setPayDate(e.target.value)}
-              />
+              <DateField value={payDate} onChange={setPayDate} aria-label="Date received" />
             </label>
             <label className="cinv-field">
               <span>Amount received ({invoice?.currency})</span>
