@@ -6173,12 +6173,12 @@
   }
 }
 
-/* ---- the invoice list becomes cards on a phone ---------------------------
-   A seven-column table on a 390px screen clips whichever columns lose, and
-   the ones that lost here were the client's name and the status — the two
-   things you scan for. Each row becomes a card instead, laid out by position
-   so the markup stays a table for everything wider. */
-@media (max-width: 720px) {
+/* ---- the invoice list becomes cards below 900px --------------------------
+   A seven-column table clips whichever columns lose, and the ones that lost
+   were the client's name and the status — the two things you scan for. The
+   tablet band (721–900) was worst: still a table, names wrapped three deep.
+   Cards take over anywhere the table cannot breathe. */
+@media (max-width: 900px) {
   .iw .dash-table--invoices,
   .iw .dash-table--invoices tbody,
   .iw .dash-table--invoices tr {
@@ -6264,8 +6264,16 @@
     border-top: 1px solid var(--border);
     text-align: left;
   }
+  /* A card has no hover affordance: revealing the actions on hover left a
+     49px band of invisible buttons at the foot of every card, with just the
+     divider showing. In card layout they are simply present. */
   .iw .dash-table--invoices .iw-rowact {
     gap: 6px;
+    opacity: 1;
+    transform: none;
+  }
+  .iw .dash-table--invoices .iw-tick-cell input {
+    opacity: 1;
   }
   .iw .dash-table--invoices .iw-rowact button {
     width: 38px;
@@ -6410,24 +6418,15 @@
   font-size: 0.85rem;
 }
 
+/* The trend is a whisper along the card's floor, under the content plane.
+   It used to sit beside the caption and reserve 84px of it, which is what
+   wrapped "received this tax year" into a four-line column on mid widths. */
 .iw .dash-kpi-spark {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  opacity: 0.85;
+  inset: auto 0 0 0;
+  height: 34px;
+  opacity: 0.5;
   pointer-events: none;
-}
-/* the caption stops before the sparkline rather than running under it */
-.iw .dash-kpi:has(.dash-kpi-spark) .dash-kpi-sub {
-  padding-right: 84px;
-}
-@media (max-width: 900px) {
-  .iw .dash-kpi-spark {
-    display: none;
-  }
-  .iw .dash-kpi:has(.dash-kpi-spark) .dash-kpi-sub {
-    padding-right: 0;
-  }
 }
 .iw .spark-line {
   stroke: var(--brand);
@@ -7057,5 +7056,90 @@
   }
   .iw .client-ident small {
     max-width: 20ch;
+  }
+}
+
+/* ---- stat cards that survive big figures and narrow columns ------------ */
+.iw .dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 16px;
+}
+.iw .dash-kpi {
+  container-type: inline-size;
+  padding-bottom: 26px; /* the sparkline strip lives down there */
+}
+.iw .dash-kpi-body {
+  min-width: 0;
+}
+.iw .dash-kpi-value {
+  /* one line, sized by the card: never wrapped, never clipped */
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.02rem, 9.2cqi, 1.42rem);
+}
+.iw .dash-kpi-sub {
+  overflow-wrap: normal;
+}
+
+/* the eye that blinds the money */
+.iw .dash-eye {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, transform 0.14s var(--ease-out);
+}
+.iw .dash-eye:hover {
+  color: var(--brand);
+  border-color: rgba(146, 78, 233, 0.4);
+}
+.iw .dash-eye:active {
+  transform: scale(0.94);
+}
+.iw .dash-eye[aria-pressed='true'] {
+  color: var(--brand);
+  background: var(--brand-tint);
+  border-color: rgba(146, 78, 233, 0.35);
+}
+
+/* ---- the period picker, polished ---------------------------------------
+   It is the dashboard's only period control now, so it earns the finish:
+   a named quick-pick column and a tick on the active choice. */
+.iw .dr-presets::before {
+  content: 'Quick picks';
+  display: block;
+  padding: 2px 12px 8px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.iw .dr-preset {
+  position: relative;
+}
+.iw .dr-preset.is-active::after {
+  content: '\2713';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+}
+@media (max-width: 720px) {
+  .iw .dr-presets::before {
+    flex-basis: 100%;
+    padding: 0 4px 2px;
+  }
+  .iw .dr-preset.is-active::after {
+    display: none;
   }
 }

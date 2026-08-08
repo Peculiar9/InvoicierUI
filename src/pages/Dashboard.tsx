@@ -22,44 +22,26 @@ import { SwipeScroll } from '@/components/SwipeScroll';
 import { useDashboardData, useInvoices } from '@/hooks';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { formatCurrency, formatDate, formatNumber } from '@/utils/format';
+import { formatCompactCurrency, formatCurrency, formatDate, formatNumber } from '@/utils/format';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { DateRangePicker } from '@/components/ui/DateRangePicker';
-import { Segmented } from '@/components/ui/Segmented';
-import { EMPTY_RANGE, inDateRange, rangeIsSet } from '@/utils/dateRange';
+import { inDateRange } from '@/utils/dateRange';
 import type { DateRangeValue } from '@/utils/dateRange';
+import { RANGE_PRESETS, describeRange } from '@/utils/dateRangePresets';
 import type { Invoice, InvoiceStatus } from '@/types';
 
-/* ---- reporting period ---- */
+/* ---- reporting period ----
+   One control: the date filter is the period. Its presets already say
+   "This month / This quarter / This year", and an empty range is all time,
+   so a second row of period tabs was the same choice asked twice. */
 
-type Period = 'month' | 'quarter' | 'year' | 'all' | 'custom';
+const THIS_YEAR = RANGE_PRESETS.find((preset) => preset.key === 'year')!;
 
-const PERIODS: { key: Period; label: string; sub: string }[] = [
-  { key: 'month', label: 'This month', sub: 'this month' },
-  { key: 'quarter', label: 'This quarter', sub: 'this quarter' },
-  { key: 'year', label: 'This year', sub: 'this tax year' },
-  { key: 'all', label: 'All time', sub: 'all time' },
-  { key: 'custom', label: 'Custom', sub: 'the selected dates' },
-];
-
-const periodStart = (period: Period): Date | null => {
-  const now = new Date();
-  if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
-  if (period === 'quarter') {
-    return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
-  }
-  if (period === 'year') return new Date(now.getFullYear(), 0, 1);
-  return null;
-};
-
-const inPeriod = (
-  iso: string | undefined,
-  start: Date | null,
-  range?: DateRangeValue
-) => {
-  // a custom range wins whenever it is set; otherwise fall back to the preset
-  if (range && rangeIsSet(range)) return inDateRange(iso, range);
-  return start === null || (Boolean(iso) && new Date(iso as string) >= start);
+/** The sentence fragment the cards read, e.g. "received this tax year". */
+const periodPhrase = (range: DateRangeValue): string => {
+  const label = describeRange(range, 'all time');
+  if (label === 'This year') return 'this tax year';
+  return /^(This|Last|Today|All|Any)/.test(label) ? label.toLowerCase() : label;
 };
 
 ChartJS.register(
@@ -96,8 +78,17 @@ export const Dashboard = () => {
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   // the fallback when there is no money at all yet
   const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
-  const [period, setPeriod] = useState<Period>('year');
-  const [range, setRange] = useState<DateRangeValue>(EMPTY_RANGE);
+  const [range, setRange] = useState<DateRangeValue>(() => THIS_YEAR.build());
+  // one eye for the whole dashboard: money hides, counts stay
+  const [hideMoney, setHideMoney] = useState(
+    () => localStorage.getItem('invoicier-hide-money') === '1'
+  );
+  const toggleMoney = () => {
+    setHideMoney((current) => {
+      localStorage.setItem('invoicier-hide-money', current ? '0' : '1');
+      return !current;
+    });
+  };
 
   // the panel steps through the recent list, in the order shown here
   const recentIds = (data?.recent_invoices ?? [])
@@ -158,21 +149,14 @@ export const Dashboard = () => {
   const { stats, revenue_chart, invoice_status_chart, recent_invoices } = data;
   const allInvoices = invData?.data ?? [];
 
-  const start = period === 'custom' ? null : periodStart(period);
-  const periodSub =
-    period === 'custom'
-      ? rangeIsSet(range)
-        ? `${range.from || 'the start'} to ${range.to || 'today'}`
-        : // custom is selected but empty, so nothing is actually filtered
-          'all time'
-      : (PERIODS.find((p) => p.key === period)?.sub ?? '');
+  const periodSub = periodPhrase(range);
 
   // Collected follows the period on a cash basis; the money-owed figures are
   // a current balance, so they ignore the period on purpose.
   const paidInPeriod = allInvoices.filter(
     (inv) =>
       isPaid(inv.status) &&
-      inPeriod(inv.date_received ?? inv.updated_at, start, period === 'custom' ? range : undefined)
+      inDateRange(inv.date_received ?? inv.updated_at, range)
   );
   // Adding naira to dollars would produce a number that is true of nothing.
   // Every money figure is per currency, headed by whichever one is biggest.
@@ -190,7 +174,7 @@ export const Dashboard = () => {
   const byCurrency = splitBy(paidInPeriod, (inv) => inv.amount_received ?? inv.total);
   const [collectedCurrency = baseCurrency, collected = 0] = byCurrency[0] ?? [];
   const issuedInPeriod = allInvoices.filter((inv) =>
-    inPeriod(inv.issue_date, start)
+    inDateRange(inv.issue_date, range)
   ).length;
   const unsettled = allInvoices.filter((inv) => !isSettled(inv.status));
   const outstandingBy = splitBy(unsettled, (inv) => inv.total);
@@ -279,8 +263,32 @@ export const Dashboard = () => {
         );
 
   // each figure counts itself up, so a payment reads as movement not a swap
-  const money = (n: number) => formatCurrency(n, collectedCurrency);
-  const owedMoney = (n: number) => formatCurrency(n, outstandingCurrency);
+  const MASK = '\u2022\u2022\u2022\u2022\u2022\u2022';
+  /**
+   * A card is about 11-13 characters wide at the hero size. Anything longer
+   * abbreviates (₦230.46M) rather than shrinking into illegibility or
+   * spilling out of the card, and the full figure rides in the title.
+   */
+  const FITS = 13;
+  const fitMoney = (amount: number, currency: string) => {
+    const full = formatCurrency(amount, currency);
+    const compact = full.length > FITS;
+    return {
+      full,
+      compact,
+      format: (n: number) =>
+        hideMoney
+          ? MASK
+          : compact
+            ? formatCompactCurrency(n, currency)
+            : formatCurrency(n, currency),
+    };
+  };
+  const collectedFit = fitMoney(collected, collectedCurrency);
+  const outstandingFit = fitMoney(outstanding, outstandingCurrency);
+  const money = (n: number) => (hideMoney ? MASK : formatCurrency(n, collectedCurrency));
+  const anyMoney = (n: number, currency: string) =>
+    hideMoney ? MASK : formatCurrency(n, currency);
   const whole = (n: number) => formatNumber(Math.round(n));
 
   // The shape of the last few months, and how this one compares. A number
@@ -295,7 +303,8 @@ export const Dashboard = () => {
     {
       label: 'Collected',
       amount: collected,
-      format: money,
+      format: collectedFit.format,
+      title: hideMoney ? undefined : collectedFit.compact ? collectedFit.full : undefined,
       split: byCurrency,
       sub:
         byCurrency.length > 1
@@ -310,7 +319,8 @@ export const Dashboard = () => {
     {
       label: 'Outstanding',
       amount: outstanding,
-      format: owedMoney,
+      format: outstandingFit.format,
+      title: hideMoney ? undefined : outstandingFit.compact ? outstandingFit.full : undefined,
       split: outstandingBy,
       sub:
         outstandingBy.length > 1
@@ -327,6 +337,7 @@ export const Dashboard = () => {
       label: 'Invoices',
       amount: issuedInPeriod,
       format: whole,
+      title: undefined as string | undefined,
       split: undefined as Array<[string, number]> | undefined,
       sub: `issued ${periodSub}, ${stats.pending_invoices} pending`,
       icon: 'bx-receipt',
@@ -340,6 +351,7 @@ export const Dashboard = () => {
       label: 'Clients',
       amount: stats.total_clients,
       format: whole,
+      title: undefined as string | undefined,
       split: undefined as Array<[string, number]> | undefined,
       sub: 'active',
       icon: 'bx-group',
@@ -443,21 +455,24 @@ export const Dashboard = () => {
           </section>
         ) : (
           <>
-        {/* reporting period */}
+        {/* the reporting period: one control, and one eye for the money */}
         <div className="dash-period">
-          <Segmented
-            ariaLabel="Reporting period"
-            value={period}
-            options={PERIODS.map((p) => ({ key: p.key, label: p.label }))}
-            onChange={(key) => setPeriod(key as Period)}
+          <DateRangePicker
+            label="Period"
+            emptyLabel="All time"
+            value={range}
+            onChange={(next) => setRange(next)}
           />
-          {period === 'custom' && (
-            <DateRangePicker
-              label="Received"
-              value={range}
-              onChange={(next) => setRange(next)}
-            />
-          )}
+          <button
+            type="button"
+            className="dash-eye"
+            aria-pressed={hideMoney}
+            title={hideMoney ? 'Show the figures' : 'Hide the figures'}
+            aria-label={hideMoney ? 'Show the figures' : 'Hide the figures'}
+            onClick={toggleMoney}
+          >
+            <i className={`bx ${hideMoney ? 'bx-hide' : 'bx-show'}`} />
+          </button>
         </div>
 
         {/* KPI cards */}
@@ -490,14 +505,14 @@ export const Dashboard = () => {
                     </em>
                   )}
                 </span>
-                <span className="dash-kpi-value">
+                <span className="dash-kpi-value" title={kpi.title}>
                   <CountUp value={kpi.amount} format={kpi.format} />
                 </span>
                 <span className="dash-kpi-sub">{kpi.sub}</span>
                 {kpi.split && kpi.split.length > 1 && (
                   <span className="iw-currsplit">
                     {kpi.split.map(([cur, amount]) => (
-                      <b key={cur}>{formatCurrency(amount, cur)}</b>
+                      <b key={cur}>{anyMoney(amount, cur)}</b>
                     ))}
                   </span>
                 )}
@@ -507,8 +522,9 @@ export const Dashboard = () => {
                   <Sparkline
                     points={kpi.spark}
                     tone={kpi.tone === 'green' ? 'good' : 'brand'}
-                    width={72}
-                    height={24}
+                    width={120}
+                    height={34}
+                    stretch
                   />
                 </span>
               )}
@@ -653,12 +669,12 @@ export const Dashboard = () => {
         <section className="iw-tiles">
           <article className="dash-card iw-tile">
             <span className="iw-tile-label">VAT collected</span>
-            <b>{formatCurrency(vatCollected)}</b>
+            <b>{money(vatCollected)}</b>
             <small>{periodSub}, at 7.5% per invoice</small>
           </article>
           <article className="dash-card iw-tile">
             <span className="iw-tile-label">WHT credits</span>
-            <b>{formatCurrency(whtCredits)}</b>
+            <b>{money(whtCredits)}</b>
             <small>withheld by clients, saved as credits</small>
           </article>
           <article className="dash-card iw-tile">

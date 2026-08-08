@@ -4,6 +4,8 @@ interface SparklineProps {
   tone?: 'brand' | 'good' | 'warn';
   width?: number;
   height?: number;
+  /** fill the parent instead of a fixed box: used as a card's backdrop */
+  stretch?: boolean;
 }
 
 /**
@@ -13,7 +15,7 @@ interface SparklineProps {
  * months, not a chart to read values off. The dot marks where it ends, which
  * is the only point anybody actually looks for.
  */
-export const Sparkline = ({ points, tone = 'brand', width = 96, height = 30 }: SparklineProps) => {
+export const Sparkline = ({ points, tone = 'brand', width = 96, height = 30, stretch = false }: SparklineProps) => {
   if (points.length < 2) return null;
 
   const max = Math.max(...points);
@@ -32,9 +34,11 @@ export const Sparkline = ({ points, tone = 'brand', width = 96, height = 30 }: S
   return (
     <svg
       className={`spark spark--${tone}`}
-      width={width}
-      height={height}
+      width={stretch ? undefined : width}
+      height={stretch ? undefined : height}
       viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio={stretch ? 'none' : undefined}
+      style={stretch ? { width: '100%', height: '100%', display: 'block' } : undefined}
       aria-hidden="true"
       focusable="false"
     >

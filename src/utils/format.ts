@@ -10,6 +10,22 @@ export const formatCurrency = (
   }).format(amount);
 };
 
+/**
+ * ₦230,456,789.35 does not fit a stat card. This says ₦230.46M and the full
+ * figure rides along in the element's title for anyone who needs the kobo.
+ */
+export const formatCompactCurrency = (
+  amount: number,
+  currency: string = 'USD',
+  locale: string = 'en-US'
+): string =>
+  new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  }).format(amount);
+
 export const formatDate = (
   date: string | Date,
   options?: Intl.DateTimeFormatOptions

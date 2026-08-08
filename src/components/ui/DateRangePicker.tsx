@@ -16,6 +16,8 @@ interface DateRangePickerProps {
   /** which date is being filtered, e.g. "Issued" */
   label?: string;
   align?: 'left' | 'right';
+  /** what an unset range is called: "Any time" on a list, "All time" here */
+  emptyLabel?: string;
 }
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -36,6 +38,7 @@ export const DateRangePicker = ({
   onChange,
   label = 'Dates',
   align = 'left',
+  emptyLabel = 'Any time',
 }: DateRangePickerProps) => {
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState(() => new Date());
@@ -135,7 +138,7 @@ export const DateRangePicker = ({
         <i className="bx bx-calendar" aria-hidden="true" />
         <span className="dr-trigger-text">
           <small>{label}</small>
-          <b>{describeRange(value)}</b>
+          <b>{describeRange(value, emptyLabel)}</b>
         </span>
         <i className={`bx bx-chevron-down dr-caret${open ? ' is-open' : ''}`} aria-hidden="true" />
       </button>
@@ -176,7 +179,7 @@ export const DateRangePicker = ({
               className={`dr-preset dr-preset--any${!isSet ? ' is-active' : ''}`}
               onClick={() => commit(EMPTY_RANGE)}
             >
-              Any time
+              {emptyLabel}
             </button>
           </div>
 
