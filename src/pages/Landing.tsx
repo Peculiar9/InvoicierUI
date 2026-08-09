@@ -706,10 +706,24 @@ const PaperTrail = () => {
 const QUOTES = [
   {
     quote:
-      "Invoicier chases so I don't have to. My awkward \u201cjust following up on this\u201d emails are officially extinct.",
-    name: 'Amara O.',
-    role: 'Studio lead, Lagos',
-    initials: 'AO',
+      'Five clients, three currencies, zero patience for paperwork. I ship the work, Invoicier keeps the receipts.',
+    name: 'Victory',
+    role: 'Software engineering contractor',
+    initials: 'V',
+  },
+  {
+    quote:
+      'Between shifts I have no time for spreadsheets. I send the link, the payment lands, the record writes itself.',
+    name: 'Emmanuella',
+    role: 'Registered nurse',
+    initials: 'E',
+  },
+  {
+    quote:
+      'My receipts used to live in a notebook by the till. Now every client pays a link and March will meet me ready.',
+    name: 'Ndidi',
+    role: 'Beauty salon owner',
+    initials: 'N',
   },
   {
     quote:
@@ -717,13 +731,6 @@ const QUOTES = [
     name: 'Tobi A.',
     role: 'Product designer, billing US clients from Lagos',
     initials: 'TA',
-  },
-  {
-    quote:
-      'The ledger part is sneaky. I came for the invoices and stayed because March stopped being scary.',
-    name: 'Chidi N.',
-    role: 'Photographer, Abuja',
-    initials: 'CN',
   },
   {
     quote: 'Sent my first invoice from the bus. It was paid before I got home.',

@@ -3509,7 +3509,7 @@
 .lp-quotes-track {
   display: flex;
   width: max-content;
-  animation: lp-quotes-drift 26s ease-in-out infinite alternate;
+  animation: lp-quotes-drift 14s ease-in-out infinite alternate;
 }
 .lp-quotes-drift:hover .lp-quotes-track {
   animation-play-state: paused;
