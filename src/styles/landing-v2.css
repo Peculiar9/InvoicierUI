@@ -5080,10 +5080,28 @@ html:has(.lp) {
 .lp-fcard::after {
   transition:
     opacity 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
-    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .lp-fcard:hover::after {
   transform: translateY(-4px);
+}
+
+/* After the entrance, reveal releases the transform: these outrank
+   `.lp [data-reveal]` so the raise/rest clocks finally apply. */
+.lp [data-reveal].settled {
+  transition:
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+/* The raise itself, ranked above the reveal's `transform: none` hold —
+   without these, revealed cards can never leave the ground. */
+.lp .lp-card.settled:hover,
+.lp .lp-fcard.settled:hover,
+.lp .lp-fcta.settled:hover {
+  transform: translateY(-7px) scale(1.015);
+}
+.lp .lp-trail-paper.settled:hover {
+  transform: translateY(-7px) rotate(-0.5deg) scale(1.015);
 }
 
 /* fingers get a settle, not a float */
@@ -5110,4 +5128,19 @@ html:has(.lp) {
     rgba(29, 27, 46, 0.045) 86%,
     rgba(29, 27, 46, 0) 100%
   );
+}
+
+/* Lenis owns the scroll when active; native smooth would fight the lerp. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }

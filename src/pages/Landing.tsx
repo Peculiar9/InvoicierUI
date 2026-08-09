@@ -6,6 +6,7 @@ import { Typewriter } from '@/components/static';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
 import { useCmsFaqs, useCmsTestimonials, useSiteSettings } from '@/hooks/useCms';
+import Lenis from 'lenis';
 import '@/styles/landing-v2.css';
 
 /* ----------------------------------------------------------------- loader */
@@ -123,6 +124,36 @@ const BrandLoader = ({ onDone }: { onDone: () => void }) => {
   );
 };
 
+/* ------------------------------------------------------------ lenis scroll */
+
+/**
+ * Inertial smooth scrolling for the landing page only. The sweet spot:
+ * lerp 0.08 (glide without seasickness), wheel very near 1:1. Anchors run
+ * through Lenis so nav jumps glide instead of teleporting. Reduced-motion
+ * visitors keep the browser's native scroll untouched.
+ */
+const useLenisScroll = (ready: boolean) => {
+  useEffect(() => {
+    if (!ready) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const lenis = new Lenis({
+      lerp: 0.08,
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      anchors: { offset: -96 },
+    });
+    let raf = requestAnimationFrame(function loop(time) {
+      lenis.raf(time);
+      raf = requestAnimationFrame(loop);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      lenis.destroy();
+    };
+  }, [ready]);
+};
+
 /* ----------------------------------------------------------- reveal + nav */
 
 /** Scroll reveals, armed only after the loader lifts so nothing plays unseen. */
@@ -137,15 +168,20 @@ const useGatedReveal = (rootRef: RefObject<HTMLElement>, ready: boolean) => {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
       !('IntersectionObserver' in window)
     ) {
-      els.forEach((el) => el.classList.add('in-view'));
+      els.forEach((el) => el.classList.add('in-view', 'settled'));
       return;
     }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            observer.unobserve(entry.target);
+            const el = entry.target as HTMLElement;
+            el.classList.add('in-view');
+            // entrance owns the transform until it finishes; then the card
+            // physics (hover raise/rest) take over via .settled
+            const stagger = Number(el.dataset.delay ?? 0) * 90;
+            window.setTimeout(() => el.classList.add('settled'), 700 + stagger + 60);
+            observer.unobserve(el);
           }
         });
       },
@@ -1189,6 +1225,7 @@ export const Landing = () => {
   useGatedReveal(rootRef, !loading);
   useTiltRipple(rootRef, !loading);
   useScrollDrift(rootRef);
+  useLenisScroll(!loading);
   const travelOk = useTravelOk();
   const quotes = useCmsTestimonials(QUOTES);
   const site = useSiteSettings({});
