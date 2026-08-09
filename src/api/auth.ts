@@ -53,6 +53,14 @@ export const authApi = {
     await apiClient.post('/auth/resend-email-verification', { email, reference });
   },
 
+  /** authed resend: no stored handle needed, works on any device */
+  resendMyVerification: async (): Promise<{ email: string; reference: string; expiry: number }> => {
+    const response = await apiClient.post<ApiResponse<{ email: string; reference: string; expiry: number }>>(
+      '/auth/resend-my-verification'
+    );
+    return response.data.data;
+  },
+
   verifyEmail: async (
     email: string,
     reference: string,

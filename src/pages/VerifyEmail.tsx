@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
 import { PENDING_VERIFICATION_KEY } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/authStore';
@@ -31,8 +31,23 @@ export const VerifyEmail = () => {
   const updateUser = useAuthStore((s) => s.updateUser);
   const setSession = useAuthStore((s) => s.setSession);
   const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const search = useSearch({ from: '/verify-email' });
 
-  const [pending] = useState<PendingVerification | null>(readPending);
+  // three sources, in order of freshness: the URL (the emailed deep link),
+  // this tab's sessionStorage, and finally an authed resend below
+  const [pending, setPending] = useState<PendingVerification | null>(() => {
+    if (search.email && search.ref) {
+      const fromUrl = { email: search.email, reference: search.ref };
+      try {
+        sessionStorage.setItem(PENDING_VERIFICATION_KEY, JSON.stringify(fromUrl));
+      } catch {
+        // private mode: the state alone carries this visit
+      }
+      return fromUrl;
+    }
+    return readPending();
+  });
   const [code, setCode] = useState('');
   const [state, setState] = useState<'entering' | 'working' | 'done' | 'failed'>(
     'entering'
@@ -107,13 +122,45 @@ export const VerifyEmail = () => {
           <div className="ob-step ob-step--done">
             <h1>Nothing waiting to be verified.</h1>
             <p>
-              Sign in and use the badge in your workspace to request a fresh
-              verification email.
+              {isAuthenticated ? (
+                <>
+                  No handle on this device. One click and a fresh code lands in{' '}
+                  <b>{user?.email}</b>.
+                </>
+              ) : (
+                <>Use the button in your verification email, or sign in and ask for a fresh code.</>
+              )}
             </p>
+            {note && <p className="ob-form-note">{note}</p>}
             <div className="ob-nav ob-nav--center">
-              <Link to="/dashboard" className="iw-btn iw-btn--lg">
-                Back to the workspace <i className="bx bx-right-arrow-alt" />
-              </Link>
+              {!isAuthenticated && (
+                <Link to="/login" className="iw-btn iw-btn--lg">
+                  Sign in <i className="bx bx-right-arrow-alt" />
+                </Link>
+              )}
+              {isAuthenticated && <button
+                type="button"
+                className="iw-btn iw-btn--lg"
+                onClick={async () => {
+                  try {
+                    const handle = await authApi.resendMyVerification();
+                    setPending({ email: handle.email, reference: handle.reference });
+                    try {
+                      sessionStorage.setItem(
+                        PENDING_VERIFICATION_KEY,
+                        JSON.stringify({ email: handle.email, reference: handle.reference })
+                      );
+                    } catch {
+                      // private mode: state alone is enough
+                    }
+                    setNote(null);
+                  } catch {
+                    setNote('Could not send a code just now. Give it a moment.');
+                  }
+                }}
+              >
+                Email me a fresh code <i className="bx bx-envelope" />
+              </button>}
             </div>
           </div>
         ) : (

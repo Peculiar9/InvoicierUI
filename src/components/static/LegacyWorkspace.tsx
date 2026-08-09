@@ -8,6 +8,7 @@ import { useServerSettings } from '@/hooks/useServerSettings';
 import { useUIStore } from '@/stores/uiStore';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/stores/authStore';
+import { useVerification } from '@/hooks/useVerification';
 import { toast } from '@/lib/toast';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { InvoicePanel } from '@/components/InvoicePanel';
@@ -114,19 +115,25 @@ export const LegacyWorkspace = ({
 
   const user = useAuthStore((s) => s.user);
   const [verifyOpen, setVerifyOpen] = useState(false);
-  const unverified = Boolean(user) && user?.email_verified === false;
+  const { verified } = useVerification();
+  const unverified = Boolean(user) && !verified;
   const resendVerification = async () => {
-    let pending: { email?: string; reference?: string } = {};
     try {
-      pending = JSON.parse(
-        sessionStorage.getItem('invoicier-pending-verification') ?? '{}'
-      ) as { email?: string; reference?: string };
+      // the session is the proof of who is asking: no stored handle needed,
+      // so this works on a device that has never seen the signup
+      const handle = await authApi.resendMyVerification();
+      try {
+        sessionStorage.setItem(
+          'invoicier-pending-verification',
+          JSON.stringify({ email: handle.email, reference: handle.reference })
+        );
+      } catch {
+        // private mode: the emailed deep link still carries the handle
+      }
+      toast.success(`A fresh code is on its way to ${handle.email}`);
     } catch {
-      // fall through to the account email with no reference
+      toast.error('Could not resend just now. Give it a moment.');
     }
-    if (!pending.email || !pending.reference) return;
-    await authApi.resendVerification(pending.email, pending.reference);
-    toast.success(`Verification link resent to ${user?.email}`);
     setVerifyOpen(false);
   };
 
@@ -245,17 +252,16 @@ export const LegacyWorkspace = ({
                         <b>One click to go</b>
                       </div>
                       <p className="iw-verify-copy">
-                        We sent a link to <b>{user?.email}</b>. Until you click
-                        it, invoices cannot go out under your name. Everything
-                        else works.
+                        A four-digit code went to <b>{user?.email}</b>. Until
+                        you confirm it, invoices cannot go out under your name.
+                        Everything else works.
                       </p>
                       <div className="iw-verify-actions">
                         <button type="button" className="iw-btn iw-btn--ghost" onClick={resendVerification}>
-                          Resend the link
+                          Resend the code
                         </button>
-                        {/* TEMPORARY: stands in for the emailed link. Delete before launch. */}
                         <Link to="/verify-email" className="iw-btn" onClick={() => setVerifyOpen(false)}>
-                          Open the link (demo)
+                          Enter the code
                         </Link>
                       </div>
                     </div>
