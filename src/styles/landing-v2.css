@@ -5036,3 +5036,78 @@
   box-shadow: 0 10px 30px rgba(29, 27, 46, 0.35);
 }
 .lp .lp-devbar--waitlist .lp-devbar-item { color: #fff; }
+
+/* ------------------------------------------------------------------ */
+/* THE GOLDEN COMBO — one physics for every card on the page.         */
+/* ~250ms, -7px raise with a whisper of scale, soft rest shadow to    */
+/* medium elevation. Later in the file on purpose: it is the ruling.  */
+/* ------------------------------------------------------------------ */
+
+html:has(.lp) {
+  /* anchor jumps clear the floating nav instead of hiding under it */
+  scroll-padding-top: 96px;
+}
+
+.lp-card,
+.lp-trail-paper,
+.lp-fcard,
+.lp-fcta {
+  transition:
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    border-color 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform;
+}
+.lp-card,
+.lp-fcard {
+  box-shadow: 0 4px 12px rgba(29, 27, 46, 0.06);
+}
+.lp-card:hover,
+.lp-fcard:hover {
+  transform: translateY(-7px) scale(1.015);
+  box-shadow: 0 14px 28px rgba(29, 27, 46, 0.12);
+}
+.lp-trail-paper:hover {
+  /* keeps its paper tilt, adopts the shared raise */
+  transform: translateY(-7px) rotate(-0.5deg) scale(1.015);
+  box-shadow: 0 14px 28px rgba(29, 27, 46, 0.12);
+}
+.lp-fcta:hover {
+  /* the ink card runs deeper shadows: same motion, darker water */
+  transform: translateY(-7px) scale(1.015);
+  box-shadow: 0 16px 32px rgba(19, 17, 32, 0.38);
+}
+.lp-fcard::after {
+  transition:
+    opacity 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.lp-fcard:hover::after {
+  transform: translateY(-4px);
+}
+
+/* fingers get a settle, not a float */
+@media (hover: none) {
+  .lp-card:hover,
+  .lp-fcard:hover,
+  .lp-trail-paper:hover,
+  .lp-fcta:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* "For the record" doused: a soft ink veil under the whole section,  */
+/* so the black payoff card sits IN something instead of ON white.    */
+/* Fades in from nothing and back out, so neither neighbour notices.  */
+/* ------------------------------------------------------------------ */
+.lp-featgrid {
+  background: linear-gradient(
+    180deg,
+    rgba(29, 27, 46, 0) 0%,
+    rgba(29, 27, 46, 0.045) 16%,
+    rgba(29, 27, 46, 0.07) 55%,
+    rgba(29, 27, 46, 0.045) 86%,
+    rgba(29, 27, 46, 0) 100%
+  );
+}
