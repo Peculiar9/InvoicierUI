@@ -1277,7 +1277,7 @@ export const Landing = () => {
                 <i className="bx bx-right-arrow-alt" />
               </a>
               <h1 data-reveal data-delay="2">
-                Invoices that turn into tax records. Paid from{' '}
+                Your invoices, your tax return. Paid from{' '}
                 <Typewriter
                   words={['a link', 'WhatsApp', 'any bank', 'your phone', 'anywhere']}
                 />
