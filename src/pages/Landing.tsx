@@ -1657,6 +1657,37 @@ export const Landing = () => {
 };
 
 /* shared marketing footer: the brand world closes every page */
+/**
+ * Contact copies the address instead of firing mailto: — the browser's
+ * "wants to access other apps" interrogation is not a first impression.
+ */
+const ContactCopy = () => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className="lp-footer-contact"
+      onClick={() => {
+        navigator.clipboard?.writeText('hello@invoicier.app').then(
+          () => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1800);
+          },
+          () => {}
+        );
+      }}
+    >
+      {copied ? (
+        <span className="lp-footer-contact-done">
+          <i className="bx bx-check" /> hello@invoicier.app copied
+        </span>
+      ) : (
+        'Contact'
+      )}
+    </button>
+  );
+};
+
 export const MarketingFooter = () => (
   <footer className="lp-footer">
     <div className="lp-footer-cta" data-reveal>
@@ -1698,7 +1729,7 @@ export const MarketingFooter = () => (
             <li><Link to="/company">About</Link></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/company">Careers</Link></li>
-            <li><a href="mailto:hello@invoicier.app">Contact</a></li>
+            <li><ContactCopy /></li>
           </ul>
         </div>
         <div className="lp-footer-col">

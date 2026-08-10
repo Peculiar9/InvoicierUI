@@ -5233,3 +5233,26 @@ html.lenis body {
     text-align: left;
   }
 }
+
+/* footer Contact: a link to the eye, a clipboard to the click */
+.lp .lp-footer-contact {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.lp .lp-footer-contact:hover {
+  color: #fff;
+}
+.lp .lp-footer-contact-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #7ee2c0;
+}
+.lp .lp-footer-contact-done i {
+  font-size: 1rem;
+}
