@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+# app surfaces and payment links are not search material
+Disallow: /dashboard
+Disallow: /invoices
+Disallow: /clients
+Disallow: /services
+Disallow: /settings
+Disallow: /pay/
+Disallow: /login
+Disallow: /signup
+Disallow: /welcome
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://invoicier.app/sitemap.xml
