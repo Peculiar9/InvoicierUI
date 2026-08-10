@@ -482,9 +482,41 @@ const InvoiceScene = () => {
  * holds while vertical scroll slides the paper train sideways. Small screens
  * get a plain swipeable row.
  */
+/**
+ * Position dots for a swipe rail — proof that more cards exist and which
+ * one you're on. Rendered only at rail breakpoints (see CSS).
+ */
+const RailDots = ({ railRef, count, kind }: {
+  railRef: RefObject<HTMLDivElement>;
+  count: number;
+  kind: string;
+}) => {
+  const [here, setHere] = useState(0);
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const range = el.scrollWidth - el.clientWidth;
+      if (range <= 0) return;
+      setHere(Math.min(count - 1, Math.round((el.scrollLeft / range) * (count - 1))));
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [railRef, count]);
+  return (
+    <span className={`lp-rail-dots lp-rail-dots--${kind}`} aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <i key={i} className={i === here ? 'is-here' : ''} />
+      ))}
+    </span>
+  );
+};
+
 const PaperTrail = () => {
   const ref = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const featsRef = useRef<HTMLDivElement>(null);
   const measured = useRef(false);
   const [phase, setPhase] = useState<'scrub' | 'stack' | 'pulse' | 'voila'>('scrub');
   const [docked, setDocked] = useState(false);
@@ -642,7 +674,7 @@ const PaperTrail = () => {
 
         {/* callouts that land on the dashboard itself, each pointing at the
             part of the app that proves it */}
-        <div className="lp-saga-feats" aria-hidden="true">
+        <div className="lp-saga-feats" ref={featsRef}>
           <div
             className={`lp-feat${featIdx === 0 ? ' is-active' : featIdx > 0 ? ' is-passed' : ''}`}
             style={{ '--fx': '-215px', '--fy': '-165px', '--fr': '-3deg' } as CSSProperties}
@@ -677,7 +709,7 @@ const PaperTrail = () => {
           </div>
         </div>
 
-        <div className="lp-trail-track" aria-hidden="true">
+        <div className="lp-trail-track" ref={trackRef}>
           <article className="lp-trail-doc">
             <span className="lp-trail-num">01</span>
             <h4>The invoice</h4>
@@ -735,6 +767,8 @@ const PaperTrail = () => {
             </div>
           </article>
         </div>
+        <RailDots railRef={trackRef} count={5} kind="track" />
+        <RailDots railRef={featsRef} count={4} kind="feats" />
       </div>
     </section>
   );

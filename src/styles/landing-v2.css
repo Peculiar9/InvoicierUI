@@ -5256,3 +5256,118 @@ html.lenis body {
 .lp .lp-footer-contact-done i {
   font-size: 1rem;
 }
+
+/* ------------------------------------------------------------------ */
+/* THE SAGA, TRANSLATED FOR THUMBS — the desktop scroll-theatre        */
+/* (papers merging into the app, callouts landing on it) becomes two   */
+/* swipeable snap rails. Same story, told at swipe speed.              */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 880px) {
+  .lp-trail-stage {
+    height: auto;
+  }
+  /* the five papers ride a rail; no state may fling them mid-merge */
+  .lp-trail-track,
+  .lp-trail-stage.is-stack .lp-trail-track,
+  .lp-trail-stage.is-story .lp-trail-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 22px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .lp-trail-track::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-trail-doc,
+  .lp-trail-stage.is-stack .lp-trail-doc,
+  .lp-trail-stage.is-pulse .lp-trail-doc,
+  .lp-trail-stage.is-voila .lp-trail-doc {
+    flex: 0 0 min(78vw, 320px);
+    position: static;
+    scroll-snap-align: center;
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .lp-trail-arrow,
+  .lp-saga-burst {
+    display: none;
+  }
+}
+
+@media (max-width: 1020px) {
+  /* the callouts: a second rail under the story, every card present */
+  .lp-saga-feats {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 22px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .lp-saga-feats::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-feat,
+  .lp-feat.is-active,
+  .lp-feat.is-passed {
+    flex: 0 0 min(74vw, 300px);
+    position: static;
+    inset: auto;
+    width: auto;
+    scroll-snap-align: center;
+    opacity: 1;
+    transform: none;
+    margin-bottom: 0;
+    pointer-events: auto;
+  }
+}
+
+/* rail dots: hidden wherever the rails don't exist */
+.lp-rail-dots {
+  display: none;
+  justify-content: center;
+  gap: 7px;
+  padding: 2px 0 6px;
+}
+.lp-rail-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(29, 27, 46, 0.18);
+  transition: background 0.25s ease, width 0.25s ease;
+}
+.lp-rail-dots i.is-here {
+  width: 18px;
+  background: var(--brand);
+}
+
+@media (max-width: 880px) {
+  /* the story told in thumb order: papers first, then the app they become,
+     then why, then the callouts. Desktop DOM order is a stage direction;
+     mobile needs narrative order. */
+  .lp-trail-stage {
+    display: flex;
+    flex-direction: column;
+  }
+  .lp-trail-head { order: 0; }
+  .lp-trail-track { order: 1; }
+  .lp-rail-dots--track { order: 2; display: flex; }
+  .lp-trail-dash { order: 3; }
+  .lp-saga-story { order: 4; }
+  .lp-saga-feats { order: 5; }
+  .lp-rail-dots--feats { order: 6; display: flex; }
+}
+@media (min-width: 881px) and (max-width: 1020px) {
+  /* tablet: only the callouts ride a rail */
+  .lp-rail-dots--feats { display: flex; }
+}

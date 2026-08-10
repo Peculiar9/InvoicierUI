@@ -25,7 +25,6 @@ import { useHotkeys } from '@/hooks/useHotkeys';
 import { useServicesStore } from '@/stores/servicesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
-import { sendInvoiceEmail } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
@@ -401,17 +400,17 @@ export const InvoicePanel = () => {
       toast.error('Verify your email first, so invoices go out under your name');
       return;
     }
-    const method = await sendInvoiceEmail(inv, profile);
+    // Delivery belongs to the backend: the send endpoint emails the client
+    // a branded invoice via Brevo. The browser opens nothing on its own.
+    const channel = inv.client?.email ? 'email' : 'link';
     sendInvoice.mutate(
-      { id: inv.id, channel: method === 'none' ? 'link' : method, to: inv.client?.email },
+      { id: inv.id, channel, to: inv.client?.email },
       {
-      onSuccess: () =>
-        toast.success(
-          method === 'emailjs'
-            ? `Invoice emailed to ${inv.client.name}`
-            : method === 'mailto'
-              ? `Email draft opened for ${inv.client.name}`
-                : 'Marked as sent (client has no email)'
+        onSuccess: () =>
+          toast.success(
+            channel === 'email'
+              ? `Invoice emailed to ${inv.client.name}`
+              : 'Marked as sent (client has no email)'
           ),
       }
     );
@@ -420,7 +419,6 @@ export const InvoicePanel = () => {
   const nudge = async (inv: Invoice) => {
     setBusy('Remind');
     try {
-      await sendInvoiceEmail(inv, profile);
       sendInvoice.mutate(
         { id: inv.id, channel: 'reminder', to: inv.client?.email },
         { onSuccess: () => toast.success(`Reminder sent to ${inv.client?.name}`) }
