@@ -5331,3 +5331,43 @@ html.lenis body {
     pointer-events: auto;
   }
 }
+
+/* rail dots: hidden wherever the rails don't exist */
+.lp-rail-dots {
+  display: none;
+  justify-content: center;
+  gap: 7px;
+  padding: 2px 0 6px;
+}
+.lp-rail-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(29, 27, 46, 0.18);
+  transition: background 0.25s ease, width 0.25s ease;
+}
+.lp-rail-dots i.is-here {
+  width: 18px;
+  background: var(--brand);
+}
+
+@media (max-width: 880px) {
+  /* the story told in thumb order: papers first, then the app they become,
+     then why, then the callouts. Desktop DOM order is a stage direction;
+     mobile needs narrative order. */
+  .lp-trail-stage {
+    display: flex;
+    flex-direction: column;
+  }
+  .lp-trail-head { order: 0; }
+  .lp-trail-track { order: 1; }
+  .lp-rail-dots--track { order: 2; display: flex; }
+  .lp-trail-dash { order: 3; }
+  .lp-saga-story { order: 4; }
+  .lp-saga-feats { order: 5; }
+  .lp-rail-dots--feats { order: 6; display: flex; }
+}
+@media (min-width: 881px) and (max-width: 1020px) {
+  /* tablet: only the callouts ride a rail */
+  .lp-rail-dots--feats { display: flex; }
+}
