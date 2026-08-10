@@ -5256,3 +5256,78 @@ html.lenis body {
 .lp .lp-footer-contact-done i {
   font-size: 1rem;
 }
+
+/* ------------------------------------------------------------------ */
+/* THE SAGA, TRANSLATED FOR THUMBS — the desktop scroll-theatre        */
+/* (papers merging into the app, callouts landing on it) becomes two   */
+/* swipeable snap rails. Same story, told at swipe speed.              */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 880px) {
+  .lp-trail-stage {
+    height: auto;
+  }
+  /* the five papers ride a rail; no state may fling them mid-merge */
+  .lp-trail-track,
+  .lp-trail-stage.is-stack .lp-trail-track,
+  .lp-trail-stage.is-story .lp-trail-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 22px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .lp-trail-track::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-trail-doc,
+  .lp-trail-stage.is-stack .lp-trail-doc,
+  .lp-trail-stage.is-pulse .lp-trail-doc,
+  .lp-trail-stage.is-voila .lp-trail-doc {
+    flex: 0 0 min(78vw, 320px);
+    position: static;
+    scroll-snap-align: center;
+    transform: none !important;
+    translate: none !important;
+    rotate: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .lp-trail-arrow,
+  .lp-saga-burst {
+    display: none;
+  }
+}
+
+@media (max-width: 1020px) {
+  /* the callouts: a second rail under the story, every card present */
+  .lp-saga-feats {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 8px var(--gutter) 22px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .lp-saga-feats::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-feat,
+  .lp-feat.is-active,
+  .lp-feat.is-passed {
+    flex: 0 0 min(74vw, 300px);
+    position: static;
+    inset: auto;
+    width: auto;
+    scroll-snap-align: center;
+    opacity: 1;
+    transform: none;
+    margin-bottom: 0;
+    pointer-events: auto;
+  }
+}
