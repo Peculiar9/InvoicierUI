@@ -1,0 +1,4 @@
+# Netlify-only file (Vercel ignores it): the staging deploy lives on Netlify,
+# so this keeps staging out of search indexes while production stays fair game.
+/*
+  X-Robots-Tag: noindex
