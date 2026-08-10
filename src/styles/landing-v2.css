@@ -5195,3 +5195,41 @@ html.lenis body {
     flex: none;
   }
 }
+
+/* the post-join confirmation: a pill on desktop, an honest card on mobile.
+   A 999px radius wrapped over three lines clips its own text; and the
+   nowrap referral code must never be allowed to set the container width. */
+.lp .lp-waitlist-done {
+  max-width: 100%;
+}
+.lp .lp-waitlist-done > span {
+  min-width: 0;
+}
+.lp .lp-waitlist-ref {
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .lp .lp-waitlist-done {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border-radius: 22px;
+    padding: 20px 18px;
+    text-align: center;
+    font-size: var(--fs-md);
+  }
+  .lp .lp-waitlist-done i {
+    width: 40px;
+    height: 40px;
+  }
+  .lp .lp-waitlist-ref {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+  .lp .lp-waitlist-ref code {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+}
