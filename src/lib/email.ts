@@ -1,13 +1,6 @@
-import emailjs from '@emailjs/browser';
 import type { Invoice } from '@/types';
 import type { BusinessProfile } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
-
-const config = {
-  serviceId: import.meta.env.VITE_EMAILJS_SERVICE_ID,
-  templateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-  publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-};
 
 /** Base URL for public links, explicit override, else the current origin
  *  (localhost in dev, the deployed domain on Vercel/Netlify). */
@@ -117,38 +110,4 @@ export function buildInvoiceEmail(invoice: Invoice, profile: BusinessProfile) {
   };
 
   return { to: invoice.client.email, subject, body, link, params };
-}
-
-export type EmailResult = 'emailjs' | 'mailto' | 'none';
-
-/**
- * Sends an invoice email entirely from the client:
- *  - if EmailJS env vars are set, sends for real via the EmailJS browser SDK
- *    (works on the free tier from your origin, no allowlist/subscription needed);
- *  - otherwise opens the user's mail composer prefilled (mailto:).
- */
-export async function sendInvoiceEmail(
-  invoice: Invoice,
-  profile: BusinessProfile
-): Promise<EmailResult> {
-  const { to, subject, body, params } = buildInvoiceEmail(invoice, profile);
-  if (!to) return 'none';
-
-  if (config.serviceId && config.templateId && config.publicKey) {
-    try {
-      await emailjs.send(config.serviceId, config.templateId, params, {
-        publicKey: config.publicKey,
-      });
-      return 'emailjs';
-    } catch {
-      /* fall through to mailto */
-    }
-  }
-
-  if (typeof window !== 'undefined') {
-    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
-  }
-  return 'mailto';
 }
