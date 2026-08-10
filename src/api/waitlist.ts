@@ -31,7 +31,9 @@ export const waitlistApi = {
       utc_offset: utcOffset(),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       ...(ref ? { ref } : {}),
-    });
+      // patient on purpose: a sleeping staging backend can take ~15s to wake,
+      // and "cold start" must never read as "could not reach the list"
+    }, { timeout: 30000 });
     return response.data.data;
   },
 };
