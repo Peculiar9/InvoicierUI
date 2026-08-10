@@ -5159,3 +5159,39 @@ html.lenis body {
 .lenis.lenis-stopped {
   overflow: hidden;
 }
+
+/* ------------------------------------------------------------------ */
+/* MOBILE POLISH — small screens get the same care as the cursor.     */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 640px) {
+  /* quote cards keep their natural height; one long quote should not
+     hollow out its neighbours into empty towers */
+  .lp-quotes-set {
+    align-items: flex-start;
+  }
+  .lp-quotes-set .lp-quote {
+    width: min(78vw, 340px);
+  }
+}
+
+@media (max-width: 380px) {
+  /* the pill nav must hold logo, CTA and hamburger even at 320px */
+  .lp-nav {
+    gap: 10px;
+    padding: 8px 10px 8px 16px;
+  }
+  .lp-logo {
+    font-size: 1.12rem;
+  }
+  .lp-nav-actions {
+    gap: 8px;
+  }
+  .lp-nav-actions .lp-btn {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+  .lp-nav-toggle {
+    flex: none;
+  }
+}

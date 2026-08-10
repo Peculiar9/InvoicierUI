@@ -185,7 +185,10 @@ const useGatedReveal = (rootRef: RefObject<HTMLElement>, ready: boolean) => {
           }
         });
       },
-      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
+      // threshold low on purpose: a tall section on a short phone screen may
+      // never reach 15% visible, and content stuck at opacity 0 reads as a
+      // blank page. Any honest sliver of visibility now reveals.
+      { threshold: 0.05, rootMargin: '0px 0px -6% 0px' }
     );
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
