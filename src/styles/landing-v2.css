@@ -5065,7 +5065,7 @@ html:has(.lp) {
 .lp-fcta:hover {
   /* the considered pause, then a rise that rings out like reverb */
   transition-duration: 0.9s;
-  transition-delay: 0.3s;
+  transition-delay: 0.2s;
 }
 .lp-card,
 .lp-fcard {
@@ -5094,7 +5094,7 @@ html:has(.lp) {
 .lp-fcard:hover::after {
   transform: translateY(-3px);
   transition-duration: 0.9s;
-  transition-delay: 0.3s;
+  transition-delay: 0.2s;
 }
 
 /* After the entrance, reveal releases the transform: these outrank
@@ -5106,7 +5106,7 @@ html:has(.lp) {
 }
 .lp [data-reveal].settled:hover {
   transition-duration: 0.9s;
-  transition-delay: 0.3s;
+  transition-delay: 0.2s;
 }
 /* The raise itself, ranked above the reveal's `transform: none` hold —
    without these, revealed cards can never leave the ground. */
