@@ -6,6 +6,7 @@ import { Typewriter } from '@/components/static';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
 import { useCmsFaqs, useCmsTestimonials, useSiteSettings } from '@/hooks/useCms';
+import Lenis from 'lenis';
 import '@/styles/landing-v2.css';
 
 /* ----------------------------------------------------------------- loader */
@@ -123,6 +124,36 @@ const BrandLoader = ({ onDone }: { onDone: () => void }) => {
   );
 };
 
+/* ------------------------------------------------------------ lenis scroll */
+
+/**
+ * Inertial smooth scrolling for the landing page only. The sweet spot:
+ * lerp 0.08 (glide without seasickness), wheel very near 1:1. Anchors run
+ * through Lenis so nav jumps glide instead of teleporting. Reduced-motion
+ * visitors keep the browser's native scroll untouched.
+ */
+const useLenisScroll = (ready: boolean) => {
+  useEffect(() => {
+    if (!ready) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const lenis = new Lenis({
+      lerp: 0.08,
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      anchors: { offset: -96 },
+    });
+    let raf = requestAnimationFrame(function loop(time) {
+      lenis.raf(time);
+      raf = requestAnimationFrame(loop);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      lenis.destroy();
+    };
+  }, [ready]);
+};
+
 /* ----------------------------------------------------------- reveal + nav */
 
 /** Scroll reveals, armed only after the loader lifts so nothing plays unseen. */
@@ -137,19 +168,27 @@ const useGatedReveal = (rootRef: RefObject<HTMLElement>, ready: boolean) => {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
       !('IntersectionObserver' in window)
     ) {
-      els.forEach((el) => el.classList.add('in-view'));
+      els.forEach((el) => el.classList.add('in-view', 'settled'));
       return;
     }
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            observer.unobserve(entry.target);
+            const el = entry.target as HTMLElement;
+            el.classList.add('in-view');
+            // entrance owns the transform until it finishes; then the card
+            // physics (hover raise/rest) take over via .settled
+            const stagger = Number(el.dataset.delay ?? 0) * 90;
+            window.setTimeout(() => el.classList.add('settled'), 700 + stagger + 60);
+            observer.unobserve(el);
           }
         });
       },
-      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' }
+      // threshold low on purpose: a tall section on a short phone screen may
+      // never reach 15% visible, and content stuck at opacity 0 reads as a
+      // blank page. Any honest sliver of visibility now reveals.
+      { threshold: 0.05, rootMargin: '0px 0px -6% 0px' }
     );
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -1189,6 +1228,7 @@ export const Landing = () => {
   useGatedReveal(rootRef, !loading);
   useTiltRipple(rootRef, !loading);
   useScrollDrift(rootRef);
+  useLenisScroll(!loading);
   const travelOk = useTravelOk();
   const quotes = useCmsTestimonials(QUOTES);
   const site = useSiteSettings({});
@@ -1617,6 +1657,37 @@ export const Landing = () => {
 };
 
 /* shared marketing footer: the brand world closes every page */
+/**
+ * Contact copies the address instead of firing mailto: — the browser's
+ * "wants to access other apps" interrogation is not a first impression.
+ */
+const ContactCopy = () => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className="lp-footer-contact"
+      onClick={() => {
+        navigator.clipboard?.writeText('hello@invoicier.app').then(
+          () => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1800);
+          },
+          () => {}
+        );
+      }}
+    >
+      {copied ? (
+        <span className="lp-footer-contact-done">
+          <i className="bx bx-check" /> hello@invoicier.app copied
+        </span>
+      ) : (
+        'Contact'
+      )}
+    </button>
+  );
+};
+
 export const MarketingFooter = () => (
   <footer className="lp-footer">
     <div className="lp-footer-cta" data-reveal>
@@ -1658,7 +1729,7 @@ export const MarketingFooter = () => (
             <li><Link to="/company">About</Link></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/company">Careers</Link></li>
-            <li><a href="mailto:hello@invoicier.app">Contact</a></li>
+            <li><ContactCopy /></li>
           </ul>
         </div>
         <div className="lp-footer-col">
