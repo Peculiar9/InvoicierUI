@@ -1,3 +1,4 @@
+import { StagingBadge } from '@/components/StagingBadge';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
@@ -97,6 +98,7 @@ enableMocking()
         <QueryClientProvider client={queryClient}>
           {/* one line, every fetch: see components/ui/RouteProgress */}
           <RouteProgress />
+          <StagingBadge />
           <RouterProvider router={router} />
           {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
