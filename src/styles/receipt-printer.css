@@ -114,6 +114,7 @@
   width: min(500px, 92vw);
   margin: clamp(14px, 3vh, 34px) auto 0;
   flex: 1;
+  min-height: calc(var(--body-h) + var(--deck-h) + 190px);
   display: flex; flex-direction: column; align-items: center;
 }
 /* light pooling on the plane the machine stands on */
@@ -283,9 +284,11 @@
 /* ---------------------------------------------------------------- paper -- */
 
 .rp-well {
-  position: relative; z-index: 4;
+  position: absolute; z-index: 4;
+  left: 50%;
+  translate: -50% 0;
+  top: calc(var(--deck-h) + var(--body-h) * 0.73 - 7px);
   width: min(292px, 72vw);
-  margin-top: calc(var(--body-h) * -0.27 - 7px);
   transform-origin: 50% 0;
 }
 /* enough hanging free, and the strip sways */
@@ -321,7 +324,7 @@
 .rp-receipt {
   position: relative;
   width: 100%;
-  padding: 15px 17px 8px;
+  padding: 15px 17px 10px;
   color: var(--ink);
   background:
     /* the roller's faint banding, left on thermal stock */
@@ -359,6 +362,13 @@
 }
 .rp-well.is-feeding .rp-head-glow { opacity: 1; animation: rp-head 0.5s ease-in-out infinite; }
 @keyframes rp-head { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+/* where one receipt on the roll ends and the next begins */
+.rp-receipt + .rp-receipt::after {
+  content: '';
+  position: absolute; left: 8%; right: 8%; top: 0; height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(29, 27, 46, 0.28) 0 3px, transparent 3px 7px);
+}
+
 /* the free end curls away and takes the light differently */
 .rp-curl {
   position: absolute; left: 0; right: 0; bottom: 0; height: 78px; z-index: 3;
@@ -412,6 +422,15 @@
 }
 .rp-rc-foot code { font-family: var(--mono); font-size: 0.55rem; }
 
+/* blank stock between the last cut and the next receipt: the roll is loaded */
+.rp-stub {
+  height: 26px;
+  background:
+    repeating-linear-gradient(180deg, rgba(29, 27, 46, 0.022) 0 1px, transparent 1px 4px),
+    var(--paper);
+  box-shadow: 0 22px 34px rgba(8, 5, 16, 0.5);
+}
+
 /* the cut edge: a real zigzag, the way a receipt leaves the roll */
 .rp-zig {
   position: relative;
@@ -452,10 +471,20 @@
   100% { opacity: 0; transform: scaleX(1); }
 }
 
+/* The floor of the room. The strip does not stop, it descends into the dark,
+   which is also what keeps a long roll from fighting the controls. */
+.rp-floor {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: clamp(170px, 26vh, 260px);
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(23, 16, 38, 0) 0%, rgba(23, 16, 38, 0.82) 42%, #171026 78%);
+  pointer-events: none;
+}
+
 /* ---------------------------------------------------------------- panel -- */
 
 .rp-controls {
-  position: relative; z-index: 5;
+  position: relative; z-index: 6;
   display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
   padding: clamp(14px, 2.5vh, 26px) 20px clamp(20px, 3vh, 36px);
 }

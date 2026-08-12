@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { playCut, playTear, startTransport, type RunningSound } from '@/lib/printerAudio';
 import '@/styles/receipt-printer.css';
@@ -80,10 +80,15 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
   const [phase, setPhase] = useState<Phase>('ready');
   const [progress, setProgress] = useState(0);
   const [muted, setMuted] = useState(false);
+  /** What is on the roll, newest first: the last printed sits at the mouth. */
+  const [strip, setStrip] = useState<ReceiptData[]>([]);
   const clipRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
   const transport = useRef<RunningSound | null>(null);
+  /** How much paper is already out, so a new receipt feeds on from there. */
+  const outLength = useRef(0);
+  const feeding = useRef(false);
 
   const reduced = useMemo(
     () =>
@@ -117,22 +122,37 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
     return ([...SCRIPT].reverse().find((s) => progress >= s.at) ?? SCRIPT[0]).text;
   }, [phase, progress]);
 
-  const print = () => {
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-    setPhase('printing');
-    setProgress(0);
-
-    // measured, not guessed, so the transport stops where the paper ends
-    const height = paperRef.current?.offsetHeight ?? 460;
+  /** The blank stub is out before anything prints, and after every cut. */
+  useLayoutEffect(() => {
     const clip = clipRef.current;
+    const sheet = paperRef.current;
+    if (!clip || !sheet || strip.length > 0) return;
+    outLength.current = sheet.offsetHeight;
+    clip.style.height = `${outLength.current}px`;
+  }, [strip.length]);
+
+  /**
+   * A new segment has entered the DOM: run the transport from where the paper
+   * already was to where it now ends. The roll never rewinds, so the strip
+   * simply gets longer and walks off the bottom of the room.
+   */
+  useLayoutEffect(() => {
+    if (!feeding.current) return;
+    feeding.current = false;
+
+    const clip = clipRef.current;
+    const sheet = paperRef.current;
+    if (!clip || !sheet) return;
+
+    const from = outLength.current;
+    const to = sheet.offsetHeight;
     const total = reduced ? 400 : FEED_MS;
-    if (clip) {
-      clip.style.setProperty('--rp-feed-ms', `${total}ms`);
-      clip.style.height = '0px';
-      void clip.offsetHeight; // let the browser accept 0 before it grows
-      clip.style.height = `${height}px`;
-    }
+
+    clip.style.setProperty('--rp-feed-ms', `${total}ms`);
+    clip.style.height = `${from}px`;
+    void clip.offsetHeight; // let the browser accept the start before it grows
+    clip.style.height = `${to}px`;
+    outLength.current = to;
 
     transport.current?.stop();
     if (!muted && !reduced) transport.current = startTransport();
@@ -148,6 +168,16 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
         setPhase('done');
       }, total + 100)
     );
+  }, [strip.length, muted, reduced]);
+
+  const print = () => {
+    if (phase === 'printing') return;
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+    setPhase('printing');
+    setProgress(0);
+    feeding.current = true;
+    setStrip((roll) => [receipt, ...roll]);
   };
 
   const tear = () => {
@@ -156,8 +186,9 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
     timers.current.push(
       window.setTimeout(
         () => {
-          const clip = clipRef.current;
-          if (clip) clip.style.height = '0px';
+          // the strip is gone; the roll pushes a fresh stub into the mouth
+          outLength.current = 0;
+          setStrip([]);
           setPhase('ready');
           setProgress(0);
         },
@@ -246,79 +277,84 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
             <span className="rp-head-glow" aria-hidden="true" />
             <span className="rp-cutline" aria-hidden="true" />
             <div className="rp-sheet" ref={paperRef}>
-              <div className="rp-receipt">
+              {strip.map((r, i) => (
+                <div className="rp-receipt" key={`${r.receiptNo}-${strip.length - i}`}>
+                  <div className="rp-rc-head">
+                    <b>
+                      invoicier<i>.</i>
+                    </b>
+                    <span>
+                      RECEIPT {r.receiptNo}
+                      <br />
+                      {r.paidOn}
+                    </span>
+                  </div>
 
-                <div className="rp-rc-head">
-                  <b>
-                    invoicier<i>.</i>
-                  </b>
-                  <span>
-                    RECEIPT {receipt.receiptNo}
-                    <br />
-                    {receipt.paidOn}
-                  </span>
-                </div>
+                  <p className="rp-rc-title">PAYMENT RECEIVED</p>
 
-                <p className="rp-rc-title">PAYMENT RECEIVED</p>
+                  <div className="rp-rc-party">
+                    <span>
+                      <small>Paid to</small>
+                      <b>{r.business}</b>
+                    </span>
+                    <span style={{ textAlign: 'right' }}>
+                      <small>Paid by</small>
+                      <b>{r.client}</b>
+                    </span>
+                  </div>
 
-                <div className="rp-rc-party">
-                  <span>
-                    <small>Paid to</small>
-                    <b>{receipt.business}</b>
-                  </span>
-                  <span style={{ textAlign: 'right' }}>
-                    <small>Paid by</small>
-                    <b>{receipt.client}</b>
-                  </span>
-                </div>
-
-                <div className="rp-rc-rows">
-                  {receipt.lines.map((l) => (
-                    <div className="rp-rc-row" key={l.label}>
-                      <i>{l.label}</i>
-                      <b>{money.format(l.amount)}</b>
+                  <div className="rp-rc-rows">
+                    {r.lines.map((l) => (
+                      <div className="rp-rc-row" key={l.label}>
+                        <i>{l.label}</i>
+                        <b>{money.format(l.amount)}</b>
+                      </div>
+                    ))}
+                    <div className="rp-rc-row">
+                      <i>{r.taxLabel}</i>
+                      <b>{money.format(r.taxAmount)}</b>
                     </div>
-                  ))}
-                  <div className="rp-rc-row">
-                    <i>{receipt.taxLabel}</i>
-                    <b>{money.format(receipt.taxAmount)}</b>
+                    <div className="rp-rc-row total">
+                      <i>Paid in full</i>
+                      <b>{money.format(r.total)}</b>
+                    </div>
                   </div>
-                  <div className="rp-rc-row total">
-                    <i>Paid in full</i>
-                    <b>{money.format(receipt.total)}</b>
-                  </div>
+
+                  <div className="rp-rc-stamp">SETTLED</div>
+
+                  <p className="rp-rc-foot">
+                    Paid via {r.method}, ref <code>{r.reference}</code>
+                    <br />
+                    Against invoice {r.invoiceNo}, issued {r.invoiceIssuedOn}
+                    <br />
+                    Keep this. It is your record.
+                  </p>
                 </div>
+              ))}
 
-                <div className="rp-rc-stamp">SETTLED</div>
-
-                <p className="rp-rc-foot">
-                  Paid via {receipt.method}, ref <code>{receipt.reference}</code>
-                  <br />
-                  Against invoice {receipt.invoiceNo}, issued {receipt.invoiceIssuedOn}
-                  <br />
-                  Keep this. It is your record.
-                </p>
-
-                <span className="rp-curl" aria-hidden="true" />
-              </div>
+              {/* blank stock at the leading edge, and the cut it was left with */}
+              <div className="rp-stub" aria-hidden="true" />
               <div className="rp-zig" aria-hidden="true" />
+              <span className="rp-curl" aria-hidden="true" />
             </div>
           </div>
         </div>
       </div>
 
+      <span className="rp-floor" aria-hidden="true" />
+
       <div className="rp-controls">
         <button type="button" className="rp-btn" onClick={print} disabled={phase === 'printing'}>
           <i className="bx bx-printer" aria-hidden="true" />
-          {phase === 'done' ? 'Print another' : 'Print the receipt'}
+          {strip.length > 0 ? 'Print another' : 'Print the receipt'}
         </button>
         <button
           type="button"
           className="rp-btn rp-btn--ghost"
           onClick={tear}
-          disabled={phase !== 'done'}
+          disabled={strip.length === 0 || phase === 'printing' || phase === 'torn'}
         >
-          <i className="bx bx-cut" aria-hidden="true" /> Tear it off
+          <i className="bx bx-cut" aria-hidden="true" /> Tear the strip off
         </button>
         <button
           type="button"
@@ -334,9 +370,13 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
           <i className={`bx ${muted ? 'bx-volume-mute' : 'bx-volume-full'}`} aria-hidden="true" />
         </button>
         <p className="rp-hint">
-          {phase === 'ready' && 'The machine is warm. Give it something to say.'}
+          {phase === 'ready' &&
+            (strip.length === 0
+              ? 'A fresh roll is loaded and the paper is waiting at the mouth.'
+              : 'Cut clean. The roll is ready for the next one.')}
           {phase === 'printing' && 'Paper transport engaged. Watch the lamp.'}
-          {phase === 'done' && 'Both parties already have this by email. Tear it off anyway.'}
+          {phase === 'done' &&
+            `${strip.length} on the strip. Print another and it keeps running, or cut the lot off.`}
           {phase === 'torn' && 'Filed.'}
         </p>
       </div>
