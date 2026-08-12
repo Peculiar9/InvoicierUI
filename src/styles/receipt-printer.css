@@ -314,7 +314,12 @@
   height: 0;
   transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.rp-sheet { position: absolute; left: 0; right: 0; bottom: 0; }
+/* one continuous piece of paper: the shadow belongs to the whole strip, and
+   traces the zigzag because it is cast from the sheet's own alpha */
+.rp-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  filter: drop-shadow(0 20px 30px rgba(8, 5, 16, 0.5));
+}
 .rp-well.is-feeding .rp-clip {
   /* steps(): paper ratchets out, it does not glide */
   transition: height var(--rp-feed-ms, 3200ms) steps(34, end);
@@ -330,7 +335,6 @@
     /* the roller's faint banding, left on thermal stock */
     repeating-linear-gradient(180deg, rgba(29, 27, 46, 0.022) 0 1px, transparent 1px 4px),
     var(--paper);
-  box-shadow: 0 22px 34px rgba(8, 5, 16, 0.5);
 }
 /* paper fibre */
 .rp-receipt::before {
@@ -422,25 +426,22 @@
 }
 .rp-rc-foot code { font-family: var(--mono); font-size: 0.55rem; }
 
-/* blank stock between the last cut and the next receipt: the roll is loaded */
+/* Blank stock between the last cut and the next receipt: the roll is loaded.
+   The teeth are cut into this same element rather than sitting under it, so
+   the paper and its cut edge are one surface with nothing to line up. */
 .rp-stub {
-  height: 26px;
+  height: calc(26px + var(--zig));
   background:
     repeating-linear-gradient(180deg, rgba(29, 27, 46, 0.022) 0 1px, transparent 1px 4px),
     var(--paper);
-  box-shadow: 0 22px 34px rgba(8, 5, 16, 0.5);
-}
-
-/* the cut edge: a real zigzag, the way a receipt leaves the roll */
-.rp-zig {
-  position: relative;
-  height: var(--zig);
-  background: var(--paper);
-  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
-    50% / calc(var(--zig) * 2) 100% repeat-x;
-  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
-    50% / calc(var(--zig) * 2) 100% repeat-x;
-  filter: drop-shadow(0 7px 9px rgba(8, 5, 16, 0.45));
+  -webkit-mask:
+    linear-gradient(#000 0 0) 0 0 / 100% calc(100% - var(--zig)) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+      50% 100% / calc(var(--zig) * 2) var(--zig) repeat-x;
+  mask:
+    linear-gradient(#000 0 0) 0 0 / 100% calc(100% - var(--zig)) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+      50% 100% / calc(var(--zig) * 2) var(--zig) repeat-x;
 }
 
 /* Torn free: paper is light and stiff, so it does not drop. It flexes at the

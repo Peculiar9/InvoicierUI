@@ -332,9 +332,8 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
                 </div>
               ))}
 
-              {/* blank stock at the leading edge, and the cut it was left with */}
+              {/* blank stock at the leading edge, cut teeth and all */}
               <div className="rp-stub" aria-hidden="true" />
-              <div className="rp-zig" aria-hidden="true" />
               <span className="rp-curl" aria-hidden="true" />
             </div>
           </div>
