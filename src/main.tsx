@@ -1,4 +1,15 @@
 import { StagingBadge } from '@/components/StagingBadge';
+
+// Cloudflare Web Analytics — exact-host gated to production, so staging
+// (staging.invoicier.app, *.netlify.app) and localhost never pollute the
+// numbers. Cookieless; route changes tracked via the History API (SPA mode).
+if (['invoicier.app', 'www.invoicier.app'].includes(window.location.hostname)) {
+  const beacon = document.createElement('script');
+  beacon.defer = true;
+  beacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  beacon.setAttribute('data-cf-beacon', '{"token": "202fe458304441f3aa0db8490dcfe688"}');
+  document.head.appendChild(beacon);
+}
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
