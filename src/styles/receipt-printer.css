@@ -1,0 +1,570 @@
+/* ============================================================================
+   THE RECEIPT PRINTER — a machine that exists only to hand you the record.
+
+   Semi-real on purpose: the body is built from layered gradients (photographic
+   falloff, no PNG), the paper is vector-crisp. The two textures meeting is the
+   point — a hyperreal object printing a perfectly clean document.
+
+   Scoped under .rp so nothing here can reach the marketing or product styles.
+   ========================================================================== */
+
+.rp {
+  --ink: #1d1b2e;
+  --brand: #924ee9;
+  --brand-600: #7c3aed;
+  --accent: #ff5a5f;
+  --paid: #0c8d6f;
+  --paper: #f6f4fb;
+  --font: 'Poppins', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --body-h: clamp(168px, 30vw, 205px);
+
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font);
+  color: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
+  /* the room: a deep purple void with the machine lit from above */
+  background:
+    radial-gradient(120% 80% at 50% -10%, #7c5aa8 0%, #4b3270 34%, #2a1b40 68%, #1a1128 100%);
+}
+.rp *,
+.rp *::before,
+.rp *::after {
+  box-sizing: border-box;
+}
+
+/* the shaft of light the machine stands in */
+.rp-beam {
+  position: absolute;
+  top: -12%;
+  left: 50%;
+  width: min(760px, 92vw);
+  height: 78%;
+  translate: -50% 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 68%);
+  -webkit-mask-image: linear-gradient(180deg, #000, transparent 72%);
+  mask-image: linear-gradient(180deg, #000, transparent 72%);
+  clip-path: polygon(43% 0, 57% 0, 88% 100%, 12% 100%);
+  filter: blur(28px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+/* dust hanging in the beam */
+.rp-motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.rp-motes i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  filter: blur(0.4px);
+  animation: rp-float 9s ease-in-out infinite;
+}
+@keyframes rp-float {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.15; }
+  50% { transform: translate3d(6px, -26px, 0); opacity: 0.7; }
+}
+
+/* ---------------------------------------------------------------- chrome -- */
+
+.rp-top {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1180px;
+  padding: 22px clamp(18px, 5vw, 44px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.rp-back:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.rp-wordmark {
+  margin-left: auto;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+.rp-wordmark b { color: var(--accent); }
+
+.rp-lede {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  padding: clamp(2px, 1vw, 10px) 20px 0;
+  max-width: 46ch;
+}
+.rp-lede span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 10px;
+}
+.rp-lede h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.35rem, 1rem + 1.2vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.rp-lede p {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------------------------------------------------------------- stage -- */
+
+.rp-stage {
+  position: relative;
+  z-index: 2;
+  width: min(520px, 94vw);
+  margin: clamp(12px, 2.5vh, 30px) auto 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* the machine sits on a plane; this is the light pooling on it */
+.rp-stage::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 150%;
+  height: 240px;
+  translate: -50% 0;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 255, 255, 0.16), transparent 70%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.rp-machine {
+  position: relative;
+  width: 100%;
+  z-index: 2;
+  filter: drop-shadow(0 42px 46px rgba(10, 6, 20, 0.6));
+  transform-origin: 50% 100%;
+}
+/* the whole body trembles while the transport runs */
+.rp-machine.is-printing { animation: rp-shudder 0.16s steps(2, end) infinite; }
+@keyframes rp-shudder {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0.6px, -0.6px, 0); }
+}
+
+/* --- body: layered gradients doing the work of a photograph --- */
+.rp-body {
+  position: relative;
+  height: var(--body-h);
+  border-radius: 22px 22px 14px 14px;
+  background:
+    linear-gradient(180deg, #4a4756 0%, #2b2836 12%, #1c1a25 46%, #131119 78%, #0d0c12 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -14px 26px rgba(0, 0, 0, 0.6),
+    inset 22px 0 40px rgba(0, 0, 0, 0.35),
+    inset -22px 0 40px rgba(0, 0, 0, 0.35);
+}
+/* the lit top edge where the beam lands */
+.rp-body::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 46%;
+  border-radius: 22px 22px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 82%);
+  pointer-events: none;
+}
+
+/* the lid seam across the top */
+.rp-lid {
+  position: absolute;
+  left: 13%;
+  right: 13%;
+  top: 15%;
+  height: 16px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #15131c, #201d2b);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.85), 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* the mouth the paper comes out of */
+.rp-slot {
+  position: absolute;
+  left: 26%;
+  right: 26%;
+  bottom: 26%;
+  height: 13px;
+  border-radius: 3px;
+  background: #05040a;
+  box-shadow:
+    inset 0 3px 7px rgba(0, 0, 0, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 4;
+}
+
+.rp-vent {
+  position: absolute;
+  left: 6%;
+  top: 26%;
+  width: 74px;
+  height: 42px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0.55;
+}
+.rp-vent i {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.9), rgba(255, 255, 255, 0.08));
+}
+.rp-badge {
+  position: absolute;
+  left: 7%;
+  top: 6%;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* --- the console: display, lamp, keypad --- */
+.rp-console {
+  position: absolute;
+  right: 5.5%;
+  top: 17%;
+  width: 27%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.rp-display {
+  height: 34px;
+  border-radius: 5px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: linear-gradient(180deg, #0a2b26, #06201c);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9), inset 0 0 14px rgba(53, 220, 170, 0.14);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: #4fe0b0;
+  text-shadow: 0 0 8px rgba(79, 224, 176, 0.75);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.rp-display.is-warn { color: #ffd27a; text-shadow: 0 0 8px rgba(255, 210, 122, 0.7); }
+.rp-display-bar {
+  flex: none;
+  width: 34px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(79, 224, 176, 0.18);
+  overflow: hidden;
+}
+.rp-display-bar i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: currentColor;
+  transition: width 0.25s linear;
+}
+
+.rp-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.rp-keys i {
+  height: 9px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #35313f, #1a1822);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.rp-lamp {
+  position: absolute;
+  right: 9%;
+  bottom: 22%;
+  width: 26px;
+  height: 6px;
+  border-radius: 3px;
+  background: #2a1418;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+.rp-lamp::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 14px 3px rgba(255, 90, 95, 0.75), 0 0 34px 8px rgba(255, 90, 95, 0.3);
+  opacity: 0.12;
+  transition: opacity 0.3s ease;
+}
+.rp-lamp.is-live::after { animation: rp-blink 0.85s steps(1, end) infinite; }
+.rp-lamp.is-done::after { opacity: 1; background: #35dcaa; box-shadow: 0 0 14px 3px rgba(53, 220, 170, 0.7), 0 0 34px 8px rgba(53, 220, 170, 0.25); }
+@keyframes rp-blink {
+  0%, 45% { opacity: 1; }
+  46%, 100% { opacity: 0.14; }
+}
+
+/* ---------------------------------------------------------------- paper -- */
+
+/* the well grows downward from the slot: the receipt is revealed top-first,
+   exactly as a transport pushes it out */
+.rp-well {
+  position: relative;
+  z-index: 3;
+  width: min(310px, 74vw);
+  /* pulled up to the slot line: paper exits the mouth, not the chassis */
+  margin-top: calc(var(--body-h) * -0.26);
+  height: 0;
+  overflow: hidden;
+  transition: height 0.4s var(--rp-feed-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+.rp-well.is-feeding {
+  /* steps() so the paper ratchets out like a real feed, not a glide */
+  transition: height var(--rp-feed-ms, 3200ms) steps(38, end);
+}
+.rp-well.is-torn { transition: none; }
+
+.rp-receipt {
+  position: relative;
+  width: 100%;
+  padding: 16px 18px 20px;
+  background:
+    linear-gradient(180deg, rgba(146, 78, 233, 0.05), transparent 22%),
+    var(--paper);
+  color: var(--ink);
+  box-shadow: 0 26px 40px rgba(10, 6, 20, 0.55), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+  /* the torn top edge and the fibre of thermal stock */
+  background-blend-mode: normal;
+}
+.rp-receipt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(29, 27, 46, 0.045) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+/* the slot's lip, thrown onto the paper as it clears the mouth */
+.rp-slot-shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 26px;
+  z-index: 5;
+  background: linear-gradient(180deg, rgba(5, 4, 10, 0.55), transparent);
+  pointer-events: none;
+}
+/* the print head's heat, riding the leading edge */
+.rp-receipt::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  background: linear-gradient(180deg, transparent, rgba(146, 78, 233, 0.18));
+  opacity: 0;
+  pointer-events: none;
+}
+.rp-well.is-feeding .rp-receipt::after { opacity: 1; }
+
+.rp-rc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(29, 27, 46, 0.16);
+}
+.rp-rc-head b {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.rp-rc-head b i { color: var(--accent); font-style: normal; }
+.rp-rc-head span {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  color: rgba(29, 27, 46, 0.55);
+  text-align: right;
+  line-height: 1.5;
+}
+.rp-rc-title {
+  margin: 14px 0 2px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  color: rgba(29, 27, 46, 0.5);
+}
+.rp-rc-party {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+.rp-rc-party small { display: block; color: rgba(29, 27, 46, 0.45); font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.rp-rc-party b { font-weight: 600; color: var(--ink); }
+
+.rp-rc-rows { margin-top: 10px; }
+.rp-rc-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 0.68rem;
+  border-bottom: 1px dashed rgba(29, 27, 46, 0.14);
+}
+.rp-rc-row i { font-style: normal; color: rgba(29, 27, 46, 0.72); }
+.rp-rc-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.rp-rc-row.total {
+  border-bottom: none;
+  border-top: 2px solid rgba(29, 27, 46, 0.85);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-size: 0.9rem;
+}
+.rp-rc-row.total i { color: var(--ink); font-weight: 700; }
+.rp-rc-row.total b { font-size: 1rem; letter-spacing: -0.02em; }
+
+.rp-rc-stamp {
+  margin: 12px auto 0;
+  width: fit-content;
+  padding: 5px 14px;
+  border: 2px solid var(--paid);
+  border-radius: 4px;
+  color: var(--paid);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  transform: rotate(-4deg);
+  opacity: 0.9;
+}
+.rp-rc-foot {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.6rem;
+  line-height: 1.7;
+  color: rgba(29, 27, 46, 0.5);
+}
+.rp-rc-foot code { font-family: var(--mono); font-size: 0.58rem; }
+
+/* the tear line, and the raggedness below it */
+.rp-perf {
+  position: relative;
+  margin-top: 12px;
+  border-top: 1px dashed rgba(29, 27, 46, 0.35);
+  padding-top: 8px;
+  text-align: center;
+  font-size: 0.54rem;
+  letter-spacing: 0.16em;
+  color: rgba(29, 27, 46, 0.35);
+}
+
+/* the sheet, once torn, falls out of the world */
+.rp-well.is-torn .rp-receipt { animation: rp-fall 0.9s cubic-bezier(0.4, 0, 0.7, 1) forwards; }
+@keyframes rp-fall {
+  to { transform: translateY(70vh) rotate(7deg); opacity: 0; }
+}
+
+/* ---------------------------------------------------------------- panel -- */
+
+.rp-controls {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(14px, 2.5vh, 26px) 20px clamp(20px, 3vh, 36px);
+}
+.rp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(146, 78, 233, 0.4);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, opacity 0.2s;
+}
+.rp-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(146, 78, 233, 0.5); }
+.rp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.rp-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: none;
+  color: #fff;
+}
+.rp-btn--ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.15); box-shadow: none; }
+.rp-hint {
+  width: 100%;
+  text-align: center;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-machine.is-printing,
+  .rp-lamp.is-live::after,
+  .rp-motes i { animation: none; }
+  .rp-well,
+  .rp-well.is-feeding { transition: height 0.3s linear; }
+  .rp-well.is-torn .rp-receipt { animation: none; opacity: 0; }
+  .rp-btn:hover:not(:disabled) { transform: none; }
+}

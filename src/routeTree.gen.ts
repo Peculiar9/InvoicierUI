@@ -15,6 +15,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReceiptRouteImport } from './routes/receipt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as InvoicesRouteImport } from './routes/invoices'
@@ -56,6 +57,11 @@ const ServicesRoute = ServicesRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceiptRoute = ReceiptRouteImport.update({
+  id: '/receipt',
+  path: '/receipt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/invoices': typeof InvoicesRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/receipt'
     | '/reset-password'
     | '/services'
     | '/settings'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/receipt'
     | '/reset-password'
     | '/services'
     | '/settings'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/legal'
     | '/login'
+    | '/receipt'
     | '/reset-password'
     | '/services'
     | '/settings'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRoute
   LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
+  ReceiptRoute: typeof ReceiptRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receipt': {
+      id: '/receipt'
+      path: '/receipt'
+      fullPath: '/receipt'
+      preLoaderRoute: typeof ReceiptRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRoute,
   LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
+  ReceiptRoute: ReceiptRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,

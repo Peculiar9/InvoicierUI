@@ -1116,6 +1116,10 @@ const DevPreviewBar = () => {
         <i className="bx bx-credit-card" aria-hidden="true" />
         What your client sees
       </Link>
+      <Link to="/receipt" className="lp-devbar-item">
+        <i className="bx bx-printer" aria-hidden="true" />
+        The receipt printer
+      </Link>
     </div>
   );
 };
