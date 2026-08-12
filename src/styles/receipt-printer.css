@@ -301,13 +301,22 @@
   100% { transform: rotate(0deg); }
 }
 
-/* the window the sheet is pushed through: only what has cleared the mouth shows */
-.rp-clip { overflow: hidden; height: 0; transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+/* The window the sheet is pushed through. The paper hangs from the BOTTOM of
+   this box, so as the box grows the sheet travels down and reveals itself
+   from its own foot upward: whatever was printed last leaves the mouth last,
+   which is why the footer appears first and the header arrives at the end. */
+.rp-clip {
+  position: relative;
+  overflow: hidden;
+  height: 0;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rp-sheet { position: absolute; left: 0; right: 0; bottom: 0; }
 .rp-well.is-feeding .rp-clip {
   /* steps(): paper ratchets out, it does not glide */
   transition: height var(--rp-feed-ms, 3200ms) steps(34, end);
 }
-.rp-well.is-torn .rp-clip { transition: none; overflow: visible; }
+.rp-well.is-torn .rp-clip { transition: none; }
 
 .rp-receipt {
   position: relative;
@@ -337,10 +346,19 @@
 
 /* the mouth's shadow, thrown across the sheet as it clears */
 .rp-slot-shade {
-  position: absolute; left: 0; right: 0; top: 0; height: 22px; z-index: 7;
-  background: linear-gradient(180deg, rgba(4, 3, 8, 0.6), transparent);
+  position: absolute; left: 0; right: 0; top: 0; height: 24px; z-index: 8;
+  background: linear-gradient(180deg, rgba(4, 3, 8, 0.65), transparent);
   pointer-events: none;
 }
+/* the print head's heat, sitting at the mouth where the ink is being laid */
+.rp-head-glow {
+  position: absolute; left: 0; right: 0; top: 0; height: 3px; z-index: 9;
+  background: linear-gradient(90deg, transparent, rgba(146, 78, 233, 0.85), transparent);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.rp-well.is-feeding .rp-head-glow { opacity: 1; animation: rp-head 0.5s ease-in-out infinite; }
+@keyframes rp-head { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
 /* the free end curls away and takes the light differently */
 .rp-curl {
   position: absolute; left: 0; right: 0; bottom: 0; height: 78px; z-index: 3;
@@ -406,11 +424,32 @@
   filter: drop-shadow(0 7px 9px rgba(8, 5, 16, 0.45));
 }
 
-/* torn free: the sheet drops out of the world */
-.rp-well.is-torn .rp-clip { animation: rp-fall 1s cubic-bezier(0.35, 0, 0.75, 1) forwards; }
-@keyframes rp-fall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(75vh) rotate(9deg); opacity: 0; }
+/* Torn free: paper is light and stiff, so it does not drop. It flexes at the
+   cut, tips, and flutters out of frame, swinging as the air catches it. */
+.rp-well.is-torn .rp-clip { overflow: visible; }
+.rp-well.is-torn .rp-sheet {
+  animation: rp-flutter 1.5s cubic-bezier(0.3, 0.1, 0.5, 1) forwards;
+  transform-origin: 50% 0;
+}
+@keyframes rp-flutter {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) skewX(0deg); opacity: 1; }
+  18% { transform: translate3d(-14px, 6vh, 0) rotate(-7deg) skewX(3deg); }
+  40% { transform: translate3d(22px, 22vh, 0) rotate(9deg) skewX(-4deg); }
+  62% { transform: translate3d(-18px, 42vh, 0) rotate(-11deg) skewX(4deg); opacity: 0.85; }
+  84% { transform: translate3d(14px, 64vh, 0) rotate(13deg) skewX(-3deg); opacity: 0.4; }
+  100% { transform: translate3d(-6px, 88vh, 0) rotate(-8deg) skewX(2deg); opacity: 0; }
+}
+/* the cut itself: a bright line snapping across the tear */
+.rp-cutline {
+  position: absolute; left: -4%; right: -4%; bottom: 0; height: 2px; z-index: 10;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  opacity: 0; pointer-events: none;
+}
+.rp-well.is-torn .rp-cutline { animation: rp-snip 0.32s ease-out 1; }
+@keyframes rp-snip {
+  0% { opacity: 0; transform: scaleX(0); }
+  35% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
 }
 
 /* ---------------------------------------------------------------- panel -- */
@@ -446,6 +485,11 @@
   .rp-well.is-done,
   .rp-well.is-feeding .rp-receipt { animation: none; }
   .rp-clip, .rp-well.is-feeding .rp-clip { transition: height 0.3s linear; }
-  .rp-well.is-torn .rp-clip { animation: none; opacity: 0; }
+  .rp-well.is-torn .rp-sheet { animation: none; opacity: 0; }
+  .rp-well.is-feeding .rp-head-glow { animation: none; }
   .rp-btn:hover:not(:disabled) { transform: none; }
 }
+
+/* the sound toggle sits with the actions but reads as a utility */
+.rp-btn--icon { padding: 13px 15px; }
+.rp-btn--icon i { font-size: 1.05rem; }

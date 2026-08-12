@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { playCut, playTear, startTransport, type RunningSound } from '@/lib/printerAudio';
 import '@/styles/receipt-printer.css';
 
 type Phase = 'ready' | 'printing' | 'done' | 'torn';
@@ -78,9 +79,11 @@ const SCRIPT: { at: number; text: string }[] = [
 export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptData }) => {
   const [phase, setPhase] = useState<Phase>('ready');
   const [progress, setProgress] = useState(0);
+  const [muted, setMuted] = useState(false);
   const clipRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
+  const transport = useRef<RunningSound | null>(null);
 
   const reduced = useMemo(
     () =>
@@ -89,7 +92,13 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
     []
   );
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      transport.current?.stop();
+    },
+    []
+  );
 
   const money = useMemo(
     () =>
@@ -125,13 +134,24 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
       clip.style.height = `${height}px`;
     }
 
+    transport.current?.stop();
+    if (!muted && !reduced) transport.current = startTransport();
+
     for (let i = 1; i <= 24; i++) {
       timers.current.push(window.setTimeout(() => setProgress(i / 24), (total / 24) * i));
     }
-    timers.current.push(window.setTimeout(() => setPhase('done'), total + 100));
+    timers.current.push(
+      window.setTimeout(() => {
+        transport.current?.stop();
+        transport.current = null;
+        if (!muted) playCut();
+        setPhase('done');
+      }, total + 100)
+    );
   };
 
   const tear = () => {
+    if (!muted) playTear();
     setPhase('torn');
     timers.current.push(
       window.setTimeout(
@@ -141,7 +161,7 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
           setPhase('ready');
           setProgress(0);
         },
-        reduced ? 100 : 1000
+        reduced ? 100 : 1500
       )
     );
   };
@@ -222,9 +242,11 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
           }${phase === 'torn' ? ' is-torn' : ''}`}
         >
           <div className="rp-clip" ref={clipRef}>
-            <div ref={paperRef}>
+            <span className="rp-slot-shade" aria-hidden="true" />
+            <span className="rp-head-glow" aria-hidden="true" />
+            <span className="rp-cutline" aria-hidden="true" />
+            <div className="rp-sheet" ref={paperRef}>
               <div className="rp-receipt">
-                <span className="rp-slot-shade" aria-hidden="true" />
 
                 <div className="rp-rc-head">
                   <b>
@@ -297,6 +319,19 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
           disabled={phase !== 'done'}
         >
           <i className="bx bx-cut" aria-hidden="true" /> Tear it off
+        </button>
+        <button
+          type="button"
+          className="rp-btn rp-btn--ghost rp-btn--icon"
+          onClick={() => {
+            if (!muted) transport.current?.stop();
+            setMuted((m) => !m);
+          }}
+          aria-pressed={muted}
+          aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
+          title={muted ? 'Sound off' : 'Sound on'}
+        >
+          <i className={`bx ${muted ? 'bx-volume-mute' : 'bx-volume-full'}`} aria-hidden="true" />
         </button>
         <p className="rp-hint">
           {phase === 'ready' && 'The machine is warm. Give it something to say.'}
