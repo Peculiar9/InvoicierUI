@@ -8,6 +8,7 @@ import { useTiltRipple } from '@/hooks/useTiltRipple';
 import { useCmsFaqs, useCmsTestimonials, useSiteSettings } from '@/hooks/useCms';
 import Lenis from 'lenis';
 import '@/styles/landing-v2.css';
+import { WAITLIST_MODE } from '@/lib/waitlistMode';
 
 /* ----------------------------------------------------------------- loader */
 
@@ -1193,7 +1194,7 @@ const useEasedAnchors = () => {
  * list, and every road to login disappears. False: login is back, and the
  * dev shortcuts show only in dev builds.
  */
-const WAITLIST_MODE = import.meta.env.VITE_WAITLIST_MODE === 'true';
+
 
 /**
  * Every call to action on this page, resolved once from the launch switch.
@@ -1353,10 +1354,12 @@ export const Landing = () => {
           </div>
           <div className="lp-shell lp-hero-inner">
             <div>
-              <a href="#waitlist" className="lp-tag" data-reveal data-delay="1">
-                Early access is open · join the waitlist
-                <i className="bx bx-right-arrow-alt" />
-              </a>
+              {WAITLIST_MODE && (
+                <a href="#waitlist" className="lp-tag" data-reveal data-delay="1">
+                  Early access is open · join the waitlist
+                  <i className="bx bx-right-arrow-alt" />
+                </a>
+              )}
               <h1 data-reveal data-delay="2">
                 Your invoices, your tax return. Paid from{' '}
                 <Typewriter

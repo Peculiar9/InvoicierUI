@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Link } from '@tanstack/react-router';
 import { useLogin } from '@/hooks';
 import '@/styles/workspace-v2.css';
+import { WAITLIST_MODE } from '@/lib/waitlistMode';
 
 const loginSchema = z.object({
   email: z.string().email('That email does not look right'),
@@ -117,8 +118,17 @@ export const Login = () => {
           </form>
 
           <p className="ob-auth-foot">
-            Not in yet? <a href="/#waitlist">Join the waitlist</a> and we'll send
-            your invite.
+            {WAITLIST_MODE ? (
+              <>
+                Not in yet? <a href="/#waitlist">Join the waitlist</a> and we'll
+                send your invite.
+              </>
+            ) : (
+              <>
+                No account yet? <a href="/signup">Create one</a> — it takes a
+                minute.
+              </>
+            )}
           </p>
         </div>
       </div>

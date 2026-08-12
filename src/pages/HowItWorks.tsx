@@ -3,6 +3,7 @@ import { MarketingFooter, MarketingNav } from '@/pages/Landing';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
 import '@/styles/landing-v2.css';
+import { WAITLIST_MODE, primaryCtaHref } from '@/lib/waitlistMode';
 
 /** Same reveal behavior as the landing page, armed immediately (no loader). */
 const useReveal = (rootRef: React.RefObject<HTMLElement>) => {
@@ -302,8 +303,9 @@ export const HowItWorks = () => {
         <div className="lp-shell lp-hiw-cta" data-reveal>
           <h2>The best time to fix your records was January.</h2>
           <p>The second best time takes thirty seconds.</p>
-          <a href="/#waitlist" className="lp-btn lp-btn--lg">
-            Join the waitlist <i className="bx bx-right-arrow-alt" />
+          <a href={primaryCtaHref} className="lp-btn lp-btn--lg">
+            {WAITLIST_MODE ? 'Join the waitlist' : 'Send your first invoice'}{' '}
+            <i className="bx bx-right-arrow-alt" />
           </a>
         </div>
       </section>
