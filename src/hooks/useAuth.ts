@@ -44,7 +44,6 @@ export const useLogin = () => {
 
 export const useSignup = () => {
   const { setSession } = useAuthStore();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (credentials: SignupCredentials) => authApi.signup(credentials),
@@ -66,9 +65,8 @@ export const useSignup = () => {
           // private mode: the page falls back to asking for a resend
         }
       }
-      // a new account has a profile but no details in it yet, so onboarding
-      // is always next
-      navigate({ to: '/welcome' });
+      // Onboarding IS the signup now, so the caller is already standing in
+      // the right room. It decides what happens next, not this hook.
     },
   });
 };

@@ -125,8 +125,8 @@ export const Login = () => {
               </>
             ) : (
               <>
-                No account yet? <a href="/signup">Create one</a> — it takes a
-                minute.
+                New here? <a href="/welcome">Start setting up</a> and we will
+                build your workspace as we go.
               </>
             )}
           </p>

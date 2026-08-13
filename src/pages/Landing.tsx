@@ -243,7 +243,7 @@ export const MarketingNav = () => {
           <Link to="/how-it-works">How it works</Link>
           <a href="/#pricing" onClick={() => setOpen(false)}>Pricing</a>
           <Link to="/docs">Docs</Link>
-          <a href={WAITLIST_MODE ? '#waitlist' : '/signup'} onClick={() => setOpen(false)}>{CTA.nav}</a>
+          <a href={WAITLIST_MODE ? '#waitlist' : '/welcome'} onClick={() => setOpen(false)}>{CTA.nav}</a>
           {!WAITLIST_MODE && <Link to="/login">Log in</Link>}
         </div>
       </nav>
@@ -920,7 +920,7 @@ const PriceCardFaces = () => (
         <li><i className="bx bx-check" />Dashboard, insights &amp; exports</li>
         <li><i className="bx bx-check" />SSL security, PDF downloads</li>
       </ul>
-      <a href={WAITLIST_MODE ? '/#waitlist' : '/signup'} className="lp-btn">
+      <a href={WAITLIST_MODE ? '/#waitlist' : '/welcome'} className="lp-btn">
         {CTA.pricing} <i className="bx bx-right-arrow-alt" />
       </a>
       <p className="lp-price-note">{CTA.pricingNote}</p>
@@ -1230,8 +1230,8 @@ const CTA = WAITLIST_MODE
       },
     }
   : {
-      href: '/signup',
-      nav: 'Sign up',
+      href: '/welcome',
+      nav: 'Join us',
       hero: 'Send an invoice today',
       fcta: 'Send your first invoice',
       fctaLine: 'Free while we are in beta. Signing up takes thirty seconds.',
@@ -1240,7 +1240,7 @@ const CTA = WAITLIST_MODE
       pricingNote: 'Free during beta. Early users keep the best price when paid plans arrive.',
       footer: 'Join us today',
       footerLine: 'Free invoicing now, painless filing later. Signing up takes thirty seconds.',
-      footerLink: 'Sign up',
+      footerLink: 'Join us',
       faqMore: 'Still curious? Join us and ask from the inside',
       capture: {
         stamp: 'Newsletter',
@@ -1734,7 +1734,7 @@ export const MarketingFooter = () => (
     <div className="lp-footer-cta" data-reveal>
       <h2>Invoice today. Thank yourself in March.</h2>
       <p>{CTA.footerLine}</p>
-      <a href={WAITLIST_MODE ? '/#waitlist' : '/signup'} className="lp-btn lp-btn--lg">
+      <a href={WAITLIST_MODE ? '/#waitlist' : '/welcome'} className="lp-btn lp-btn--lg">
         {CTA.footer} <i className="bx bx-right-arrow-alt" />
       </a>
     </div>
@@ -1761,7 +1761,7 @@ export const MarketingFooter = () => (
             <li><a href="/#pricing">Pricing</a></li>
             <li><a href="/#features">Features</a></li>
             <li><Link to="/how-it-works">How it works</Link></li>
-            <li><a href={WAITLIST_MODE ? '/#waitlist' : '/signup'}>{CTA.footerLink}</a></li>
+            <li><a href={WAITLIST_MODE ? '/#waitlist' : '/welcome'}>{CTA.footerLink}</a></li>
           </ul>
         </div>
         <div className="lp-footer-col">

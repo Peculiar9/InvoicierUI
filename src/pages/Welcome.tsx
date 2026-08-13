@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSaveBusinessProfile } from '@/hooks';
+import { useSaveBusinessProfile, useSignup } from '@/hooks';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
@@ -39,11 +39,16 @@ export const Welcome = () => {
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);
   const accountEmail = useAuthStore((s) => s.user?.email);
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { mutate: signup, isPending: creating } = useSignup();
+
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [tradingName, setTradingName] = useState('');
   const [email, setEmail] = useState(() => useAuthStore.getState().user?.email ?? '');
   const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [persona, setPersona] = useState<Persona | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [color, setColor] = useState('#924ee9');
@@ -73,12 +78,39 @@ export const Welcome = () => {
   const displayName = tradingName.trim() || name.trim() || 'Your name here';
   const first_name = name.trim().split(' ')[0] || 'friend';
 
-  const goFromEmail = () => {
+  /**
+   * The one step that is not a question: the address plus a password, which
+   * is the moment the account actually comes into being. Everything after it
+   * is saved to a real account rather than held in the browser and hoped for.
+   *
+   * Someone already signed in (they came back to finish) just walks past it.
+   */
+  const goFromCredentials = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setEmailError('We need a working address to send invoices from');
       return;
     }
-    setStep(3);
+    if (isAuthenticated) {
+      setStep(3);
+      return;
+    }
+    if (password.length < 8) {
+      setPasswordError('Eight characters or more, so nobody else gets in');
+      return;
+    }
+    signup(
+      { full_name: name.trim(), email: email.trim(), password },
+      {
+        onSuccess: () => setStep(3),
+        onError: (error: unknown) => {
+          const message =
+            error instanceof Error ? error.message : 'That did not work. Give it another go.';
+          // an address already in use is the common case, so say so where the
+          // address is, not in a banner the eye has already left
+          setEmailError(message);
+        },
+      }
+    );
   };
   const monogram = (displayName.charAt(0) || 'i').toUpperCase();
 
@@ -243,8 +275,9 @@ export const Welcome = () => {
             <span className="ob-kicker">One detail that matters</span>
             <h1>Where should the money talk happen?</h1>
             <p>
-              This is the address your invoices are sent from and the one your
-              clients hit reply to. We will send a link to confirm it.
+              This is the address your invoices go out from and the one your
+              clients hit reply to.
+              {!isAuthenticated && ' A password keeps the rest of this yours.'}
             </p>
             <label className="cinv-field">
               <span>Email</span>
@@ -259,18 +292,50 @@ export const Welcome = () => {
                   setEmailError('');
                 }}
                 placeholder="you@yourbusiness.com"
-                onKeyDown={(e) => e.key === 'Enter' && goFromEmail()}
+                onKeyDown={(e) => e.key === 'Enter' && goFromCredentials()}
               />
               {emailError && <small className="field-error">{emailError}</small>}
             </label>
+
+            {!isAuthenticated && (
+              <label className="cinv-field">
+                <span>Password</span>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  className={passwordError ? 'is-invalid' : ''}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError('');
+                  }}
+                  placeholder="At least eight characters"
+                  onKeyDown={(e) => e.key === 'Enter' && goFromCredentials()}
+                />
+                {passwordError && <small className="field-error">{passwordError}</small>}
+              </label>
+            )}
+
             <div className="ob-nav">
               <button type="button" className="ob-back" onClick={() => setStep(1)}>
                 <i className="bx bx-left-arrow-alt" /> Back
               </button>
-              <button type="button" className="iw-btn" onClick={goFromEmail}>
-                That is the one <i className="bx bx-right-arrow-alt" />
+              <button
+                type="button"
+                className="iw-btn"
+                onClick={goFromCredentials}
+                disabled={creating}
+              >
+                {creating ? 'Setting you up…' : 'That is the one'}{' '}
+                <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
+
+            {!isAuthenticated && (
+              <p className="ob-aside">
+                Been here before? <a href="/login">Sign in instead</a>
+              </p>
+            )}
           </div>
         )}
 

@@ -13,4 +13,4 @@
 export const WAITLIST_MODE = import.meta.env.VITE_WAITLIST_MODE === 'true';
 
 /** Where a "get started" action should point, given the posture. */
-export const primaryCtaHref = WAITLIST_MODE ? '/#waitlist' : '/signup';
+export const primaryCtaHref = WAITLIST_MODE ? '/#waitlist' : '/welcome';

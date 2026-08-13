@@ -7896,3 +7896,19 @@
   border-color: var(--border);
 }
 [data-theme='dark'] .iw .cinv-item--head span { color: var(--ink-faint); }
+
+/* the quiet way out of onboarding for someone who already has an account */
+.ob-aside {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+.ob-aside a {
+  color: var(--brand-600);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.ob-aside a:hover { border-bottom-color: currentColor; }
