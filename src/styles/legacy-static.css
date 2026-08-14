@@ -3269,20 +3269,30 @@
   /* ---- invoice-panel rail: clean bottom action bar within the panel ---- */
   .ws-rail-right.ipanel-rail {
     top: auto;
-    bottom: 0;
-    left: 0;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
     right: auto;
-    transform: none;
-    width: min(680px, 94vw);
+    transform: translateX(-50%);
+    width: auto;
   }
+  /* a slick curved-glass pill of the same tint discs — not an edge-to-edge bar */
   .ws-rail-right.ipanel-rail ul {
     flex-direction: row;
-    justify-content: space-around;
-    width: 100%;
-    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-    background: #fff;
-    border-top: 1px solid var(--ws-border);
-    box-shadow: 0 -6px 22px rgba(29, 27, 46, 0.06);
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid var(--ws-border);
+    border-radius: 999px;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 30px rgba(29, 27, 46, 0.16);
+  }
+  [data-theme='dark'] .ws-rail-right.ipanel-rail ul {
+    background: rgba(30, 27, 46, 0.86);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   }
   .ws-rail-right.ipanel-rail .ws-action::after {
     display: none;
