@@ -406,6 +406,11 @@ export const LegacyWorkspace = ({
             }}
           >
             <i className="bx bx-plus" aria-hidden="true" />
+            <span className="ws-fab-label">
+              {actions.filter((a) => !a.to).length === 1
+                ? actions.filter((a) => !a.to)[0].label
+                : 'New'}
+            </span>
           </button>
         </div>
       )}

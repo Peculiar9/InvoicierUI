@@ -423,6 +423,10 @@ export const Dashboard = () => {
           <section className="dash-card iw-firstrun">
             <span className="iw-firstrun-kicker">Welcome to Invoicier</span>
             <h2>Three steps to your first tax-grade payment.</h2>
+            <p className="iw-firstrun-sub">
+              A client and an invoice, and your books start keeping themselves.
+              We will walk it with you.
+            </p>
             <ol>
               <li className={stats.total_clients > 0 ? 'done' : ''}>
                 <i className={`bx ${stats.total_clients > 0 ? 'bx-check-circle' : 'bx-user-plus'}`} />

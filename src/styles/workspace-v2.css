@@ -7912,3 +7912,140 @@
   transition: border-color 0.2s ease;
 }
 .ob-aside a:hover { border-bottom-color: currentColor; }
+
+/* ============================================================================
+   TUNE-UP: dark-mode surfaces, a labelled mobile "New invoice", and a warmer
+   first-run card that stacks cleanly on a phone. Appended last so these win.
+   ========================================================================== */
+
+/* --- dark mode: the two bright-white surfaces that broke the theme --- */
+[data-theme='dark'] .iw .ws-rail-logo {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+[data-theme='dark'] .iw .iw-bell {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border);
+  color: var(--ink-soft);
+}
+[data-theme='dark'] .iw .iw-bell:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink);
+}
+
+/* --- the mobile "new invoice": a purple pill with a word, not an orange disc.
+   Same brand as the desktop create button, shaped for a thumb. --- */
+.iw .ws-fab {
+  width: auto;
+  min-width: 52px;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 600;
+  gap: 9px;
+  box-shadow: 0 12px 28px rgba(146, 78, 233, 0.42);
+}
+.iw .ws-fab .ws-fab-label {
+  white-space: nowrap;
+}
+/* when the disc folds several actions into a menu, drop the word and round it */
+.iw .ws-fab.is-open {
+  width: 56px;
+  padding: 0;
+}
+.iw .ws-fab.is-open .ws-fab-label {
+  display: none;
+}
+
+/* --- first-run card: a warmer face, and rows that stack on a phone --- */
+.iw .iw-firstrun {
+  position: relative;
+  max-width: 640px;
+  padding: 30px 30px 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, var(--brand-tint), transparent 128px),
+    var(--card);
+}
+.iw .iw-firstrun-sub {
+  margin: 0 0 8px;
+  max-width: 46ch;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.iw .iw-firstrun h2 {
+  margin-bottom: 6px;
+}
+.iw .iw-firstrun ol {
+  counter-reset: fr;
+  margin-top: 10px;
+}
+.iw .iw-firstrun li {
+  position: relative;
+  gap: 16px;
+  padding: 18px 0;
+}
+/* the step number, quietly present */
+.iw .iw-firstrun li > i {
+  position: relative;
+}
+.iw .iw-firstrun li > i::after {
+  counter-increment: fr;
+  content: counter(fr);
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(146, 78, 233, 0.4);
+}
+.iw .iw-firstrun li.done > i::after {
+  content: '\2713';
+  background: var(--paid);
+  box-shadow: 0 2px 6px rgba(12, 141, 111, 0.4);
+}
+
+@media (max-width: 560px) {
+  .iw .iw-firstrun {
+    padding: 24px 20px 8px;
+  }
+  /* a grid, not a guessing flex-wrap: icon top-left, copy top-right, the action
+     full-width on its own row beneath. The copy never squeezes to one word and
+     the button never runs past the card edge. */
+  .iw .iw-firstrun li {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    column-gap: 16px;
+    row-gap: 13px;
+    align-items: start;
+  }
+  .iw .iw-firstrun li > i {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .iw .iw-firstrun li div {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .iw .iw-firstrun li .iw-btn {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+}
