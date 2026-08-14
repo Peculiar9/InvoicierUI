@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { monthGrid, prettyDay } from '@/utils/dateRangePresets';
 import { toLocalDay } from '@/utils/day';
+import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 
 interface DateFieldProps {
   value: string;
@@ -18,6 +19,8 @@ interface DateFieldProps {
  */
 export const DateField = ({ value, onChange, min, invalid, 'aria-label': ariaLabel }: DateFieldProps) => {
   const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  useBodyFlagWhileOpen(open);
   const today = toLocalDay(new Date());
   const seed = value || today;
   const [view, setView] = useState({
@@ -30,8 +33,15 @@ export const DateField = ({ value, onChange, min, invalid, 'aria-label': ariaLab
     const key = value || today;
     setView({ year: Number(key.slice(0, 4)), month: Number(key.slice(5, 7)) - 1 });
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onDown);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -42,7 +52,7 @@ export const DateField = ({ value, onChange, min, invalid, 'aria-label': ariaLab
   });
 
   return (
-    <div className="ffield">
+    <div className="ffield" ref={rootRef}>
       <button
         type="button"
         className={`ffield-trigger${invalid ? ' is-invalid' : ''}${value ? ' has-value' : ''}`}

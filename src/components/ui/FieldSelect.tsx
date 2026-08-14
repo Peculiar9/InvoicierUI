@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 
 export interface FieldOption {
   value: string;
@@ -36,6 +37,9 @@ export const FieldSelect = ({
   const [active, setActive] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // let floating action rails duck while this menu is open
+  useBodyFlagWhileOpen(open);
+
   const rows: FieldOption[] = placeholder !== undefined
     ? [{ value: '', label: placeholder }, ...options]
     : options;
@@ -48,8 +52,15 @@ export const FieldSelect = ({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onDown);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

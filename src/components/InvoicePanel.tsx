@@ -890,7 +890,7 @@ export const InvoicePanel = () => {
                     </div>
                   )}
                   <div className="cinv-fields">
-                    <label className="cinv-field">
+                    <div className="cinv-field">
                       <span>Bill to</span>
                       <FieldSelect
                         value={client_id}
@@ -904,8 +904,8 @@ export const InvoicePanel = () => {
                         }}
                       />
                       {errors.client && <small className="field-error">{errors.client}</small>}
-                    </label>
-                    <label className="cinv-field">
+                    </div>
+                    <div className="cinv-field">
                       <span>Currency</span>
                       <FieldSelect
                         value={currency}
@@ -918,11 +918,11 @@ export const InvoicePanel = () => {
                         ]}
                         onChange={setCurrency}
                       />
-                    </label>
-                    <label className="cinv-field">
+                    </div>
+                    <div className="cinv-field">
                       <span>Due date</span>
                       <DateField value={due_date} onChange={setDueDate} aria-label="Due date" />
-                    </label>
+                    </div>
                   </div>
 
                   {!client_id && (
@@ -956,7 +956,7 @@ export const InvoicePanel = () => {
                     </div>
                   )}
 
-                  <label className="cinv-field cinv-field--mt">
+                  <div className="cinv-field cinv-field--mt">
                     <span>How they pay</span>
                     <FieldSelect
                       value={payment_route}
@@ -980,7 +980,7 @@ export const InvoicePanel = () => {
                           instead. Add one under Settings, Getting paid.
                         </small>
                       )}
-                  </label>
+                  </div>
 
                   {(() => {
                     const forCurrency = (profile.receivingAccounts ?? []).filter(
@@ -993,7 +993,7 @@ export const InvoicePanel = () => {
                         (profile.routeByCurrency?.[currency] ?? 'transfer') !== 'instant');
                     // only worth asking when more than one account could serve
                     return showsTransfer && forCurrency.length > 1 ? (
-                      <label className="cinv-field">
+                      <div className="cinv-field">
                         <span>Which account</span>
                         <FieldSelect
                           value={receiving_account_id}
@@ -1002,7 +1002,7 @@ export const InvoicePanel = () => {
                           options={forCurrency.map((a) => ({ value: a.id, label: a.label }))}
                           onChange={setReceivingAccountId}
                         />
-                      </label>
+                      </div>
                     ) : null;
                   })()}
 
@@ -1294,10 +1294,10 @@ export const InvoicePanel = () => {
             sets the conversion rate that filing season will use.
           </p>
           <div className="iw-paid-grid">
-            <label className="cinv-field">
+            <div className="cinv-field">
               <span>Date received</span>
               <DateField value={payDate} onChange={setPayDate} aria-label="Date received" />
-            </label>
+            </div>
             <label className="cinv-field">
               <span>Amount received ({invoice?.currency})</span>
               <input

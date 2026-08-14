@@ -370,7 +370,7 @@ export const Settings = () => {
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
                 />
               </label>
-              <label className="cinv-field">
+              <div className="cinv-field">
                 <span>Default currency</span>
                 <FieldSelect
                   value={form.currency}
@@ -378,7 +378,7 @@ export const Settings = () => {
                   options={['NGN', 'USD', 'EUR', 'GBP'].map((c) => ({ value: c, label: c }))}
                   onChange={(currency) => setForm({ ...form, currency })}
                 />
-              </label>
+              </div>
             </div>
             <div className="settings-actions">
               <button type="button" className="btn btn-primary" onClick={saveProfile}>
@@ -789,7 +789,7 @@ export const Settings = () => {
       >
         <div className="cinv-fields cinv-fields--stack">
           <div className="iw-paid-grid">
-            <label className="cinv-field">
+            <div className="cinv-field">
               <span>Provider</span>
               <FieldSelect
                 value={acctForm.provider}
@@ -802,8 +802,8 @@ export const Settings = () => {
                   setAcctForm({ ...acctForm, provider: provider as AccountProvider })
                 }
               />
-            </label>
-            <label className="cinv-field">
+            </div>
+            <div className="cinv-field">
               <span>Currency</span>
               <FieldSelect
                 value={acctForm.currency}
@@ -811,7 +811,7 @@ export const Settings = () => {
                 options={['NGN', 'USD', 'EUR', 'GBP'].map((c) => ({ value: c, label: c }))}
                 onChange={(currency) => setAcctForm({ ...acctForm, currency })}
               />
-            </label>
+            </div>
           </div>
 
           <label className="cinv-field">
