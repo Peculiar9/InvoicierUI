@@ -3248,39 +3248,22 @@
   }
 
   /* ---- contextual quick-actions hang as a floating FAB cluster ---- */
+  /* mobile mirrors the desktop floating rail verbatim: the same frosted pill
+     of equal tint discs, moved down above the bottom nav. No enlarged FAB, no
+     reversed order, labels stay hover-only exactly as on desktop. */
   .ws-rail-right:not(.ipanel-rail) {
     top: auto;
-    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
     right: 16px;
     left: auto;
     transform: none;
     width: auto;
   }
   .ws-rail-right:not(.ipanel-rail) ul {
-    flex-direction: column-reverse; /* primary nearest the thumb */
-    align-items: flex-end;
-    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     width: auto;
-  }
-  .ws-rail-right:not(.ipanel-rail) .ws-action {
-    box-shadow: var(--ws-shadow-float);
-  }
-  /* primary action becomes a filled purple FAB */
-  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action {
-    width: 62px;
-    height: 62px;
-    background: var(--purple-color);
-    border-color: transparent;
-    box-shadow: 0 14px 28px rgba(146, 78, 233, 0.42);
-  }
-  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action .bx,
-  .ws-rail-right:not(.ipanel-rail) li:first-child .ws-action i {
-    color: #fff;
-  }
-  /* labels can't rely on hover on touch — show them as pills to the left */
-  .ws-rail-right:not(.ipanel-rail) .ws-action::after {
-    opacity: 1;
-    box-shadow: var(--ws-shadow);
   }
 
   /* ---- invoice-panel rail: clean bottom action bar within the panel ---- */

@@ -7512,13 +7512,6 @@
   .iw .view-toolbar-side .btn.btn-primary {
     display: none !important;
   }
-  .iw .ws-rail-right {
-    top: auto;
-    bottom: calc(86px + env(safe-area-inset-bottom));
-    right: 14px;
-    transform: none;
-    z-index: 60;
-  }
 }
 .iw .ws-fab {
   width: 56px;
