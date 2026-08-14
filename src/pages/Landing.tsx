@@ -1231,7 +1231,7 @@ const CTA = WAITLIST_MODE
     }
   : {
       href: '/welcome',
-      nav: 'Join us',
+      nav: 'Get paid',
       hero: 'Send an invoice today',
       fcta: 'Send your first invoice',
       fctaLine: 'Free while we are in beta. Signing up takes thirty seconds.',
@@ -1240,7 +1240,7 @@ const CTA = WAITLIST_MODE
       pricingNote: 'Free during beta. Early users keep the best price when paid plans arrive.',
       footer: 'Join us today',
       footerLine: 'Free invoicing now, painless filing later. Signing up takes thirty seconds.',
-      footerLink: 'Join us',
+      footerLink: 'Get paid',
       faqMore: 'Still curious? Join us and ask from the inside',
       capture: {
         stamp: 'Newsletter',
