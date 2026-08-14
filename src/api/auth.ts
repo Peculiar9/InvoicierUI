@@ -131,4 +131,14 @@ export const authApi = {
   }): Promise<void> => {
     await apiClient.put('/auth/change-password', input);
   },
+
+  /**
+   * Mints a fresh token pair off the still-valid access token — the "stay
+   * signed in" action when the refresh token is spent. Re-seats a refresh
+   * token server-side, so silent rotation works again afterwards.
+   */
+  extendSession: async (): Promise<AuthSession> => {
+    const response = await apiClient.post<ApiResponse<AuthSession>>('/auth/session/extend');
+    return response.data.data;
+  },
 };

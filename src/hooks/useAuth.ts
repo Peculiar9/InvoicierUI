@@ -183,6 +183,21 @@ export const useResetPassword = () => {
 };
 
 /**
+ * "Stay signed in" — re-establish the session from the still-valid access
+ * token when the refresh token is spent. Seats the fresh tokens and user.
+ */
+export const useExtendSession = () => {
+  const setSession = useAuthStore((s) => s.setSession);
+
+  return useMutation({
+    mutationFn: () => authApi.extendSession(),
+    onSuccess: (data) => {
+      setSession(data.user, data.accessToken, data.refreshToken);
+    },
+  });
+};
+
+/**
  * Set or change the signed-in user's password. On success we flip the local
  * `has_password` so Settings switches from "set" to "change" without a refetch,
  * and the sign-in screen will offer the password option next time.

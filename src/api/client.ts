@@ -58,6 +58,28 @@ const signOutHard = () => {
   }
 };
 
+/**
+ * Rotate the tokens ahead of a 401, sharing the same in-flight guard as the
+ * reactive path. Returns true on success. Used by the session watcher to renew
+ * silently before expiry; a false result means the refresh token is spent (e.g.
+ * a password change cleared it), which is the cue to ask the user to stay.
+ */
+export const tryProactiveRefresh = async (): Promise<boolean> => {
+  if (!useAuthStore.getState().refreshToken) return false;
+  try {
+    refreshing ??= refreshSession().finally(() => {
+      refreshing = null;
+    });
+    await refreshing;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/** Sign out and bounce to /login with the "your session expired" note. */
+export const forceSignOut = () => signOutHard();
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
