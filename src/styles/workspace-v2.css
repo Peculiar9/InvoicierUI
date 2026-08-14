@@ -460,11 +460,8 @@
   border-color: rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
 }
-@media (max-width: 1100px) {
-  .iw .ws-rail-right {
-    display: none;
-  }
-}
+/* the floating action rail stays visible on smaller screens too; the mobile
+   position (bottom-right, above the nav) is set in the max-width:900px block */
 
 /* (desktop gutter for the floating rail lives at the end of this file) */
 
@@ -2361,15 +2358,7 @@
   text-decoration: line-through;
   color: var(--ink-soft);
 }
-@media (max-width: 560px) {
-  .iw .iw-firstrun li {
-    flex-wrap: wrap;
-  }
-  .iw .iw-firstrun li .iw-btn,
-  .iw .iw-firstrun li button {
-    margin-left: 56px;
-  }
-}
+
 
 /* ============================================================================
    SWIPE SCROLL — hidden scrollbars, edge fades, smooth arrows
@@ -7514,18 +7503,21 @@
   display: none;
 }
 @media (max-width: 900px) {
+  /* the same small floating action discs the desktop shows, kept on mobile and
+     moved down above the bottom nav. The orange disc is retired. */
   .iw .ws-fab-wrap {
-    display: block;
-    position: fixed;
-    right: 16px;
-    bottom: calc(92px + env(safe-area-inset-bottom));
-    z-index: 60;
+    display: none;
   }
-  /* the static creators bow out on mobile — the FAB is the way */
   .iw .ws-create-btn,
-  .iw .view-toolbar-side .btn.btn-primary,
-  .iw .ws-rail-right {
+  .iw .view-toolbar-side .btn.btn-primary {
     display: none !important;
+  }
+  .iw .ws-rail-right {
+    top: auto;
+    bottom: calc(86px + env(safe-area-inset-bottom));
+    right: 14px;
+    transform: none;
+    z-index: 60;
   }
 }
 .iw .ws-fab {
@@ -7933,34 +7925,11 @@
   background: rgba(255, 255, 255, 0.1);
   color: var(--ink);
 }
+[data-theme='dark'] .iw .ws-rail-right {
+  background: rgba(30, 27, 44, 0.86);
+  border-color: var(--border);
+}
 
-/* --- the mobile "new invoice": a purple pill with a word, not an orange disc.
-   Same brand as the desktop create button, shaped for a thumb. --- */
-.iw .ws-fab {
-  width: auto;
-  min-width: 52px;
-  height: 52px;
-  padding: 0 22px;
-  border-radius: 999px;
-  background: var(--brand);
-  color: #fff;
-  font-family: var(--font);
-  font-size: 0.92rem;
-  font-weight: 600;
-  gap: 9px;
-  box-shadow: 0 12px 28px rgba(146, 78, 233, 0.42);
-}
-.iw .ws-fab .ws-fab-label {
-  white-space: nowrap;
-}
-/* when the disc folds several actions into a menu, drop the word and round it */
-.iw .ws-fab.is-open {
-  width: 56px;
-  padding: 0;
-}
-.iw .ws-fab.is-open .ws-fab-label {
-  display: none;
-}
 
 /* --- first-run card: a warmer face, and rows that stack on a phone --- */
 .iw .iw-firstrun {
@@ -8047,5 +8016,7 @@
     grid-column: 1 / -1;
     grid-row: 2;
     width: 100%;
+    box-sizing: border-box;
+    justify-self: stretch;
   }
 }
