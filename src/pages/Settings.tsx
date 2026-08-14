@@ -4,6 +4,7 @@ import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
 import { FieldSelect } from '@/components/ui/FieldSelect';
 import { TemplatePicker } from '@/components/TemplatePicker';
+import { PasswordCard } from '@/components/settings/PasswordCard';
 import { useInvoices } from '@/hooks';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { usePayoutStore } from '@/stores/payoutStore';
@@ -410,6 +411,8 @@ export const Settings = () => {
             />
           </div>
         )}
+
+        {tab === 'profile' && <PasswordCard />}
 
         {tab === 'paid' && (
           <>
