@@ -3743,6 +3743,166 @@
   color: var(--accent);
 }
 
+/* ---- Email-first sign-in: method choice, code entry, the little extras ---- */
+
+/* A gentler banner for "we signed you out" — information, not an error. */
+.ob-auth-banner--info {
+  background: var(--brand-tint);
+  border-color: rgba(146, 78, 233, 0.25);
+  color: var(--brand-deep);
+}
+
+/* The "no account for that email" nudge, shown under the field itself. */
+.ob-auth-notfound {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.ob-auth-notfound a {
+  color: var(--brand-600);
+  font-weight: 600;
+}
+.ob-auth-notfound a:hover {
+  color: var(--accent);
+}
+
+/* The email chip: who we're signing in, with a way to correct it. */
+.ob-auth-who {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-size: 0.82rem;
+}
+.ob-auth-who-mail {
+  color: var(--ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ob-auth-change {
+  flex-shrink: 0;
+  font-family: var(--font);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  transition: color 0.3s var(--swift);
+}
+.ob-auth-change:hover {
+  color: var(--accent);
+}
+
+/* The two paths in. The first child is the last-used, so it reads primary. */
+.ob-auth-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 22px;
+}
+.ob-auth-choice {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 15px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: left;
+  color: var(--ink);
+  transition: border-color 0.25s var(--swift), transform 0.25s var(--ease-out),
+    box-shadow 0.25s ease;
+}
+.ob-auth-choice:not(:disabled):hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.ob-auth-choice:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+/* The last-used method leads: filled icon, so the eye lands there first. */
+.ob-auth-choices > .ob-auth-choice:first-child:not(:disabled) {
+  border-color: rgba(146, 78, 233, 0.35);
+}
+.ob-auth-choices > .ob-auth-choice:first-child:not(:disabled) .ob-auth-choice-icon {
+  background: var(--brand);
+  color: #fff;
+}
+.ob-auth-choice-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1.15rem;
+}
+.ob-auth-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ob-auth-choice-body b {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.ob-auth-choice-body small {
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+}
+.ob-auth-choice-go {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--ink-faint);
+  font-size: 1.2rem;
+}
+
+/* The single code field: big, centered, monospaced digits. */
+.ob-otp-input {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+}
+
+/* Quiet secondary actions under a step — resend, switch method. */
+.ob-auth-alt {
+  align-self: center;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  transition: color 0.3s var(--swift);
+}
+.ob-auth-alt:hover:not(:disabled) {
+  color: var(--accent);
+}
+.ob-auth-alt:disabled {
+  color: var(--ink-faint);
+  cursor: default;
+}
+.ob-auth-otp-aux {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 2px;
+}
+
 /* ============================================================================
    THE PAYMENT PAGE — what your client sees. They have no account and no
    patience, so: legible invoice, obvious button, honest receipt.
