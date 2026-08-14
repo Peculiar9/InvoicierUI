@@ -8058,6 +8058,62 @@
 }
 .ob-aside a:hover { border-bottom-color: currentColor; }
 
+/* the "before you continue" pre-note on the very first step */
+.ob-aside--pre {
+  margin: -4px 0 18px;
+  text-align: left;
+}
+
+/* the small note under the email input: set a password now, or just continue */
+.ob-passhint {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: -6px 2px 4px;
+  font-size: 0.82rem;
+}
+.ob-passhint-or { color: var(--ink-faint); }
+.ob-passtoggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--brand-600);
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+.ob-passtoggle:hover { border-bottom-color: currentColor; }
+
+/* the revealed password block */
+.ob-passblock {
+  margin-top: 4px;
+  animation: ob-passblock-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ob-passblock-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ob-passblock-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.ob-passblock-head > span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.ob-passblock-head .ob-passtoggle { font-size: 0.8rem; text-transform: none; letter-spacing: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .ob-passblock { animation: none; }
+}
+
 /* ============================================================================
    TUNE-UP: dark-mode surfaces, a labelled mobile "New invoice", and a warmer
    first-run card that stacks cleanly on a phone. Appended last so these win.

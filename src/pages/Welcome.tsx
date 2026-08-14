@@ -3,6 +3,7 @@ import { useSaveBusinessProfile, useSignup } from '@/hooks';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { TemplatePicker } from '@/components/TemplatePicker';
+import { NewPasswordField } from '@/components/ui/NewPasswordField';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceTemplate, Persona } from '@/stores/settingsStore';
@@ -49,6 +50,7 @@ export const Welcome = () => {
   const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [wantsPassword, setWantsPassword] = useState(false);
   const [persona, setPersona] = useState<Persona | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [color, setColor] = useState('#924ee9');
@@ -94,12 +96,18 @@ export const Welcome = () => {
       setStep(3);
       return;
     }
-    if (password.length < 8) {
+    // Password is optional now: they can start email-only and set one later.
+    // Only when they've chosen to set one here do we hold them to a length.
+    if (wantsPassword && password.length < 8) {
       setPasswordError('Eight characters or more, so nobody else gets in');
       return;
     }
     signup(
-      { full_name: name.trim(), email: email.trim(), password },
+      {
+        full_name: name.trim(),
+        email: email.trim(),
+        password: wantsPassword && password ? password : undefined,
+      },
       {
         onSuccess: () => setStep(3),
         onError: (error: unknown) => {
@@ -214,6 +222,12 @@ export const Welcome = () => {
             <span className="ob-kicker">First things first</span>
             <h1>What should the money call you?</h1>
             <p>The name that chases invoices and collects the thanks.</p>
+            {!isAuthenticated && (
+              <p className="ob-aside ob-aside--pre">
+                Before you continue — been here before?{' '}
+                <a href="/login">Sign in instead</a>.
+              </p>
+            )}
             <label className="cinv-field">
               <span>Your name</span>
               <input
@@ -277,7 +291,6 @@ export const Welcome = () => {
             <p>
               This is the address your invoices go out from and the one your
               clients hit reply to.
-              {!isAuthenticated && ' A password keeps the rest of this yours.'}
             </p>
             <label className="cinv-field">
               <span>Email</span>
@@ -297,23 +310,46 @@ export const Welcome = () => {
               {emailError && <small className="field-error">{emailError}</small>}
             </label>
 
-            {!isAuthenticated && (
-              <label className="cinv-field">
-                <span>Password</span>
-                <input
-                  type="password"
-                  autoComplete="new-password"
+            {!isAuthenticated && !wantsPassword && (
+              <div className="ob-passhint">
+                <button
+                  type="button"
+                  className="ob-passtoggle"
+                  onClick={() => setWantsPassword(true)}
+                >
+                  Set a password now
+                </button>
+                <span className="ob-passhint-or">— or just continue</span>
+              </div>
+            )}
+
+            {!isAuthenticated && wantsPassword && (
+              <div className="ob-passblock">
+                <div className="ob-passblock-head">
+                  <span>Your password</span>
+                  <button
+                    type="button"
+                    className="ob-passtoggle"
+                    onClick={() => {
+                      setWantsPassword(false);
+                      setPassword('');
+                      setPasswordError('');
+                    }}
+                  >
+                    I'll just use email
+                  </button>
+                </div>
+                <NewPasswordField
                   value={password}
-                  className={passwordError ? 'is-invalid' : ''}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
+                  onChange={(v) => {
+                    setPassword(v);
                     setPasswordError('');
                   }}
-                  placeholder="At least eight characters"
-                  onKeyDown={(e) => e.key === 'Enter' && goFromCredentials()}
+                  error={passwordError}
+                  onEnter={goFromCredentials}
+                  autoFocus
                 />
-                {passwordError && <small className="field-error">{passwordError}</small>}
-              </label>
+              </div>
             )}
 
             <div className="ob-nav">
@@ -326,16 +362,14 @@ export const Welcome = () => {
                 onClick={goFromCredentials}
                 disabled={creating}
               >
-                {creating ? 'Setting you up…' : 'That is the one'}{' '}
+                {creating
+                  ? 'Setting you up…'
+                  : wantsPassword
+                    ? 'Create my account'
+                    : 'Continue'}{' '}
                 <i className="bx bx-right-arrow-alt" />
               </button>
             </div>
-
-            {!isAuthenticated && (
-              <p className="ob-aside">
-                Been here before? <a href="/login">Sign in instead</a>
-              </p>
-            )}
           </div>
         )}
 

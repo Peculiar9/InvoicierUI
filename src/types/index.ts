@@ -221,7 +221,8 @@ export interface LoginCredentials {
 export interface SignupCredentials {
   full_name: string;
   email: string;
-  password: string;
+  /** optional: an account can start email-only and set a password later */
+  password?: string;
 }
 
 export interface ApiResponse<T> {
