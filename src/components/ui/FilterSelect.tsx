@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 
 export interface FilterOption {
   value: string;
@@ -47,6 +48,9 @@ export const FilterSelect = ({
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+
+  // let floating action rails duck while this menu is open
+  useBodyFlagWhileOpen(open);
 
   const chosen = options.find((option) => option.value === value) ?? null;
 

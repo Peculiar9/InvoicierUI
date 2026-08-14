@@ -3258,6 +3258,7 @@
     left: auto;
     transform: none;
     width: auto;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
   }
   .ws-rail-right:not(.ipanel-rail) ul {
     flex-direction: column;
@@ -3274,6 +3275,22 @@
     right: auto;
     transform: translateX(-50%);
     width: auto;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+  }
+
+  /* When a dropdown opens (its menu becomes a bottom sheet on mobile), the
+     floating rails slide out of the way so they never sit on top of it, and
+     glide back the moment it closes. Driven by body.select-open, which every
+     FieldSelect / FilterSelect sets while its menu is open. */
+  body.select-open .ws-rail-right.ipanel-rail {
+    opacity: 0;
+    transform: translateX(-50%) translateY(180%);
+    pointer-events: none;
+  }
+  body.select-open .ws-rail-right:not(.ipanel-rail) {
+    opacity: 0;
+    transform: translateY(180%);
+    pointer-events: none;
   }
   /* a slick curved-glass pill of the same tint discs — not an edge-to-edge bar */
   .ws-rail-right.ipanel-rail ul {
