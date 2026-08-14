@@ -6272,8 +6272,10 @@
     border-radius: 11px;
   }
   .iw .fs-menu {
-    max-height: 70vh;
-    padding: 0 8px 8px;
+    max-height: 82vh;
+    /* the last option needs to clear the phone's bottom edge / home indicator,
+       not sit flush against it — the earlier `8px` shorthand ate that clearance */
+    padding: 0 8px calc(24px + env(safe-area-inset-bottom, 0px));
   }
   .iw .fs-option {
     padding: 14px 12px;
