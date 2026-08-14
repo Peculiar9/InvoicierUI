@@ -181,3 +181,23 @@ export const useResetPassword = () => {
     },
   });
 };
+
+/**
+ * Set or change the signed-in user's password. On success we flip the local
+ * `has_password` so Settings switches from "set" to "change" without a refetch,
+ * and the sign-in screen will offer the password option next time.
+ */
+export const useChangePassword = () => {
+  const updateUser = useAuthStore((s) => s.updateUser);
+
+  return useMutation({
+    mutationFn: (input: {
+      currentPassword?: string;
+      newPassword: string;
+      confirmPassword: string;
+    }) => authApi.changePassword(input),
+    onSuccess: () => {
+      updateUser({ has_password: true });
+    },
+  });
+};

@@ -118,4 +118,17 @@ export const authApi = {
   resetPassword: async (token: string, password: string): Promise<void> => {
     await apiClient.post('/auth/reset-password', { token, password });
   },
+
+  /**
+   * Sets or changes the signed-in user's password. `currentPassword` is
+   * omitted for an email-only account setting one for the first time; the
+   * backend only asks for it when a password already exists.
+   */
+  changePassword: async (input: {
+    currentPassword?: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Promise<void> => {
+    await apiClient.put('/auth/change-password', input);
+  },
 };

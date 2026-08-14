@@ -4,6 +4,8 @@ export interface User {
   username: string;
   /** cleared by the verification link; gates sending, nothing else */
   email_verified?: boolean;
+  /** whether a password is set — false for email-only accounts, until Settings */
+  has_password?: boolean;
   first_name?: string;
   last_name?: string;
   avatar?: string;
