@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,6 +7,7 @@ import { Link } from '@tanstack/react-router';
 import { useLogin } from '@/hooks';
 import '@/styles/workspace-v2.css';
 import { WAITLIST_MODE } from '@/lib/waitlistMode';
+import { SignInLoader } from '@/components/SignInLoader';
 
 const loginSchema = z.object({
   email: z.string().email('That email does not look right'),
@@ -38,12 +40,23 @@ export const Login = () => {
     }
   }, []);
 
+  const navigate = useNavigate();
   const { mutate: login, isPending, error } = useLogin();
+  const [landing, setLanding] = useState<{ target: string; name?: string } | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+
+  if (landing) {
+    return (
+      <SignInLoader
+        name={landing.name}
+        onDone={() => navigate({ to: landing.target as '/dashboard' })}
+      />
+    );
+  }
 
   return (
     <div className="ob iw ob--auth">
@@ -57,7 +70,15 @@ export const Login = () => {
           <h1>Let's get you to your money.</h1>
           <p>Two fields and you're in. Your ledger kept everything warm.</p>
 
-          <form className="ob-auth-form" onSubmit={handleSubmit((data) => login(data))}>
+          <form
+          className="ob-auth-form"
+          onSubmit={handleSubmit((data) =>
+            login(data, {
+              onSuccess: ({ target, user }) =>
+                setLanding({ target, name: user?.first_name || user?.username }),
+            })
+          )}
+        >
             {expired && !error && (
               <p className="ob-auth-banner ob-auth-banner--info">
                 Your session expired, so we signed you out. Nothing was lost.

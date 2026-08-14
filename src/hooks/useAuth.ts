@@ -11,21 +11,20 @@ export const PENDING_VERIFICATION_KEY = 'invoicier-pending-verification';
 
 export const useLogin = () => {
   const { setSession } = useAuthStore();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) => authApi.login(credentials),
-    meta: { doing: 'Signing you in' },
-    onSuccess: async (data) => {
+    // The whole post-login errand lives here, so the sign-in loader can play
+    // over the real work rather than a made-up delay: authenticate, seat the
+    // session, then fetch the profile that decides where they land.
+    mutationFn: async (credentials: LoginCredentials) => {
+      const data = await authApi.login(credentials);
       setSession(data.user, data.accessToken, data.refreshToken);
       queryClient.invalidateQueries({ queryKey: ['user'] });
 
-      // Where they land is a fact about their account, not about this
-      // browser. It used to be read from localStorage, so signing in on a new
-      // device sent a long-standing customer back through onboarding.
-      // fetchQuery seeds the cache too, so the page that follows does not
-      // ask again.
+      // Where they land is a fact about their account, not this browser, so we
+      // read it from the server. fetchQuery seeds the cache too, so the page
+      // that follows does not ask again.
       let onboarded = false;
       try {
         const profile = await queryClient.fetchQuery({
@@ -34,11 +33,12 @@ export const useLogin = () => {
         });
         onboarded = hasOnboarded(profile);
       } catch {
-        // no profile, or we could not reach it: onboarding is the safe
-        // landing, and it is idempotent
+        // no profile, or we could not reach it: onboarding is the safe,
+        // idempotent landing
       }
-      navigate({ to: onboarded ? '/dashboard' : '/welcome' });
+      return { user: data.user, target: onboarded ? '/dashboard' : '/welcome' } as const;
     },
+    meta: { doing: 'Signing you in' },
   });
 };
 
