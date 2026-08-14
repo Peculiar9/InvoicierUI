@@ -367,7 +367,7 @@ export const Dashboard = () => {
     datasets: [
       {
         label: 'Revenue',
-        data: revenue_chart.datasets[0].data,
+        data: revenue_chart.datasets[0]?.data ?? [],
         borderColor: '#924ee9',
         backgroundColor: 'rgba(146, 78, 233, 0.12)',
         fill: true,
@@ -405,7 +405,7 @@ export const Dashboard = () => {
 
   // paid, viewed, sent, pending, overdue, draft
   const statusColors = ['#0c8d6f', '#ff5a5f', '#357fff', '#e0a008', '#ef5d54', '#9b99ab'];
-  const statusValues = invoice_status_chart.datasets[0].data;
+  const statusValues = invoice_status_chart.datasets[0]?.data ?? [];
   const statusTotal = statusValues.reduce((a, b) => a + b, 0) || 1;
 
   return (
