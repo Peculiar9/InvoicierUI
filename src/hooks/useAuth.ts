@@ -4,10 +4,45 @@ import { authApi } from '@/api/auth';
 import { businessProfileApi } from '@/api/businessProfile';
 import { businessProfileKey, hasOnboarded } from '@/hooks/useBusinessProfile';
 import { useAuthStore } from '@/stores/authStore';
-import type { LoginCredentials, SignupCredentials } from '@/types';
+import type { AuthSession } from '@/api/auth';
+import type { LoginCredentials, SignupCredentials, User } from '@/types';
+import type { QueryClient } from '@tanstack/react-query';
+
+type SetSession = (user: User, token: string, refreshToken: string) => void;
 
 /** Where the verify-email page finds its handle after signup. */
 export const PENDING_VERIFICATION_KEY = 'invoicier-pending-verification';
+
+/**
+ * The shared tail of every sign-in, whichever lock they opened: seat the
+ * session, then read from the server where this account lands. Both the
+ * password and the OTP path run this identical errand so the sign-in loader
+ * plays over real work, not a made-up delay.
+ */
+const seatSessionAndResolveLanding = async (
+  data: AuthSession,
+  setSession: SetSession,
+  queryClient: QueryClient
+) => {
+  setSession(data.user, data.accessToken, data.refreshToken);
+  queryClient.invalidateQueries({ queryKey: ['user'] });
+
+  // Where they land is a fact about their account, not this browser, so we
+  // read it from the server. fetchQuery seeds the cache too, so the page
+  // that follows does not ask again.
+  let onboarded = false;
+  try {
+    const profile = await queryClient.fetchQuery({
+      queryKey: businessProfileKey,
+      queryFn: businessProfileApi.get,
+    });
+    onboarded = hasOnboarded(profile);
+  } catch {
+    // no profile, or we could not reach it: onboarding is the safe,
+    // idempotent landing
+  }
+  return { user: data.user, target: onboarded ? '/dashboard' : '/welcome' } as const;
+};
 
 export const useLogin = () => {
   const { setSession } = useAuthStore();
@@ -19,24 +54,38 @@ export const useLogin = () => {
     // session, then fetch the profile that decides where they land.
     mutationFn: async (credentials: LoginCredentials) => {
       const data = await authApi.login(credentials);
-      setSession(data.user, data.accessToken, data.refreshToken);
-      queryClient.invalidateQueries({ queryKey: ['user'] });
+      return seatSessionAndResolveLanding(data, setSession, queryClient);
+    },
+    meta: { doing: 'Signing you in' },
+  });
+};
 
-      // Where they land is a fact about their account, not this browser, so we
-      // read it from the server. fetchQuery seeds the cache too, so the page
-      // that follows does not ask again.
-      let onboarded = false;
-      try {
-        const profile = await queryClient.fetchQuery({
-          queryKey: businessProfileKey,
-          queryFn: businessProfileApi.get,
-        });
-        onboarded = hasOnboarded(profile);
-      } catch {
-        // no profile, or we could not reach it: onboarding is the safe,
-        // idempotent landing
-      }
-      return { user: data.user, target: onboarded ? '/dashboard' : '/welcome' } as const;
+/** Asks the backend which sign-in methods an email holds. Pure lookup. */
+export const useLoginMethods = () => {
+  return useMutation({
+    mutationFn: (email: string) => authApi.loginMethods(email),
+  });
+};
+
+/** Requests a one-time code; hands back the reference verify will need. */
+export const useRequestLoginOtp = () => {
+  return useMutation({
+    mutationFn: (email: string) => authApi.requestLoginOtp(email),
+  });
+};
+
+/**
+ * The code-based twin of useLogin: same post-auth errand, different lock.
+ * Trades an emailed code for a session, then lands them by account state.
+ */
+export const useVerifyLoginOtp = () => {
+  const { setSession } = useAuthStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { email: string; code: string; reference: string }) => {
+      const data = await authApi.verifyLoginOtp(input);
+      return seatSessionAndResolveLanding(data, setSession, queryClient);
     },
     meta: { doing: 'Signing you in' },
   });

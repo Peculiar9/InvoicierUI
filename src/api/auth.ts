@@ -19,6 +19,39 @@ export const authApi = {
     return response.data.data;
   },
 
+  /** Asks the door which keys this email holds, before we show either lock. */
+  loginMethods: async (
+    email: string
+  ): Promise<{ exists: boolean; has_password: boolean }> => {
+    const response = await apiClient.post<
+      ApiResponse<{ exists: boolean; has_password: boolean }>
+    >('/auth/login-methods', { email });
+    return response.data.data;
+  },
+
+  /** Mints a one-time code and returns the handle its verify call needs. */
+  requestLoginOtp: async (
+    email: string
+  ): Promise<{ reference: string; expiry: number; email: string }> => {
+    const response = await apiClient.post<
+      ApiResponse<{ reference: string; expiry: number; email: string }>
+    >('/auth/login/otp/request', { email });
+    return response.data.data;
+  },
+
+  /** Trades a code for a session — same shape a password login hands back. */
+  verifyLoginOtp: async (input: {
+    email: string;
+    code: string;
+    reference: string;
+  }): Promise<AuthSession> => {
+    const response = await apiClient.post<ApiResponse<AuthSession>>(
+      '/auth/login/otp/verify',
+      input
+    );
+    return response.data.data;
+  },
+
   signup: async (credentials: SignupCredentials): Promise<AuthSession> => {
     const response = await apiClient.post<ApiResponse<AuthSession>>(
       '/auth/register',
