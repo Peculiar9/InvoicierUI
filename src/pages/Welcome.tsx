@@ -196,15 +196,26 @@ export const Welcome = () => {
         </div>
       )}
       {prepping && (
-        <div className="ob-prep" role="status">
-          <div className="ob-prep-tile">
-            {logo ? <img src={logo} alt="" /> : <b>{monogram}</b>}
-            <span className="ob-prep-ring" aria-hidden="true" />
+        <div className="prep" role="status" aria-live="polite">
+          <div className="prep-core" aria-hidden="true">
+            <span className="prep-word">
+              {'invoicier'.split('').map((c, i) => (
+                <span key={i} className="prep-ltr" style={{ '--i': i } as CSSProperties}>
+                  {c}
+                </span>
+              ))}
+            </span>
+            <span className="prep-dotwrap">
+              <span className="prep-ring" />
+              <span className="prep-ring" />
+              <span className="prep-ring" />
+              <span className="prep-dot" />
+            </span>
           </div>
-          <p className="ob-prep-msg" key={prepIdx}>
+          <p className="prep-msg" key={prepIdx}>
             {PREP_MSGS[prepIdx]}
           </p>
-          <span className="ob-prep-bar" aria-hidden="true">
+          <span className="prep-bar" aria-hidden="true">
             <span />
           </span>
         </div>
