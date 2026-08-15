@@ -19,7 +19,10 @@ import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { todayLocal } from '@/utils/day';
 import { useListStateStore } from '@/stores/listStateStore';
 import { formatCurrency, formatDate } from '@/utils/format';
-import type { Invoice, InvoiceStatus } from '@/types';
+import type { Client, Invoice, InvoiceStatus } from '@/types';
+
+/** the recipient's name, from the saved client or the ad-hoc bill_to field */
+const recipientName = (inv: Invoice): string => inv.client?.name ?? inv.bill_to_name ?? '';
 
 const tabs: { key: InvoiceStatus | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -66,7 +69,7 @@ type SortKey =
 const DESC_FIRST: SortKey[] = ['issue_date', 'due_date', 'date_received', 'total'];
 
 const sortValue = (inv: Invoice, key: SortKey): string | number => {
-  if (key === 'client') return inv.client.name.toLowerCase();
+  if (key === 'client') return recipientName(inv).toLowerCase();
   if (key === 'total') return inv.total;
   return (inv[key] as string | undefined) ?? '';
 };
@@ -115,19 +118,21 @@ export const Invoices = () => {
   // which would collide with the "All clients" option
   const clientOptions = [
     ...new Map(
-      invoices.filter((i) => i.client.id).map((i) => [i.client.id, i.client])
+      invoices.flatMap((i) =>
+        i.client?.id ? [[i.client.id, i.client] as [string, Client]] : []
+      )
     ).values(),
   ];
   const currencyOptions = [...new Set(invoices.map((i) => i.currency))];
 
   // Everything except the status filter, which the tab counts are drawn from.
   const withoutStatusFilter = invoices.filter((inv) => {
-    const matchesClient = !clientFilter || inv.client.id === clientFilter;
+    const matchesClient = !clientFilter || inv.client?.id === clientFilter;
     const matchesCurrency = !currencyFilter || inv.currency === currencyFilter;
     const matchesDates = inDateRange(inv[dateField], range);
     const q = query.toLowerCase();
     const matchesQuery =
-      inv.client.name.toLowerCase().includes(q) ||
+      recipientName(inv).toLowerCase().includes(q) ||
       inv.invoice_number.toLowerCase().includes(q);
     return matchesClient && matchesCurrency && matchesDates && matchesQuery;
   });
@@ -464,7 +469,7 @@ export const Invoices = () => {
                         />
                       </td>
                       <td className="dash-mono">#{inv.invoice_number}</td>
-                      <td>{inv.client.name}</td>
+                      <td>{recipientName(inv) || '—'}</td>
                       <td className="dash-muted">
                         {inv.issue_date
                           ? formatDate(inv.issue_date, { month: 'short', day: 'numeric' })
@@ -513,8 +518,8 @@ export const Invoices = () => {
                                     onSuccess: () =>
                                       toast.success(
                                         inv.status === 'draft'
-                                          ? `#${inv.invoice_number} sent to ${inv.client.name}`
-                                          : `Reminder sent to ${inv.client.name}`
+                                          ? `#${inv.invoice_number} sent to ${recipientName(inv)}`
+                                          : `Reminder sent to ${recipientName(inv)}`
                                       ),
                                   }
                                 )

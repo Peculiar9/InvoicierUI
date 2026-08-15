@@ -197,21 +197,21 @@ export const Dashboard = () => {
       .map((inv) => ({
         inv,
         kind: 'claimed' as const,
-        text: `${inv.client.name} says they sent ${formatCurrency(inv.total, inv.currency)}`,
+        text: `${(inv.client?.name ?? inv.bill_to_name ?? 'a client')} says they sent ${formatCurrency(inv.total, inv.currency)}`,
       })),
     ...allInvoices
       .filter((inv) => inv.status === 'overdue')
       .map((inv) => ({
         inv,
         kind: 'overdue' as const,
-        text: `${formatCurrency(inv.total, inv.currency)} from ${inv.client.name} is past due`,
+        text: `${formatCurrency(inv.total, inv.currency)} from ${(inv.client?.name ?? inv.bill_to_name ?? 'a client')} is past due`,
       })),
     ...allInvoices
       .filter((inv) => isPaid(inv.status) && !inv.date_received)
       .map((inv) => ({
         inv,
         kind: 'no-date' as const,
-        text: `${inv.client.name} paid, but the date received is not recorded`,
+        text: `${(inv.client?.name ?? inv.bill_to_name ?? 'a client')} paid, but the date received is not recorded`,
       })),
     ...allInvoices
       .filter(
@@ -221,7 +221,7 @@ export const Dashboard = () => {
       .map((inv) => ({
         inv,
         kind: 'stale' as const,
-        text: `Draft for ${inv.client.name} has been sitting for over a week`,
+        text: `Draft for ${(inv.client?.name ?? inv.bill_to_name ?? 'a client')} has been sitting for over a week`,
       })),
   ].slice(0, 6);
 
@@ -653,7 +653,7 @@ export const Dashboard = () => {
                       onClick={() => openView(inv.id)}
                     >
                       <td className="dash-mono">#{inv.invoice_number}</td>
-                      <td>{inv.client.name}</td>
+                      <td>{(inv.client?.name ?? inv.bill_to_name ?? 'a client')}</td>
                       <td className="dash-muted">
                         {formatDate(inv.issue_date, { month: 'short', day: 'numeric' })}
                       </td>

@@ -1,7 +1,9 @@
 import apiClient from './client';
+import { toMajor, toMinor } from '@/utils/money';
 import type {
   PaymentWindow,
   Invoice,
+  InvoiceItem,
   CreateInvoiceDto,
   UpdateInvoiceDto,
   MarkPaidDto,
@@ -18,13 +20,69 @@ interface InvoiceFilters {
   limit?: number;
 }
 
+/**
+ * Read boundary: the backend speaks minor-unit integers, the app speaks major
+ * units. Divide every money field on the way in so `formatCurrency` and every
+ * component keep working unchanged.
+ */
+const decodeItem = (item: InvoiceItem, currency?: string): InvoiceItem => {
+  const raw = item as InvoiceItem & { amount?: number };
+  // the backend calls the line total `amount`; the app reads `total`
+  const total =
+    typeof item.total === 'number'
+      ? toMajor(item.total, currency)
+      : typeof raw.amount === 'number'
+        ? toMajor(raw.amount, currency)
+        : item.total;
+  return {
+    ...item,
+    unit_price:
+      typeof item.unit_price === 'number' ? toMajor(item.unit_price, currency) : item.unit_price,
+    total,
+  };
+};
+
+const decodeInvoice = (inv: Invoice): Invoice => {
+  if (!inv || typeof inv !== 'object') return inv;
+  const c = inv.currency;
+  const money = (v: number | undefined): number | undefined =>
+    typeof v === 'number' ? toMajor(v, c) : v;
+  return {
+    ...inv,
+    subtotal: money(inv.subtotal) ?? inv.subtotal,
+    tax: money(inv.tax) ?? inv.tax,
+    total: money(inv.total) ?? inv.total,
+    amount_received: money(inv.amount_received),
+    wht_withheld: money(inv.wht_withheld),
+    items: Array.isArray(inv.items) ? inv.items.map((it) => decodeItem(it, c)) : inv.items,
+  };
+};
+
+/**
+ * Write boundary: the app hands over major units; multiply line prices up to
+ * minor-unit integers the backend expects. Totals are computed server-side.
+ */
+const encodeWrite = <T extends Partial<CreateInvoiceDto>>(data: T): T => {
+  if (!data || !Array.isArray(data.items)) return data;
+  return {
+    ...data,
+    items: data.items.map((it) => ({
+      ...it,
+      unit_price: toMinor(it.unit_price, data.currency),
+    })),
+  } as T;
+};
+
 /** the real backend answers {invoice, items}; older shapes answer flat */
 const mergeInvoice = (data: unknown): Invoice => {
   const record = data as { invoice?: Invoice; items?: Invoice['items'] } & Invoice;
   if (record && typeof record === 'object' && 'invoice' in record && record.invoice) {
-    return { ...record.invoice, items: record.items ?? record.invoice.items ?? [] };
+    return decodeInvoice({
+      ...record.invoice,
+      items: record.items ?? record.invoice.items ?? [],
+    });
   }
-  return record as Invoice;
+  return decodeInvoice(record as Invoice);
 };
 
 export const invoicesApi = {
@@ -37,7 +95,7 @@ export const invoicesApi = {
     const body = response.data;
     if (Array.isArray(body.data)) {
       return {
-        data: body.data,
+        data: body.data.map((row) => decodeInvoice(row)),
         total: body.meta?.total ?? body.data.length,
         page: body.meta?.page ?? 1,
         limit: body.meta?.limit ?? body.data.length,
@@ -98,14 +156,14 @@ export const invoicesApi = {
         business?: Invoice['sender_business'];
         payment_account?: Invoice['payment_account'];
       };
-      return {
+      return decodeInvoice({
         ...wrapped.invoice,
         items: wrapped.items ?? wrapped.invoice.items ?? [],
         sender_business: wrapped.business ?? null,
         payment_account: wrapped.payment_account ?? null,
-      };
+      });
     }
-    return data as Invoice;
+    return decodeInvoice(data as Invoice);
   },
 
   getById: async (id: string): Promise<Invoice> => {
@@ -114,14 +172,14 @@ export const invoicesApi = {
   },
 
   create: async (data: CreateInvoiceDto): Promise<Invoice> => {
-    const response = await apiClient.post<ApiResponse<unknown>>('/invoices', data);
+    const response = await apiClient.post<ApiResponse<unknown>>('/invoices', encodeWrite(data));
     return mergeInvoice(response.data.data);
   },
 
   update: async (id: string, data: UpdateInvoiceDto): Promise<Invoice> => {
     const response = await apiClient.patch<ApiResponse<unknown>>(
       `/invoices/${id}`,
-      data
+      encodeWrite(data)
     );
     return mergeInvoice(response.data.data);
   },
@@ -185,9 +243,19 @@ export const invoicesApi = {
   },
 
   markAsPaid: async (id: string, data?: MarkPaidDto): Promise<Invoice> => {
+    // amounts are entered in major units; the wire wants minor-unit integers
+    const payload = data
+      ? {
+          ...data,
+          amount_received: toMinor(data.amount_received),
+          ...(typeof data.wht_withheld === 'number'
+            ? { wht_withheld: toMinor(data.wht_withheld) }
+            : {}),
+        }
+      : data;
     const response = await apiClient.post<ApiResponse<unknown>>(
       `/invoices/${id}/mark-paid`,
-      data
+      payload
     );
     return mergeInvoice(response.data.data);
   },

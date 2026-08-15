@@ -69,8 +69,11 @@ export function buildInvoiceEmail(invoice: Invoice, profile: BusinessProfile) {
   const due_date = formatDate(invoice.due_date);
   const subject = `Invoice ${invoice.invoice_number} from ${profile.name}`;
   const notes = invoice.notes || 'Thank you for your business.';
+  // client is null for an ad-hoc recipient; the flat bill_to_* fields carry it
+  const clientName = invoice.client?.name ?? invoice.bill_to_name ?? 'there';
+  const clientEmail = invoice.client?.email ?? invoice.bill_to_email ?? '';
   const body = [
-    `Hi ${invoice.client.name},`,
+    `Hi ${clientName},`,
     '',
     `Here is invoice ${invoice.invoice_number} for ${amount}.`,
     `Due ${due_date}.`,
@@ -82,7 +85,7 @@ export function buildInvoiceEmail(invoice: Invoice, profile: BusinessProfile) {
   ].join('\n');
 
   const content = invoiceEmailHtml({
-    toName: invoice.client.name,
+    toName: clientName,
     fromName: profile.name,
     invoice_number: invoice.invoice_number,
     amount,
@@ -94,8 +97,8 @@ export function buildInvoiceEmail(invoice: Invoice, profile: BusinessProfile) {
   // Everything the EmailJS template might reference. A one-line passthrough
   // template ({{{content}}}) is enough; structured fields are there too.
   const params = {
-    to_email: invoice.client.email,
-    to_name: invoice.client.name,
+    to_email: clientEmail,
+    to_name: clientName,
     from_name: profile.name,
     reply_to: profile.email,
     subject,
@@ -109,5 +112,5 @@ export function buildInvoiceEmail(invoice: Invoice, profile: BusinessProfile) {
     message: body,
   };
 
-  return { to: invoice.client.email, subject, body, link, params };
+  return { to: clientEmail, subject, body, link, params };
 }

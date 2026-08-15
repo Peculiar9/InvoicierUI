@@ -195,9 +195,12 @@ export const InvoicePanel = () => {
       setItems([{ ...emptyItem }]);
       setSavedId(null);
     } else if (mode === 'edit' && invoice) {
-      setClientId(invoice.client.id);
-      setRecipientName(invoice.client.id ? '' : invoice.client.name);
-      setRecipientEmail(invoice.client.id ? '' : (invoice.client.email ?? ''));
+      // client is null for an ad-hoc invoice; fall back to the flat bill_to_* fields
+      setClientId(invoice.client?.id ?? '');
+      setRecipientName(invoice.client?.id ? '' : (invoice.client?.name ?? invoice.bill_to_name ?? ''));
+      setRecipientEmail(
+        invoice.client?.id ? '' : (invoice.client?.email ?? invoice.bill_to_email ?? '')
+      );
       setCurrency(invoice.currency);
       setDueDate(invoice.due_date ? invoice.due_date.slice(0, 10) : '');
       setVatEnabled(invoice.vat_enabled ?? invoice.tax_rate > 0);
@@ -304,18 +307,23 @@ export const InvoicePanel = () => {
   };
 
   const buildDto = () => ({
-    ...(client_id
-      ? { client_id }
-      : { recipient_name: recipient_name.trim(), recipient_email: recipient_email.trim() }),
+    // client_id only travels when a saved client is chosen
+    ...(client_id ? { client_id } : {}),
+    // bill_to_name is always sent: the client's name, or the ad-hoc typed one
+    bill_to_name: billToName,
+    ...(billToEmail ? { bill_to_email: billToEmail } : {}),
     currency,
+    // edit keeps the invoice's own issue date; create stamps today
+    issue_date: invoice?.issue_date ? invoice.issue_date.slice(0, 10) : todayLocal(),
     due_date: due_date || todayLocal(),
-    tax_rate,
+    tax_basis_points: vat_enabled ? 750 : 0,
     vat_enabled,
     wht_expected,
     ...(payment_route ? { payment_route } : {}),
     ...(receiving_account_id ? { receiving_account_id } : {}),
     notes,
     terms,
+    // major units here; the api boundary converts unit_price to minor
     items: items.map((it) => ({
       description: it.description,
       quantity: it.quantity,
@@ -409,7 +417,7 @@ export const InvoicePanel = () => {
         onSuccess: () =>
           toast.success(
             channel === 'email'
-              ? `Invoice emailed to ${inv.client.name}`
+              ? `Invoice emailed to ${inv.client?.name ?? inv.bill_to_name ?? 'your client'}`
               : 'Marked as sent (client has no email)'
           ),
       }
@@ -810,7 +818,7 @@ export const InvoicePanel = () => {
                     isPaid(invoice.status) && (
                       <div className="iw-savelead">
                         <div>
-                          <b>{invoice.client?.name} paid you.</b>
+                          <b>{invoice.client?.name ?? invoice.bill_to_name ?? 'Your client'} paid you.</b>
                           <small>
                             Add them to your clients and they will be one tap away
                             next time.
@@ -823,8 +831,8 @@ export const InvoicePanel = () => {
                           onClick={() =>
                             createClient.mutate(
                               {
-                                name: invoice.client.name,
-                                email: invoice.client.email,
+                                name: invoice.client?.name ?? invoice.bill_to_name ?? '',
+                                email: invoice.client?.email ?? invoice.bill_to_email ?? '',
                               },
                               {
                                 onSuccess: (saved) => {

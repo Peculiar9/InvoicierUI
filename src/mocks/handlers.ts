@@ -252,8 +252,9 @@ export const handlers = [
       invoice.client = {
         ...invoice.client,
         id: '',
-        name: (body.recipient_name as string)?.trim() || invoice.client.name,
-        email: (body.recipient_email as string)?.trim() ?? invoice.client.email,
+        name: (body.recipient_name as string)?.trim() || invoice.client?.name || '',
+        email: (body.recipient_email as string)?.trim() ?? invoice.client?.email ?? '',
+        created_at: invoice.client?.created_at ?? new Date().toISOString(),
       };
     }
     if (typeof body.currency === 'string') invoice.currency = body.currency;

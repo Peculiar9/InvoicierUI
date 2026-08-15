@@ -51,7 +51,11 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string;
   invoice_number: string;
-  client: Client;
+  /** the saved client, or null for an ad-hoc recipient (see bill_to_*) */
+  client: Client | null;
+  /** flat recipient fields the backend returns; the fallback when client is null */
+  bill_to_name?: string;
+  bill_to_email?: string;
   items: InvoiceItem[];
   /** public payload only: who sent this, for a stranger's browser */
   sender_business?: { business_name?: string | null; email?: string | null; phone?: string | null; address?: string | null; logo_url?: string | null } | null;
@@ -242,17 +246,19 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CreateInvoiceDto {
-  /** Optional: bill a saved client, or name the recipient inline below. */
+  /** Optional: only when a saved client is chosen. */
   client_id?: string;
-  /** Ad-hoc recipient, used when no client has been saved yet. */
-  recipient_name?: string;
-  recipient_email?: string;
+  /** REQUIRED: the recipient's name — the saved client's, or an ad-hoc typed one. */
+  bill_to_name: string;
+  bill_to_email?: string;
   items: Omit<InvoiceItem, 'id' | 'total'>[];
   currency: string;
+  issue_date: string;
   due_date: string;
   notes?: string;
   terms?: string;
-  tax_rate?: number;
+  /** VAT in basis points: 0 (off) or 750 (7.5%). Replaces the old tax_rate. */
+  tax_basis_points?: number;
   vat_enabled?: boolean;
   wht_expected?: boolean;
   payment_route?: PaymentRoute;
