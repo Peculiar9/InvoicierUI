@@ -950,7 +950,7 @@ export const InvoicePanel = () => {
                       </label>
                       <p className="iw-adhoc-note">
                         <i className="bx bx-info-circle" aria-hidden="true" />
-                        No need to save them as a client first — bill them now,
+                        No need to save them as a client first, bill them now,
                         and add them to your list the moment they pay.
                       </p>
                     </div>

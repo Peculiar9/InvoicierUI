@@ -235,7 +235,7 @@ export const Welcome = () => {
             <p>The name that chases invoices and collects the thanks.</p>
             {!isAuthenticated && (
               <p className="ob-aside ob-aside--pre">
-                Before you continue — been here before?{' '}
+                Before you continue, been here before?{' '}
                 <a href="/login">Sign in instead</a>.
               </p>
             )}
@@ -330,7 +330,7 @@ export const Welcome = () => {
                 >
                   Set a password now
                 </button>
-                <span className="ob-passhint-or">— or just continue</span>
+                <span className="ob-passhint-or">or just continue</span>
               </div>
             )}
 

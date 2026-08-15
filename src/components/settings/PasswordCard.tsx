@@ -49,7 +49,7 @@ export const PasswordCard = () => {
       },
       {
         onSuccess: () => {
-          toast.success(hasPassword ? 'Password changed' : "Password set — you're all set");
+          toast.success(hasPassword ? 'Password changed' : "Password set, you're all set");
           clear();
         },
         onError: (e) =>
@@ -64,7 +64,7 @@ export const PasswordCard = () => {
       <p className="dash-muted settings-lead">
         {hasPassword
           ? 'Change the password you use to sign in. You can still ask for a one-time code any time.'
-          : 'You sign in with an emailed code right now. Set a password for a faster way in — the code is always there as a backup.'}
+          : 'You sign in with an emailed code right now. Set a password for a faster way in. The code is always there as a backup.'}
       </p>
 
       {hasPassword && (

@@ -21,7 +21,7 @@ const RULES: { key: string; label: string; test: (v: string) => boolean }[] = [
 ];
 
 /** Warm, never scolding — the meter climbs and the words cheer it on. */
-const VERDICTS = ['', 'A start', 'Getting there', 'Strong — nice', 'Ironclad'] as const;
+const VERDICTS = ['', 'A start', 'Getting there', 'Strong, nice', 'Ironclad'] as const;
 
 /**
  * The password field as a welcome, not a checkpoint.

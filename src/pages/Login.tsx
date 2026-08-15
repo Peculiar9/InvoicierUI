@@ -207,7 +207,7 @@ export const Login = () => {
         <small>
           {hasPassword
             ? 'The password you set for this account.'
-            : "You haven't set a password yet — use a code instead."}
+            : "You haven't set a password yet, use a code instead."}
         </small>
       </span>
       {hasPassword && <i className="bx bx-chevron-right ob-auth-choice-go" aria-hidden="true" />}
@@ -241,7 +241,7 @@ export const Login = () => {
           <div className="ob-step">
             <span className="ob-kicker">Welcome back</span>
             <h1>Let's get you to your money.</h1>
-            <p>Start with your email — we'll take it from there.</p>
+            <p>Start with your email, we'll take it from there.</p>
 
             <form className="ob-auth-form" onSubmit={onEmailSubmit}>
               {expired && !loginMethods.error && (
