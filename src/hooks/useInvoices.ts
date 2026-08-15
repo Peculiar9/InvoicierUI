@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoicesApi } from '@/api/invoices';
+import { devMockInvoice, isDevMockInvoiceId } from '@/lib/devMockInvoice';
 import type { CreateInvoiceDto, MarkPaidDto, UpdateInvoiceDto } from '@/types';
 
 interface UseInvoicesParams {
@@ -34,7 +35,13 @@ export const useInvoice = (id: string) => {
 export const usePublicInvoice = (id: string, asOwner: boolean) => {
   return useQuery({
     queryKey: ['invoices', id],
-    queryFn: () => (asOwner ? invoicesApi.getById(id) : invoicesApi.getPublic(id)),
+    queryFn: () => {
+      // Dev only: an inv_* id renders a realistic sample so we can refine the
+      // pay flow. In prod/staging this branch never runs, so those ids fall
+      // through to the real fetch and its "nothing behind this link" empty state.
+      if (isDevMockInvoiceId(id)) return Promise.resolve(devMockInvoice(id));
+      return asOwner ? invoicesApi.getById(id) : invoicesApi.getPublic(id);
+    },
     enabled: !!id,
   });
 };
