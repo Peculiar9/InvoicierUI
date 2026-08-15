@@ -380,6 +380,25 @@ export const Settings = () => {
                   onChange={(currency) => setForm({ ...form, currency })}
                 />
               </div>
+              <label className="cinv-field">
+                <span>Invoice number prefix</span>
+                <input
+                  value={form.invoice_prefix ?? ''}
+                  aria-label="Invoice number prefix"
+                  maxLength={6}
+                  placeholder="INV"
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      // uppercase letters/digits only, 2–6 chars, e.g. ADA
+                      invoice_prefix: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6),
+                    })
+                  }
+                />
+                <small className="dash-muted">
+                  Numbers count up from here — e.g. {(form.invoice_prefix || 'INV')}-0001
+                </small>
+              </label>
             </div>
             <div className="settings-actions">
               <button type="button" className="btn btn-primary" onClick={saveProfile}>

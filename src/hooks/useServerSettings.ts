@@ -38,6 +38,7 @@ export const useServerSettings = () => {
             phone: profile.phone ?? undefined,
             address: profile.address ?? undefined,
             currency: profile.default_currency ?? undefined,
+            invoice_prefix: profile.invoice_prefix ?? undefined,
             template: (profile.invoice_template as never) ?? undefined,
             logo: profile.logo_url ?? undefined,
             routeByCurrency: (profile.route_by_currency as never) ?? undefined,

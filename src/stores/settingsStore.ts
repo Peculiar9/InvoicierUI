@@ -11,6 +11,8 @@ export interface BusinessProfile {
   phone: string;
   address: string;
   currency: string;
+  /** prefix stamped on every invoice number, e.g. ADA in ADA-0001 (2–6 chars) */
+  invoice_prefix?: string;
   /* ---- brand, collected in the welcome journey ---- */
   /** data-URL logo; absent means the wordmark default */
   logo?: string;

@@ -17,6 +17,8 @@ export interface BusinessProfileDto {
   address: string | null;
   logo_url: string | null;
   default_currency: string;
+  /** prefix for generated invoice numbers, e.g. ADA in ADA-0001 */
+  invoice_prefix: string;
   invoice_template: string;
   route_by_currency: Record<string, string>;
   default_account_by_currency: Record<string, string>;
@@ -35,6 +37,7 @@ export type OnboardingPayload = Partial<
     | 'address'
     | 'logo_url'
     | 'default_currency'
+    | 'invoice_prefix'
     | 'invoice_template'
   >
 >;
