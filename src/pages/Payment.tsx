@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
@@ -23,6 +23,7 @@ type Stage = 'review' | 'method' | 'processing' | 'done' | 'reported';
 
 /** A rail in the bank-transfer list, normalised into one shape to render. */
 type RailKind = 'account' | 'crypto';
+type RailGroup = 'local' | 'foreign' | 'crypto';
 interface RailItem {
   kind: RailKind;
   provider: string;
@@ -30,7 +31,23 @@ interface RailItem {
   sub: string;
   currency: string;
   rail: PublicPaymentAccount;
+  group: RailGroup;
 }
+
+const CURRENCY_NAMES: Record<string, string> = {
+  NGN: 'Naira',
+  USD: 'US Dollar',
+  EUR: 'Euro',
+  GBP: 'Pound',
+};
+
+/** The little heading each cluster of rails sits under. */
+const groupName = (group: RailGroup, invoiceCurrency: string): string =>
+  group === 'local'
+    ? `${CURRENCY_NAMES[invoiceCurrency] ?? invoiceCurrency} accounts`
+    : group === 'foreign'
+      ? 'Other currencies'
+      : 'Crypto';
 
 /** The badge each provider wears in the rail list. */
 const railMeta = (provider: string): { label: string; icon: string; tint: string } => {
@@ -40,14 +57,14 @@ const railMeta = (provider: string): { label: string; icon: string; tint: string
     case 'generated':
       return { label: 'Instant', icon: 'bx-timer', tint: 'is-instant' };
     case 'grey':
-      return { label: 'Grey', icon: 'bx-transfer-alt', tint: '' };
+      return { label: 'Grey', icon: 'bx-transfer-alt', tint: 'is-grey' };
     case 'fincra':
-      return { label: 'Fincra', icon: 'bx-transfer-alt', tint: '' };
+      return { label: 'Fincra', icon: 'bx-transfer-alt', tint: 'is-grey' };
     case 'wise':
-      return { label: 'Wise', icon: 'bx-globe', tint: '' };
+      return { label: 'Wise', icon: 'bx-globe', tint: 'is-wise' };
     case 'dom':
     case 'domiciliary':
-      return { label: 'Domiciliary account', icon: 'bx-globe', tint: '' };
+      return { label: 'Domiciliary account', icon: 'bx-globe', tint: 'is-dom' };
     case 'paypal':
       return { label: 'PayPal', icon: 'bxl-paypal', tint: '' };
     default:
@@ -230,19 +247,16 @@ export const Payment = ({
   // Paystack is the marquee NGN rail; everything else is a transfer.
   const paystackAvailable = Boolean(invoice) && invoice?.currency === 'NGN' && routes.instant;
 
-  // The rails the payer can actually use, filtered to this invoice's currency:
-  // an NGN invoice offers only Naira accounts (no foreign rails, no coin), and
-  // a foreign invoice offers every non-NGN account plus any crypto wallet.
+  // Every rail the sender has added is on offer — a Naira payer may still
+  // settle from a dom account, through Wise, or in USDT. Grouped so the
+  // invoice's own currency leads, other currencies follow, crypto closes.
   const railItems = useMemo<RailItem[]>(() => {
     if (!invoice) return [];
-    const ngn = invoice.currency === 'NGN';
     const items: RailItem[] = [];
     for (const r of invoice.payment_accounts ?? []) {
       const provider = r.provider ?? 'bank';
       const cur = r.currency ?? '';
       if (provider === 'crypto') {
-        // crypto rides with the foreign list; an NGN bill is settled in Naira
-        if (ngn) continue;
         items.push({
           kind: 'crypto',
           provider,
@@ -250,9 +264,9 @@ export const Payment = ({
           sub: [r.asset, r.network].filter(Boolean).join(' · '),
           currency: cur,
           rail: r,
+          group: 'crypto',
         });
       } else {
-        if (ngn ? cur !== 'NGN' : cur === 'NGN') continue;
         items.push({
           kind: 'account',
           provider,
@@ -260,10 +274,12 @@ export const Payment = ({
           sub: r.bank_name ?? r.account_name ?? railMeta(provider).label,
           currency: cur,
           rail: r,
+          group: cur === invoice.currency ? 'local' : 'foreign',
         });
       }
     }
-    return items;
+    const order: Record<RailGroup, number> = { local: 0, foreign: 1, crypto: 2 };
+    return items.sort((a, b) => order[a.group] - order[b.group]);
   }, [invoice]);
 
   // entering the Pay step: NGN leads with Paystack, everything else with rails
@@ -667,26 +683,38 @@ export const Payment = ({
                             <div className="pay-rails" role="list">
                               {railItems.map((item, i) => {
                                 const meta = railMeta(item.provider);
+                                const heading =
+                                  i === 0 || railItems[i - 1].group !== item.group
+                                    ? groupName(item.group, invoice.currency)
+                                    : null;
                                 return (
-                                  <button
-                                    key={`${item.provider}-${i}`}
-                                    type="button"
-                                    role="listitem"
-                                    className={`pay-rail${selectedRail === i ? ' active' : ''}`}
-                                    onClick={() => chooseRail(i)}
-                                    disabled={stage === 'processing'}
-                                  >
-                                    <span className={`pay-rail-badge ${meta.tint}`} aria-hidden="true">
-                                      <i className={`bx ${meta.icon}`} />
-                                    </span>
-                                    <span className="pay-rail-txt">
-                                      <b>{item.label}</b>
-                                      {item.sub && <small>{item.sub}</small>}
-                                    </span>
-                                    {item.currency && (
-                                      <span className="pay-rail-cur">{item.currency}</span>
+                                  <Fragment key={`${item.provider}-${i}`}>
+                                    {heading && (
+                                      <span className="pay-rails-group">{heading}</span>
                                     )}
-                                  </button>
+                                    <button
+                                      type="button"
+                                      role="listitem"
+                                      className={`pay-rail${selectedRail === i ? ' active' : ''}`}
+                                      onClick={() => chooseRail(i)}
+                                      disabled={stage === 'processing'}
+                                    >
+                                      <span className={`pay-rail-badge ${meta.tint}`} aria-hidden="true">
+                                        <i className={`bx ${meta.icon}`} />
+                                      </span>
+                                      <span className="pay-rail-txt">
+                                        <b>{item.label}</b>
+                                        {item.sub && <small>{item.sub}</small>}
+                                      </span>
+                                      {item.currency && (
+                                        <span className="pay-rail-cur">{item.currency}</span>
+                                      )}
+                                      <i
+                                        className="bx bx-chevron-right pay-rail-go"
+                                        aria-hidden="true"
+                                      />
+                                    </button>
+                                  </Fragment>
                                 );
                               })}
                             </div>

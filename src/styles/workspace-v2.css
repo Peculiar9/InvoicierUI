@@ -5424,6 +5424,58 @@
   background: rgba(12, 141, 111, 0.12);
   color: var(--paid);
 }
+.pay-rail-badge.is-grey {
+  background: rgba(14, 116, 144, 0.12);
+  color: #0e7490;
+}
+.pay-rail-badge.is-dom {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+.pay-rail-badge.is-wise {
+  background: rgba(12, 141, 111, 0.12);
+  color: #0c8d6f;
+}
+
+/* the cluster headings inside the rail list */
+.pay-rails-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 2px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pay-rails-group:first-child {
+  margin-top: 0;
+}
+.pay-rails-group::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* the quiet chevron that answers a hover */
+.pay-rail-go {
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  color: var(--ink-faint);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.25s ease, transform 0.3s var(--swift), color 0.25s ease;
+}
+.pay-rail:hover:not(:disabled) .pay-rail-go,
+.pay-rail.active .pay-rail-go {
+  opacity: 1;
+  transform: none;
+}
+.pay-rail.active .pay-rail-go {
+  color: var(--brand);
+}
 .pay-rail-txt { flex: 1; min-width: 0; }
 .pay-rail-txt b {
   display: block;
