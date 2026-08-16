@@ -192,15 +192,7 @@ export const LegacyWorkspace = ({
             </Link>
           ))}
         </nav>
-        <button
-          type="button"
-          className="ws-rail-item ws-theme-toggle"
-          title={theme === 'dark' ? 'Lights on' : 'Lights off'}
-          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          onClick={() => toggleTheme()}
-        >
-          <i className={`bx ${theme === 'dark' ? 'bx-sun' : 'bx-moon'}`} aria-hidden="true" />
-        </button>
+        {/* the theme toggle now lives only in the topbar, by the bell */}
         <button
           type="button"
           className="ws-rail-item ws-rail-logout"
