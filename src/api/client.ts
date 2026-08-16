@@ -10,7 +10,9 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  // 30s, not 10s: Nigerian mobile networks are often slow, and a login email
+  // lookup timing out reads as "broken" when it was only patient network.
+  timeout: 30000,
 });
 
 apiClient.interceptors.request.use(
@@ -37,7 +39,7 @@ const refreshSession = async (): Promise<string> => {
   const response = await axios.post(
     `${API_BASE_URL}/auth/refresh`,
     { refresh_token: refreshToken },
-    { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
+    { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
   );
   const data = response.data?.data ?? response.data;
   useAuthStore.getState().setTokens(data.accessToken, data.refreshToken);
