@@ -61,6 +61,8 @@ export interface Invoice {
   sender_business?: { business_name?: string | null; email?: string | null; phone?: string | null; address?: string | null; logo_url?: string | null } | null;
   /** public payload only: the account this invoice should be paid into */
   payment_account?: PublicPaymentAccount | null;
+  /** public payload only: every account the sender offers (bank, dom, crypto) */
+  payment_accounts?: PublicPaymentAccount[] | null;
   subtotal: number;
   tax: number;
   tax_rate: number;
@@ -291,6 +293,10 @@ export interface PublicPaymentAccount {
   swift_code?: string | null;
   iban?: string | null;
   instructions?: string | null;
+  /** crypto rails: the address to send to, its chain, and the asset */
+  wallet_address?: string | null;
+  network?: string | null;
+  asset?: string | null;
 }
 
 /** the generated account a payer pays into, and the clock it lives on */

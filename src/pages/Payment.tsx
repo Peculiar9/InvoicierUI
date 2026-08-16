@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
@@ -12,23 +12,62 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
-import type { Invoice } from '@/types';
-import { PaymentWindowCard } from '@/components/PaymentWindowCard';
+import type { Invoice, PublicPaymentAccount } from '@/types';
+import { PayRailReveal } from '@/components/PayRailReveal';
+
+// The delight moment: the surreal receipt printer. Lazy so its CSS and the
+// animation are only paid for at the instant an invoice actually settles.
+const ReceiptPrintout = lazy(() => import('@/components/ReceiptPrintout'));
 
 type Stage = 'review' | 'method' | 'processing' | 'done' | 'reported';
 
-/** How the money can arrive, by currency. NGN is instant; the rest are transfers. */
-const methodsFor = (currency: string) =>
-  currency === 'NGN'
-    ? [
-        { key: 'card', icon: 'bx-credit-card-front', name: 'Card', line: 'Visa, Mastercard, Verve' },
-        { key: 'transfer', icon: 'bx-transfer', name: 'Bank transfer', line: 'Instant, via Paystack' },
-        { key: 'ussd', icon: 'bx-mobile-alt', name: 'USSD', line: 'Dial and confirm' },
-      ]
-    : [
-        { key: 'wire', icon: 'bx-globe', name: 'Bank transfer', line: `Pay in ${currency}` },
-        { key: 'card', icon: 'bx-credit-card-front', name: 'Card', line: 'Visa, Mastercard' },
-      ];
+/** A rail in the bank-transfer list, normalised into one shape to render. */
+type RailKind = 'account' | 'crypto';
+interface RailItem {
+  kind: RailKind;
+  provider: string;
+  label: string;
+  sub: string;
+  currency: string;
+  rail: PublicPaymentAccount;
+}
+
+/** The badge each provider wears in the rail list. */
+const railMeta = (provider: string): { label: string; icon: string; tint: string } => {
+  switch (provider) {
+    case 'crypto':
+      return { label: 'Crypto', icon: 'bxl-bitcoin', tint: 'is-crypto' };
+    case 'generated':
+      return { label: 'Instant', icon: 'bx-timer', tint: 'is-instant' };
+    case 'grey':
+      return { label: 'Grey', icon: 'bx-transfer-alt', tint: '' };
+    case 'fincra':
+      return { label: 'Fincra', icon: 'bx-transfer-alt', tint: '' };
+    case 'wise':
+      return { label: 'Wise', icon: 'bx-globe', tint: '' };
+    case 'dom':
+    case 'domiciliary':
+      return { label: 'Domiciliary account', icon: 'bx-globe', tint: '' };
+    case 'paypal':
+      return { label: 'PayPal', icon: 'bxl-paypal', tint: '' };
+    default:
+      return { label: PROVIDER_LABELS[provider] ?? 'Bank account', icon: 'bx-building-house', tint: '' };
+  }
+};
+
+/** The payment_accounts payload uses swift_code / domiciliary; the display
+    spec speaks swift / dom. One place to reconcile the two. */
+const normaliseRail = (r: PublicPaymentAccount): Record<string, string | null | undefined> => ({
+  provider: r.provider === 'domiciliary' ? 'dom' : r.provider,
+  currency: r.currency,
+  account_name: r.account_name,
+  account_number: r.account_number,
+  bank_name: r.bank_name,
+  routing_number: r.routing_number,
+  swift: r.swift_code,
+  iban: r.iban,
+  instructions: r.instructions,
+});
 
 /**
  * What the client sees when they open a payment link. They never signed up
@@ -59,23 +98,24 @@ export const Payment = ({
   const [payer_email, setPayerEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [reference, setReference] = useState('');
-  const [copied, setCopied] = useState('');
 
-  const copy = (label: string, value: string) => {
-    navigator.clipboard?.writeText(value).then(
-      () => {
-        setCopied(label);
-        setTimeout(() => setCopied(''), 1600);
-      },
-      () => {}
-    );
-  };
+  // where the payer is inside the "Pay" step
+  const [payView, setPayView] = useState<'choose' | 'paystack' | 'rails'>('choose');
+  const [selectedRail, setSelectedRail] = useState<number | null>(null);
 
   // a settled invoice opens straight on the receipt
   const invoiceStatus = invoice?.status;
   useEffect(() => {
     if (invoiceStatus && isPaid(invoiceStatus)) setStage('done');
   }, [invoiceStatus]);
+
+  // leaving review on a phone, the action card jumps to the top of the grid;
+  // bring the viewport with it so the payer is not left staring at the document
+  useEffect(() => {
+    if (stage !== 'review' && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [stage]);
 
   // tell the sender their client opened the link. Fire and forget: a failure
   // here must never stop someone from paying.
@@ -108,7 +148,7 @@ export const Payment = ({
         data: {
           date_received: todayLocal(),
           amount_received: inv.total,
-          payment_method: method,
+          payment_method: method || 'Paystack',
           payer_email: payer_email.trim(),
         },
       },
@@ -138,38 +178,111 @@ export const Payment = ({
   // On the payer's machine the sender's identity and account come from the
   // PUBLIC PAYLOAD, their localStorage knows nothing. The store only feeds
   // the sender's own preview.
-  const payloadAccount = invoice?.payment_account
-    ? {
-        id: 'public',
-        label: invoice.payment_account.label ?? 'Account',
-        provider: (invoice.payment_account.provider ?? 'bank') as never,
-        currency: invoice.payment_account.currency ?? invoice.currency,
-        account_name: invoice.payment_account.account_name ?? '',
-        account_number: invoice.payment_account.account_number ?? undefined,
-        bank_name: invoice.payment_account.bank_name ?? undefined,
-        routing_number: invoice.payment_account.routing_number ?? undefined,
-        swift: invoice.payment_account.swift_code ?? undefined,
-        iban: invoice.payment_account.iban ?? undefined,
-        instructions: invoice.payment_account.instructions ?? undefined,
-      }
-    : null;
-  const effectiveProfile = preview
-    ? profile
-    : {
-        ...profile,
-        name: invoice?.sender_business?.business_name ?? profile.name,
-        email: invoice?.sender_business?.email ?? profile.email,
-        phone: invoice?.sender_business?.phone ?? profile.phone,
-        address: invoice?.sender_business?.address ?? profile.address,
-        receivingAccounts: payloadAccount ? [payloadAccount] : [],
-        defaultAccountByCurrency: {},
-      };
+  const payloadAccount = useMemo(
+    () =>
+      invoice?.payment_account
+        ? {
+            id: 'public',
+            label: invoice.payment_account.label ?? 'Account',
+            provider: (invoice.payment_account.provider ?? 'bank') as never,
+            currency: invoice.payment_account.currency ?? invoice.currency,
+            account_name: invoice.payment_account.account_name ?? '',
+            account_number: invoice.payment_account.account_number ?? undefined,
+            bank_name: invoice.payment_account.bank_name ?? undefined,
+            routing_number: invoice.payment_account.routing_number ?? undefined,
+            swift: invoice.payment_account.swift_code ?? undefined,
+            iban: invoice.payment_account.iban ?? undefined,
+            instructions: invoice.payment_account.instructions ?? undefined,
+          }
+        : null,
+    [invoice]
+  );
+  const effectiveProfile = useMemo(
+    () =>
+      preview
+        ? profile
+        : {
+            ...profile,
+            name: invoice?.sender_business?.business_name ?? profile.name,
+            email: invoice?.sender_business?.email ?? profile.email,
+            phone: invoice?.sender_business?.phone ?? profile.phone,
+            address: invoice?.sender_business?.address ?? profile.address,
+            receivingAccounts: payloadAccount ? [payloadAccount] : [],
+            defaultAccountByCurrency: {},
+          },
+    [preview, profile, invoice, payloadAccount]
+  );
   const senderName = effectiveProfile.name || 'Your supplier';
   // what this invoice actually offers: its own choice, then the sender's
   // default for the currency
-  const routes = invoice
-    ? resolveRoutes(invoice, effectiveProfile)
-    : { instant: true, transfer: false, account: null };
+  const routes = useMemo(
+    () =>
+      invoice
+        ? resolveRoutes(invoice, effectiveProfile)
+        : { instant: true, transfer: false, account: null },
+    [invoice, effectiveProfile]
+  );
+
+  // Paystack is the marquee NGN rail; everything else is a transfer.
+  const paystackAvailable = Boolean(invoice) && invoice?.currency === 'NGN' && routes.instant;
+
+  // The rails the payer can actually use, filtered to this invoice's currency:
+  // an NGN invoice offers only Naira accounts (no foreign rails, no coin), and
+  // a foreign invoice offers every non-NGN account plus any crypto wallet.
+  const railItems = useMemo<RailItem[]>(() => {
+    if (!invoice) return [];
+    const ngn = invoice.currency === 'NGN';
+    const items: RailItem[] = [];
+    for (const r of invoice.payment_accounts ?? []) {
+      const provider = r.provider ?? 'bank';
+      const cur = r.currency ?? '';
+      if (provider === 'crypto') {
+        // crypto rides with the foreign list; an NGN bill is settled in Naira
+        if (ngn) continue;
+        items.push({
+          kind: 'crypto',
+          provider,
+          label: r.label ?? `${r.asset ?? 'Crypto'} wallet`,
+          sub: [r.asset, r.network].filter(Boolean).join(' · '),
+          currency: cur,
+          rail: r,
+        });
+      } else {
+        if (ngn ? cur !== 'NGN' : cur === 'NGN') continue;
+        items.push({
+          kind: 'account',
+          provider,
+          label: r.label ?? railMeta(provider).label,
+          sub: r.bank_name ?? r.account_name ?? railMeta(provider).label,
+          currency: cur,
+          rail: r,
+        });
+      }
+    }
+    return items;
+  }, [invoice]);
+
+  // entering the Pay step: NGN leads with Paystack, everything else with rails
+  useEffect(() => {
+    if (stage !== 'method') return;
+    setPayView(paystackAvailable ? 'choose' : 'rails');
+  }, [stage, paystackAvailable]);
+
+  const openRails = () => {
+    setPayView('rails');
+    setSelectedRail(null);
+  };
+
+  const chooseRail = (i: number) => {
+    // toggling to the same rail keeps it; the reveal owns its own load beat
+    setSelectedRail(i);
+    setEmailError('');
+  };
+
+  const showPrinter =
+    Boolean(invoice) && (stage === 'done' || (invoice ? isPaid(invoice.status) : false));
+
+  const active = selectedRail != null ? railItems[selectedRail] : null;
 
   return (
     <section className={`pay-page${preview ? ' pay-page--preview' : ''}`}>
@@ -193,9 +306,45 @@ export const Payment = ({
 
       <div className="pay-wrap">
         {isLoading ? (
-          <div className="pay-card pay-state">
-            <span className="iw-spin iw-spin--dark" aria-hidden="true" />
-            <p className="pay-loading">Fetching the invoice…</p>
+          /* Never a blank wait: a shimmering ghost of the page it becomes, so
+             nothing shifts when the real content lands. */
+          <div className="pay-skel" aria-hidden="true">
+            <div className="pay-skel-steps">
+              <span /> <span /> <span />
+            </div>
+            <div className="pay-grid">
+              <div className="pay-doc pay-skel-doc">
+                <div className="pay-skel-row pay-skel-row--head">
+                  <span className="sk sk-badge" />
+                  <span className="sk sk-title" />
+                </div>
+                <div className="pay-skel-parties">
+                  <span className="sk sk-line" />
+                  <span className="sk sk-line" />
+                  <span className="sk sk-line" />
+                </div>
+                <div className="pay-skel-lines">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div className="pay-skel-line" key={i}>
+                      <span className="sk" />
+                      <span className="sk" />
+                    </div>
+                  ))}
+                </div>
+                <div className="pay-skel-total">
+                  <span className="sk" />
+                </div>
+              </div>
+              <div className="pay-card pay-skel-side">
+                <span className="sk sk-eyebrow" />
+                <span className="sk sk-amount" />
+                <span className="sk sk-sub" />
+                <span className="sk sk-btn" />
+              </div>
+            </div>
+            <p className="pay-loading">
+              <span className="iw-spin iw-spin--dark" /> Fetching the invoice&hellip;
+            </p>
           </div>
         ) : isError && !isGone ? (
           /* A payer who is told the link is dead simply stops paying. Unless
@@ -264,11 +413,25 @@ export const Payment = ({
               })}
             </ol>
 
-            <div className="pay-grid">
-              <div className="pay-doc">
-                {/* once it is settled the receipt is the document that matters */}
-                {isPaid(invoice.status) ? (
-                  <ReceiptDocument invoice={invoice} />
+            <div className={`pay-grid pay-grid--${stage}`}>
+              <div className={`pay-doc${showPrinter ? ' pay-doc--printer' : ''}`}>
+                {showPrinter ? (
+                  <>
+                    <Suspense
+                      fallback={
+                        <div className="pay-printer-fallback">
+                          <span className="iw-spin iw-spin--dark" aria-hidden="true" />
+                          Warming up the printer&hellip;
+                        </div>
+                      }
+                    >
+                      <ReceiptPrintout invoice={invoice} senderName={senderName} />
+                    </Suspense>
+                    {/* the vector receipt is what a Download / print actually captures */}
+                    <div className="pay-doc-print">
+                      <ReceiptDocument invoice={invoice} />
+                    </div>
+                  </>
                 ) : (
                   <InvoiceDocument
                     data={{
@@ -279,9 +442,10 @@ export const Payment = ({
                         phone: invoice.sender_business?.phone,
                         address: invoice.sender_business?.address,
                       },
-                      payment_account: routes.account
-                        ? { ...routes.account, swift_code: routes.account.swift }
-                        : invoice.payment_account ?? null,
+                      // Payment details never sit on the document itself: the
+                      // payer only sees an account after choosing a rail in the
+                      // side panel. Keeps bank details out of a link anyone holds.
+                      payment_account: null,
                     }}
                   />
                 )}
@@ -331,179 +495,202 @@ export const Payment = ({
                       {formatCurrency(invoice.total, invoice.currency)}
                     </strong>
 
-                    <div className="pay-methods">
-                      {[
-                        // instant rails when the sender takes them
-                        ...(routes.instant
-                          ? methodsFor(invoice.currency).map((m) => ({
-                              key: m.key,
-                              icon: m.icon,
-                              name: m.name,
-                              line: m.line,
-                            }))
-                          : []),
-                        // their own account, two ways, when one exists
-                        ...(routes.transfer && routes.account
-                          ? [
-                              {
-                                key: 'transfer',
-                                icon: 'bx-bank',
-                                name: 'Bank transfer',
-                                line: 'their account details',
-                              },
-                              {
-                                key: 'custom',
-                                icon: 'bx-timer',
-                                name: 'Custom',
-                                line: 'generated account, timed window',
-                              },
-                            ]
-                          : []),
-                      ].map((m) => (
+                    {/* ---- the fork: Paystack, or a transfer ---- */}
+                    {payView === 'choose' && (
+                      <div className="pay-pick">
                         <button
-                          key={m.key}
                           type="button"
-                          className={`pay-method${method === m.key ? ' active' : ''}`}
-                          onClick={() => setMethod(m.key)}
+                          className="pay-paystack"
+                          onClick={() => setPayView('paystack')}
                           disabled={stage === 'processing'}
                         >
-                          <i className={`bx ${m.icon}`} />
-                          <span>
-                            <b>{m.name}</b>
-                            <small>{m.line}</small>
+                          <span className="pay-paystack-badge" aria-hidden="true">
+                            <i className="bx bx-credit-card-front" />
                           </span>
-                          <i className="bx bx-check pay-method-tick" />
+                          <span className="pay-paystack-txt">
+                            <b>Pay with Paystack</b>
+                            <small>Card, bank transfer or USSD · instant</small>
+                          </span>
+                          <i className="bx bx-right-arrow-alt pay-paystack-go" />
                         </button>
-                      ))}
-                    </div>
 
-                    {method === 'custom' && routes.transfer && routes.account && !preview && (
-                      <PaymentWindowCard
-                        invoice={invoice}
-                        payerEmail={payer_email}
-                        requireEmail={requireEmail}
-                        onReported={() => {
-                          queryClient.invalidateQueries({ queryKey: ['invoices', invoice.id] });
-                          setStage('reported');
-                        }}
-                      />
-                    )}
-                    {method === 'custom' && preview && (
-                      <p className="pay-transfer-note">
-                        <i className="bx bx-info-circle" /> In the live link, a
-                        generated account with a 30-minute window appears here.
-                      </p>
-                    )}
-
-                    {method === 'transfer' && routes.transfer && routes.account && (
-                      <div className="pay-transfer">
-                        <div className="pay-transfer-head">
-                          <span className="pay-transfer-tag">
-                            {PROVIDER_LABELS[routes.account.provider] ?? 'Transfer'}
-                          </span>
-                          <b>Send {formatCurrency(invoice.total, invoice.currency)} to</b>
+                        <div className="pay-or">
+                          <span>or</span>
                         </div>
-                        <dl className="pay-transfer-rows">
-                          {[
-                            ...accountDisplayRows(routes.account),
-                            ['Reference', invoice.invoice_number],
-                          ]
-                            .filter(([, v]) => Boolean(v))
-                            .map(([label, value]) => (
-                              <div key={label as string}>
-                                <dt>{label}</dt>
-                                <dd>
-                                  <span>{value}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => copy(label as string, String(value))}
-                                    aria-label={`Copy ${label}`}
-                                  >
-                                    <i
-                                      className={`bx ${
-                                        copied === label ? 'bx-check' : 'bx-copy'
-                                      }`}
-                                    />
-                                  </button>
-                                </dd>
-                              </div>
-                            ))}
-                        </dl>
-                        {routes.account.instructions && (
-                          <p className="pay-transfer-note">
-                            <i className="bx bx-info-circle" />
-                            {routes.account.instructions}
-                          </p>
-                        )}
-                        <label className="pay-field">
-                          <span>Your transfer reference (optional)</span>
-                          <input
-                            value={reference}
-                            onChange={(e) => setReference(e.target.value)}
-                            placeholder="The reference your bank gave you"
-                          />
-                        </label>
+
+                        <button
+                          type="button"
+                          className="pay-alt"
+                          onClick={openRails}
+                          disabled={stage === 'processing'}
+                        >
+                          <i className="bx bx-transfer" aria-hidden="true" />
+                          <span>
+                            <b>Try other payment options</b>
+                            <small>Bank transfer from your own banking app</small>
+                          </span>
+                          <i className="bx bx-chevron-right" />
+                        </button>
                       </div>
                     )}
 
-                    <label className="pay-field">
-                      <span>Send my receipt to</span>
-                      <input
-                        type="email"
-                        value={payer_email}
-                        disabled={stage === 'processing'}
-                        onChange={(e) => {
-                          setPayerEmail(e.target.value);
-                          setEmailError('');
-                        }}
-                        placeholder="you@company.com"
-                      />
-                      {emailError && <small className="pay-error">{emailError}</small>}
-                    </label>
+                    {/* ---- Paystack, stubbed but obviously the default ---- */}
+                    {payView === 'paystack' && (
+                      <div className="pay-checkout">
+                        <button
+                          type="button"
+                          className="pay-back pay-back--inline"
+                          onClick={() => setPayView('choose')}
+                        >
+                          <i className="bx bx-left-arrow-alt" /> Payment options
+                        </button>
+                        <div className="pay-checkout-frame">
+                          <span className="pay-checkout-brand">
+                            <i className="bx bx-credit-card-front" /> Paystack
+                          </span>
+                          <p className="pay-checkout-lede">Paystack checkout opens here.</p>
+                          <p className="pay-checkout-note">
+                            Card, bank transfer and USSD all run through Paystack. This
+                            checkout is not wired up in the demo.
+                          </p>
+                        </div>
+                        <label className="pay-field">
+                          <span>Send my receipt to</span>
+                          <input
+                            type="email"
+                            value={payer_email}
+                            disabled={stage === 'processing'}
+                            onChange={(e) => {
+                              setPayerEmail(e.target.value);
+                              setEmailError('');
+                            }}
+                            placeholder="you@company.com"
+                          />
+                          {emailError && <small className="pay-error">{emailError}</small>}
+                        </label>
+                        <button
+                          type="button"
+                          className="pay-btn pay-btn--primary pay-btn--block"
+                          disabled={stage === 'processing'}
+                          onClick={() => {
+                            setMethod('Paystack');
+                            pay(invoice);
+                          }}
+                        >
+                          {stage === 'processing' ? (
+                            <>
+                              <span className="iw-spin" aria-hidden="true" />
+                              Confirming payment
+                            </>
+                          ) : (
+                            <>
+                              <i className="bx bx-lock-alt" /> Pay{' '}
+                              {formatCurrency(invoice.total, invoice.currency)}
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
 
-                    {method === 'transfer' && routes.transfer && routes.account ? (
-                      <button
-                        type="button"
-                        className="pay-btn pay-btn--primary pay-btn--block"
-                        disabled={stage === 'processing'}
-                        onClick={() => reportTransfer(invoice)}
-                      >
-                        {stage === 'processing' ? (
-                          <>
-                            <span className="iw-spin" aria-hidden="true" />
-                            Letting them know
-                          </>
+                    {/* ---- the transfer rails ---- */}
+                    {payView === 'rails' && (
+                      <div className="pay-rails-wrap">
+                        {paystackAvailable && (
+                          <button
+                            type="button"
+                            className="pay-back pay-back--inline"
+                            onClick={() => setPayView('choose')}
+                            disabled={stage === 'processing'}
+                          >
+                            <i className="bx bx-left-arrow-alt" /> Payment options
+                          </button>
+                        )}
+
+                        {railItems.length === 0 ? (
+                          <p className="pay-transfer-note">
+                            <i className="bx bx-info-circle" /> The sender has not added a
+                            transfer account for {invoice.currency} yet.
+                          </p>
                         ) : (
                           <>
-                            <i className="bx bx-check" /> I have sent the transfer
+                            <span className="pay-rails-title">Choose an account to pay into</span>
+                            <div className="pay-rails" role="list">
+                              {railItems.map((item, i) => {
+                                const meta = railMeta(item.provider);
+                                return (
+                                  <button
+                                    key={`${item.provider}-${i}`}
+                                    type="button"
+                                    role="listitem"
+                                    className={`pay-rail${selectedRail === i ? ' active' : ''}`}
+                                    onClick={() => chooseRail(i)}
+                                    disabled={stage === 'processing'}
+                                  >
+                                    <span className={`pay-rail-badge ${meta.tint}`} aria-hidden="true">
+                                      <i className={`bx ${meta.icon}`} />
+                                    </span>
+                                    <span className="pay-rail-txt">
+                                      <b>{item.label}</b>
+                                      {item.sub && <small>{item.sub}</small>}
+                                    </span>
+                                    {item.currency && (
+                                      <span className="pay-rail-cur">{item.currency}</span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </>
                         )}
-                      </button>
-                    ) : method && method !== 'custom' && method !== 'transfer' ? (
-                      <button
-                        type="button"
-                        className="pay-btn pay-btn--primary pay-btn--block"
-                        disabled={stage === 'processing'}
-                        onClick={() => pay(invoice)}
-                      >
-                        {stage === 'processing' ? (
-                          <>
-                            <span className="iw-spin" aria-hidden="true" />
-                            Confirming payment
-                          </>
+
+                        {active ? (
+                          <PayRailReveal
+                            key={selectedRail}
+                            amountLabel={formatCurrency(
+                              invoice.total,
+                              active.currency || invoice.currency
+                            )}
+                            senderName={senderName}
+                            kind={active.kind}
+                            rows={
+                              active.kind === 'account'
+                                ? [
+                                    ...accountDisplayRows(normaliseRail(active.rail)),
+                                    ['Reference', invoice.invoice_number] as [string, string],
+                                  ].filter(([, v]) => Boolean(v))
+                                : []
+                            }
+                            crypto={
+                              active.kind === 'crypto'
+                                ? {
+                                    asset: active.rail.asset,
+                                    network: active.rail.network,
+                                    wallet_address: active.rail.wallet_address,
+                                  }
+                                : undefined
+                            }
+                            instructions={active.rail.instructions}
+                            payerEmail={payer_email}
+                            onPayerEmail={(v) => {
+                              setPayerEmail(v);
+                              setEmailError('');
+                            }}
+                            emailError={emailError}
+                            reference={reference}
+                            onReference={setReference}
+                            onConfirm={() => reportTransfer(invoice)}
+                            processing={stage === 'processing'}
+                          />
                         ) : (
-                          <>
-                            <i className="bx bx-lock-alt" /> Pay{' '}
-                            {formatCurrency(invoice.total, invoice.currency)}
-                          </>
+                          railItems.length > 0 && (
+                            <p className="pay-choose-hint">
+                              <i className="bx bx-up-arrow-alt" aria-hidden="true" /> Pick an
+                              account to see where to send it.
+                            </p>
+                          )
                         )}
-                      </button>
-                    ) : !method ? (
-                      <p className="pay-choose-hint">
-                        <i className="bx bx-up-arrow-alt" aria-hidden="true" /> Pick
-                        how you want to pay.
-                      </p>
-                    ) : null}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -606,6 +793,23 @@ export const Payment = ({
                 )}
               </aside>
             </div>
+
+            {/* mobile: the amount and the way forward, always within thumb reach */}
+            {stage === 'review' && (
+              <div className="pay-mobile-bar">
+                <div className="pay-mobile-amt">
+                  <span>Amount due</span>
+                  <b>{formatCurrency(invoice.total, invoice.currency)}</b>
+                </div>
+                <button
+                  type="button"
+                  className="pay-btn pay-btn--primary"
+                  onClick={() => setStage('method')}
+                >
+                  Pay <i className="bx bx-right-arrow-alt" />
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

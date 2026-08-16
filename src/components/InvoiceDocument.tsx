@@ -36,6 +36,8 @@ export interface InvoiceDocData {
   business?: InvoiceDocBusiness | null;
   /** the account this invoice is paid into, printed on every PDF */
   payment_account?: Record<string, string | null | undefined> | import('@/types').PublicPaymentAccount | null;
+  /** the recipient's name when there's no saved client (ad-hoc billing) */
+  bill_to_name?: string | null;
 }
 
 const statusLabel: Record<InvoiceStatus, string> = {
@@ -97,7 +99,9 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
         </div>
         <div>
           <h4>Bill to</h4>
-          <p className="invoice-doc-name">{data.client?.name ?? 'No client selected'}</p>
+          <p className="invoice-doc-name">
+            {data.client?.name ?? data.bill_to_name ?? 'No client selected'}
+          </p>
           {data.client?.email && <p>{data.client.email}</p>}
           {data.client?.phone && <p>{data.client.phone}</p>}
           {data.client?.address && (
