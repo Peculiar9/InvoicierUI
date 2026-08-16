@@ -508,8 +508,8 @@ export const Payment = ({
                             <i className="bx bx-credit-card-front" />
                           </span>
                           <span className="pay-paystack-txt">
-                            <b>Pay with Paystack</b>
-                            <small>Card, bank transfer or USSD · instant</small>
+                            <b>Pay by card</b>
+                            <small>Card, transfer or USSD · powered by Paystack</small>
                           </span>
                           <i className="bx bx-right-arrow-alt pay-paystack-go" />
                         </button>
@@ -526,8 +526,8 @@ export const Payment = ({
                         >
                           <i className="bx bx-transfer" aria-hidden="true" />
                           <span>
-                            <b>Try other payment options</b>
-                            <small>Bank transfer from your own banking app</small>
+                            <b>Can't pay by card?</b>
+                            <small>See other ways to pay, like a bank transfer</small>
                           </span>
                           <i className="bx bx-chevron-right" />
                         </button>
