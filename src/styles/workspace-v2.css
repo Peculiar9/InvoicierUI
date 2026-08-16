@@ -8998,3 +8998,171 @@
     justify-self: stretch;
   }
 }
+
+/* ============================================================================
+   CHECKOUT MODE — clicking "Pay this invoice" enters a secured room: the
+   invoice folds into a summary strip up top ("View invoice" reopens it) and
+   the payment card takes the whole stage, centered, instead of hanging off
+   the document's side. Scoped to .pay-page.
+   ========================================================================== */
+.pay-page .pay-shellhead {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto 16px;
+}
+.pay-page .pay-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 3px 18px rgba(29, 27, 46, 0.05);
+}
+.pay-page .pay-summary-mark {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(146, 78, 233, 0.12);
+  color: #7c3aed;
+  font-weight: 800;
+  font-size: 1rem;
+}
+.pay-page .pay-summary-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pay-page .pay-summary-txt b {
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: #1d1b2e;
+}
+.pay-page .pay-summary-txt small {
+  font-size: 0.78rem;
+  color: #8a85a4;
+}
+.pay-page .pay-summary-amount {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  text-align: right;
+}
+.pay-page .pay-summary-amount small {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #8a85a4;
+}
+.pay-page .pay-summary-amount b {
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: #1d1b2e;
+  font-variant-numeric: tabular-nums;
+}
+.pay-page .pay-summary-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.pay-page .pay-summary-view:hover {
+  background: rgba(146, 78, 233, 0.08);
+  border-color: #b892f5;
+}
+.pay-page .pay-summary-doc {
+  margin-top: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px;
+  overflow: hidden;
+  animation: pay-doc-unfold 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes pay-doc-unfold {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* the grid narrows to one centered column while paying */
+.pay-page .pay-grid--method,
+.pay-page .pay-grid--processing {
+  grid-template-columns: 1fr;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.pay-page .pay-grid--method .pay-side,
+.pay-page .pay-grid--processing .pay-side {
+  position: static;
+  width: 100%;
+}
+
+/* card head: the way back, and the room's name */
+.pay-page .pay-checkout-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.pay-page .pay-checkout-head .pay-back {
+  margin-bottom: 0;
+}
+.pay-page .pay-checkout-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #8a85a4;
+}
+.pay-page .pay-checkout-title i {
+  color: #0c8d6f;
+  font-size: 0.95rem;
+}
+
+.pay-page .pay-secure-note {
+  width: 100%;
+  max-width: 620px;
+  margin: 14px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #8a85a4;
+  text-align: center;
+}
+.pay-page .pay-secure-note i {
+  color: #0c8d6f;
+}
+
+@media (max-width: 640px) {
+  .pay-page .pay-summary {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .pay-page .pay-summary-view {
+    order: 4;
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}

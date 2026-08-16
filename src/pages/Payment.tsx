@@ -102,6 +102,8 @@ export const Payment = ({
   // where the payer is inside the "Pay" step
   const [payView, setPayView] = useState<'choose' | 'paystack' | 'rails'>('choose');
   const [selectedRail, setSelectedRail] = useState<number | null>(null);
+  // in checkout the invoice folds into a summary strip; this reopens it
+  const [docOpen, setDocOpen] = useState(false);
 
   // a settled invoice opens straight on the receipt
   const invoiceStatus = invoice?.status;
@@ -115,6 +117,8 @@ export const Payment = ({
     if (stage !== 'review' && typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    // each stage starts with the invoice folded away again
+    setDocOpen(false);
   }, [stage]);
 
   // tell the sender their client opened the link. Fire and forget: a failure
@@ -284,6 +288,32 @@ export const Payment = ({
 
   const active = selectedRail != null ? railItems[selectedRail] : null;
 
+  // Entering checkout is entering a secured room: the invoice folds into a
+  // summary strip and the payment card takes the whole stage, instead of
+  // hanging off the side of the document like a popover.
+  const checkoutMode = (stage === 'method' || stage === 'processing') && !showPrinter;
+
+  const renderDoc = () =>
+    invoice ? (
+      <InvoiceDocument
+        data={{
+          ...invoice,
+          business: preview
+            ? null
+            : {
+                name: invoice.sender_business?.business_name,
+                email: invoice.sender_business?.email,
+                phone: invoice.sender_business?.phone,
+                address: invoice.sender_business?.address,
+              },
+          // Payment details never sit on the document itself: the payer only
+          // sees an account after choosing a rail in the checkout. Keeps bank
+          // details out of a link anyone holds.
+          payment_account: null,
+        }}
+      />
+    ) : null;
+
   return (
     <section className={`pay-page${preview ? ' pay-page--preview' : ''}`}>
       {preview && (
@@ -413,43 +443,62 @@ export const Payment = ({
               })}
             </ol>
 
-            <div className={`pay-grid pay-grid--${stage}`}>
-              <div className={`pay-doc${showPrinter ? ' pay-doc--printer' : ''}`}>
-                {showPrinter ? (
-                  <>
-                    <Suspense
-                      fallback={
-                        <div className="pay-printer-fallback">
-                          <span className="iw-spin iw-spin--dark" aria-hidden="true" />
-                          Warming up the printer&hellip;
-                        </div>
-                      }
-                    >
-                      <ReceiptPrintout invoice={invoice} senderName={senderName} />
-                    </Suspense>
-                    {/* the vector receipt is what a Download / print actually captures */}
-                    <div className="pay-doc-print">
-                      <ReceiptDocument invoice={invoice} />
-                    </div>
-                  </>
-                ) : (
-                  <InvoiceDocument
-                    data={{
-                      ...invoice,
-                      business: preview ? null : {
-                        name: invoice.sender_business?.business_name,
-                        email: invoice.sender_business?.email,
-                        phone: invoice.sender_business?.phone,
-                        address: invoice.sender_business?.address,
-                      },
-                      // Payment details never sit on the document itself: the
-                      // payer only sees an account after choosing a rail in the
-                      // side panel. Keeps bank details out of a link anyone holds.
-                      payment_account: null,
-                    }}
-                  />
-                )}
+            {checkoutMode && (
+              <div className="pay-shellhead">
+                <div className="pay-summary">
+                  <span className="pay-summary-mark" aria-hidden="true">
+                    {senderName.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="pay-summary-txt">
+                    <b>#{invoice.invoice_number}</b>
+                    <small>
+                      From {senderName} · due{' '}
+                      {formatDate(invoice.due_date, { month: 'short', day: 'numeric' })}
+                    </small>
+                  </span>
+                  <span className="pay-summary-amount">
+                    <small>Amount due</small>
+                    <b>{formatCurrency(invoice.total, invoice.currency)}</b>
+                  </span>
+                  <button
+                    type="button"
+                    className="pay-summary-view"
+                    onClick={() => setDocOpen((v) => !v)}
+                    aria-expanded={docOpen}
+                  >
+                    {docOpen ? 'Hide invoice' : 'View invoice'}
+                    <i className={`bx bx-chevron-${docOpen ? 'up' : 'down'}`} aria-hidden="true" />
+                  </button>
+                </div>
+                {docOpen && <div className="pay-summary-doc">{renderDoc()}</div>}
               </div>
+            )}
+
+            <div className={`pay-grid pay-grid--${stage}`}>
+              {!checkoutMode && (
+                <div className={`pay-doc${showPrinter ? ' pay-doc--printer' : ''}`}>
+                  {showPrinter ? (
+                    <>
+                      <Suspense
+                        fallback={
+                          <div className="pay-printer-fallback">
+                            <span className="iw-spin iw-spin--dark" aria-hidden="true" />
+                            Warming up the printer&hellip;
+                          </div>
+                        }
+                      >
+                        <ReceiptPrintout invoice={invoice} senderName={senderName} />
+                      </Suspense>
+                      {/* the vector receipt is what a Download / print actually captures */}
+                      <div className="pay-doc-print">
+                        <ReceiptDocument invoice={invoice} />
+                      </div>
+                    </>
+                  ) : (
+                    renderDoc()
+                  )}
+                </div>
+              )}
 
               <aside className="pay-side">
                 {stage === 'review' && (
@@ -481,19 +530,20 @@ export const Payment = ({
                 )}
 
                 {(stage === 'method' || stage === 'processing') && (
-                  <div className="pay-card">
-                    <button
-                      type="button"
-                      className="pay-back"
-                      onClick={() => setStage('review')}
-                      disabled={stage === 'processing'}
-                    >
-                      <i className="bx bx-left-arrow-alt" /> Back
-                    </button>
-                    <span className="pay-amount-label">Paying</span>
-                    <strong className="pay-amount">
-                      {formatCurrency(invoice.total, invoice.currency)}
-                    </strong>
+                  <div className="pay-card pay-card--checkout">
+                    <div className="pay-checkout-head">
+                      <button
+                        type="button"
+                        className="pay-back"
+                        onClick={() => setStage('review')}
+                        disabled={stage === 'processing'}
+                      >
+                        <i className="bx bx-left-arrow-alt" /> Back to invoice
+                      </button>
+                      <span className="pay-checkout-title">
+                        <i className="bx bx-lock-alt" aria-hidden="true" /> Secure checkout
+                      </span>
+                    </div>
 
                     {/* ---- the fork: Paystack, or a transfer ---- */}
                     {payView === 'choose' && (
@@ -793,6 +843,14 @@ export const Payment = ({
                 )}
               </aside>
             </div>
+
+            {checkoutMode && (
+              <p className="pay-secure-note">
+                <i className="bx bx-shield-quarter" aria-hidden="true" />
+                This checkout is secured. Account details appear only here, never in
+                the email.
+              </p>
+            )}
 
             {/* mobile: the amount and the way forward, always within thumb reach */}
             {stage === 'review' && (
