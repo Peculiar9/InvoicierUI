@@ -47,8 +47,16 @@ const decodeInvoice = (inv: Invoice): Invoice => {
   const c = inv.currency;
   const money = (v: number | undefined): number | undefined =>
     typeof v === 'number' ? toMajor(v, c) : v;
+  // the backend speaks basis points; the app still reads tax_rate (0.075)
+  const bps = (inv as Invoice & { tax_basis_points?: number }).tax_basis_points;
   return {
     ...inv,
+    tax_rate:
+      typeof inv.tax_rate === 'number' && !Number.isNaN(inv.tax_rate)
+        ? inv.tax_rate
+        : typeof bps === 'number'
+          ? bps / 10000
+          : 0,
     subtotal: money(inv.subtotal) ?? inv.subtotal,
     tax: money(inv.tax) ?? inv.tax,
     total: money(inv.total) ?? inv.total,
