@@ -9264,3 +9264,74 @@
 .pay-page .pay-expired-back:hover {
   color: var(--ink);
 }
+
+/* ============================================================================
+   ITEM ROWS ON A PHONE — the five-column row cannot survive 350px, so it
+   folds: description across the top, labeled Qty / Price / Amount beneath.
+   min-width: 0 everywhere, because an input's intrinsic width is what was
+   quietly forcing the row wider than the screen.
+   ========================================================================== */
+.iw .cinv-item > input {
+  min-width: 0;
+}
+.iw .cinv-mini {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .iw .cinv-item--head {
+    display: none;
+  }
+  .iw .cinv-item:not(.cinv-item--head) {
+    grid-template-columns: 76px minmax(0, 1fr) minmax(84px, auto);
+    grid-template-areas:
+      'desc  desc   remove'
+      'lqty  lprice ltotal'
+      'qty   price  total';
+    row-gap: 4px;
+    column-gap: 8px;
+    padding: 12px;
+  }
+  .iw .cinv-item:not(.cinv-item--head) > input[type='text'] {
+    grid-area: desc;
+    margin-bottom: 6px;
+  }
+  .iw .cinv-item:not(.cinv-item--head) > input[inputmode='numeric'] {
+    grid-area: qty;
+  }
+  .iw .cinv-item:not(.cinv-item--head) > input[inputmode='decimal'] {
+    grid-area: price;
+  }
+  .iw .cinv-mini {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    align-self: end;
+  }
+  .iw .cinv-mini:nth-of-type(1) {
+    grid-area: lqty;
+  }
+  .iw .cinv-mini:nth-of-type(2) {
+    grid-area: lprice;
+  }
+  .iw .cinv-mini:nth-of-type(3) {
+    grid-area: ltotal;
+    text-align: right;
+    padding-right: 4px;
+  }
+  .iw .cinv-line-total {
+    grid-area: total;
+    align-self: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .iw .cinv-remove {
+    grid-area: remove;
+    justify-self: end;
+  }
+}

@@ -1069,29 +1069,42 @@ export const InvoicePanel = () => {
                         <input
                           type="text"
                           placeholder="Item description"
+                          aria-label="Item description"
                           value={line.description}
                           onChange={(e) => updateItem(i, { description: e.target.value })}
                         />
+                        {/* phone layout only: the row folds and these name the fields */}
+                        <span className="cinv-mini" aria-hidden="true">
+                          Qty
+                        </span>
                         <input
                           type="number"
                           min={0}
                           step="1"
                           inputMode="numeric"
+                          aria-label="Quantity"
                           value={line.quantity}
                           onChange={(e) =>
                             updateItem(i, { quantity: Math.max(0, Number(e.target.value) || 0) })
                           }
                         />
+                        <span className="cinv-mini" aria-hidden="true">
+                          Price
+                        </span>
                         <input
                           type="number"
                           min={0}
                           step="0.01"
                           inputMode="decimal"
+                          aria-label="Unit price"
                           value={line.unit_price}
                           onChange={(e) =>
                             updateItem(i, { unit_price: Math.max(0, Number(e.target.value) || 0) })
                           }
                         />
+                        <span className="cinv-mini" aria-hidden="true">
+                          Amount
+                        </span>
                         <span className="cinv-line-total">
                           {formatCurrency(line.total, currency)}
                         </span>
