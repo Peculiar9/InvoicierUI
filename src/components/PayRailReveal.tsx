@@ -30,6 +30,10 @@ export interface PayRailRevealProps {
   processing: boolean;
   /** when a real PaymentWindow exists, its expiry drives the clock instead of the default */
   expiresAt?: string | null;
+  /** the window closed: mint a fresh one for the same rail */
+  onRetry: () => void;
+  /** the window closed: go back and pick a different account */
+  onBack: () => void;
 }
 
 /**
@@ -55,6 +59,8 @@ export const PayRailReveal = ({
   onConfirm,
   processing,
   expiresAt,
+  onRetry,
+  onBack,
 }: PayRailRevealProps) => {
   const [loading, setLoading] = useState(true);
   const [left, setLeft] = useState(WINDOW_SECONDS);
@@ -69,10 +75,14 @@ export const PayRailReveal = ({
     const work = Promise.resolve();
     void Promise.all([work, new Promise((r) => setTimeout(r, REVEAL_MIN_MS))]).then(() => {
       if (cancelled) return;
+      // dev only: ?window=15 shortens the clock so expiry is testable
+      const devOverride = import.meta.env.DEV
+        ? Number(new URLSearchParams(globalThis.location?.search ?? '').get('window')) || null
+        : null;
       const windowSeconds =
         expiresAt != null
           ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000))
-          : WINDOW_SECONDS;
+          : devOverride ?? WINDOW_SECONDS;
       expiryRef.current = Date.now() + windowSeconds * 1000;
       setLeft(windowSeconds);
       setLoading(false);
@@ -115,6 +125,35 @@ export const PayRailReveal = ({
           <span className="iw-spin iw-spin--dark" aria-hidden="true" />
           <b>Loading payment options…</b>
           <small>Securing the account details for this transfer</small>
+        </div>
+      </div>
+    );
+  }
+
+  // The clock ran out: the details leave the screen. An expired window is the
+  // security feature working, so it is said plainly, with the way forward.
+  if (left <= 0) {
+    return (
+      <div className="pay-reveal">
+        <div className="pay-expired" role="status">
+          <span className="pay-expired-icon" aria-hidden="true">
+            <i className="bx bx-time-five" />
+          </span>
+          <b>This payment window has closed</b>
+          <p>
+            For your safety the account details are only shown for a limited
+            time. Nothing was charged. Get fresh details to finish paying.
+          </p>
+          <button
+            type="button"
+            className="pay-btn pay-btn--primary pay-btn--block"
+            onClick={onRetry}
+          >
+            <i className="bx bx-refresh" /> Get fresh details
+          </button>
+          <button type="button" className="pay-expired-back" onClick={onBack}>
+            Choose a different account
+          </button>
         </div>
       </div>
     );

@@ -9218,3 +9218,49 @@
     justify-content: center;
   }
 }
+
+/* the window ran out: details are gone, the way forward is plain */
+.pay-page .pay-expired {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 20px 20px;
+  text-align: center;
+  animation: pay-fade 0.3s var(--swift);
+}
+.pay-page .pay-expired-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(185, 125, 16, 0.12);
+  color: #b97d10;
+  font-size: 1.4rem;
+}
+.pay-page .pay-expired b {
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+.pay-page .pay-expired p {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-faint);
+  max-width: 34ch;
+}
+.pay-page .pay-expired-back {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 6px;
+  transition: color 0.2s ease;
+}
+.pay-page .pay-expired-back:hover {
+  color: var(--ink);
+}

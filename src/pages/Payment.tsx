@@ -119,6 +119,8 @@ export const Payment = ({
   // where the payer is inside the "Pay" step
   const [payView, setPayView] = useState<'choose' | 'paystack' | 'rails'>('choose');
   const [selectedRail, setSelectedRail] = useState<number | null>(null);
+  // bumping this remounts the reveal: a fresh loading beat, a fresh window
+  const [railNonce, setRailNonce] = useState(0);
   // in checkout the invoice folds into a summary strip; this reopens it
   const [docOpen, setDocOpen] = useState(false);
 
@@ -723,7 +725,9 @@ export const Payment = ({
 
                         {active ? (
                           <PayRailReveal
-                            key={selectedRail}
+                            key={`${selectedRail}-${railNonce}`}
+                            onRetry={() => setRailNonce((n) => n + 1)}
+                            onBack={() => setSelectedRail(null)}
                             amountLabel={formatCurrency(
                               invoice.total,
                               active.currency || invoice.currency

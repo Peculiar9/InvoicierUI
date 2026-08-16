@@ -141,6 +141,7 @@ export const invoicesApi = {
         | ({ invoice: Invoice; items?: Invoice['items'] } & {
             business?: Invoice['sender_business'];
             payment_account?: Invoice['payment_account'];
+            payment_accounts?: Invoice['payment_accounts'];
           })
         | Invoice
       >
@@ -155,12 +156,14 @@ export const invoicesApi = {
         items?: Invoice['items'];
         business?: Invoice['sender_business'];
         payment_account?: Invoice['payment_account'];
+        payment_accounts?: Invoice['payment_accounts'];
       };
       return decodeInvoice({
         ...wrapped.invoice,
         items: wrapped.items ?? wrapped.invoice.items ?? [],
         sender_business: wrapped.business ?? null,
         payment_account: wrapped.payment_account ?? null,
+        payment_accounts: wrapped.payment_accounts ?? null,
       });
     }
     return decodeInvoice(data as Invoice);
