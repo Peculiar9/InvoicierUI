@@ -10,6 +10,7 @@ import {
 import '@/styles/workspace-v2.css';
 import { WAITLIST_MODE } from '@/lib/waitlistMode';
 import { SignInLoader } from '@/components/SignInLoader';
+import { RETURN_TO_KEY } from '@/lib/guards';
 
 const emailSchema = z.string().email('That email does not look right');
 
@@ -175,7 +176,18 @@ export const Login = () => {
     return (
       <SignInLoader
         name={landing.name}
-        onDone={() => navigate({ to: landing.target as '/dashboard' })}
+        onDone={() => {
+          // an emailed link they followed before signing in wins over the
+          // default landing: finish the errand they actually came for
+          let back: string | null = null;
+          try {
+            back = sessionStorage.getItem(RETURN_TO_KEY);
+            if (back) sessionStorage.removeItem(RETURN_TO_KEY);
+          } catch {
+            // private mode: fall through to the usual landing
+          }
+          navigate({ to: (back || landing.target) as '/dashboard' });
+        }}
       />
     );
   }

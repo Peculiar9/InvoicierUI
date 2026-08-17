@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
@@ -191,6 +191,19 @@ export const Invoices = () => {
     setPicked((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
 
   // the panel steps through what this page is showing, in this order
+  // An emailed link ("they say they have paid") lands here with ?open=<id>.
+  // Open that invoice straight away so the confirm action is the first thing
+  // they see, then clean the URL so a refresh does not reopen it.
+  const openedFromLink = useRef(false);
+  useEffect(() => {
+    if (openedFromLink.current) return;
+    const id = new URLSearchParams(window.location.search).get('open');
+    if (!id) return;
+    openedFromLink.current = true;
+    openView(id);
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [openView]);
+
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   const pagedIds = paged.map((inv) => inv.id).join(',');
   useEffect(() => {
