@@ -55,6 +55,9 @@ const signOutHard = () => {
   } catch {
     // private mode, or storage full: the redirect still has to happen
   }
+  // A payer on a payment link is a guest, not a session. A stale token in
+  // their storage must never yank them off the invoice and onto our login.
+  if (window.location.pathname.startsWith('/pay/')) return;
   if (!window.location.pathname.startsWith('/login')) {
     window.location.href = '/login';
   }

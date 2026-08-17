@@ -9,6 +9,7 @@ import { usePublicInvoice } from '@/hooks/useInvoices';
 import { invoicesApi } from '@/api/invoices';
 import { resolveRoutes, PROVIDER_LABELS, accountDisplayRows } from '@/utils/paymentRoutes';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
@@ -162,8 +163,19 @@ export const Payment = ({
     return true;
   };
 
+  const [payNotice, setPayNotice] = useState('');
+
   const pay = (inv: Invoice) => {
     if (!requireEmail()) return;
+    // The demo settle behind this button is an owner's shortcut, an
+    // authenticated call. A real payer has no session and must never be
+    // handed a 401: they get the honest state of the card rail instead.
+    if (!useAuthStore.getState().token) {
+      setPayNotice(
+        'Card payments are almost here. For now, pay by bank transfer — it takes under a minute.'
+      );
+      return;
+    }
     setStage('processing');
     markPaid.mutate(
       {
@@ -636,6 +648,21 @@ export const Payment = ({
                           />
                           {emailError && <small className="pay-error">{emailError}</small>}
                         </label>
+                        {payNotice && (
+                          <div className="pay-notice" role="status">
+                            <i className="bx bx-info-circle" aria-hidden="true" />
+                            <span>{payNotice}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPayNotice('');
+                                openRails();
+                              }}
+                            >
+                              Pay by transfer
+                            </button>
+                          </div>
+                        )}
                         <button
                           type="button"
                           className="pay-btn pay-btn--primary pay-btn--block"

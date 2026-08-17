@@ -9335,3 +9335,36 @@
     justify-self: end;
   }
 }
+
+/* the honest card-rail note on the public checkout */
+.pay-page .pay-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 11px 14px;
+  border: 1px solid rgba(146, 78, 233, 0.25);
+  border-radius: 12px;
+  background: rgba(146, 78, 233, 0.06);
+  font-size: 0.82rem;
+  color: var(--ink);
+  animation: pay-fade 0.3s var(--swift);
+}
+.pay-page .pay-notice i {
+  color: #7c3aed;
+  font-size: 1rem;
+}
+.pay-page .pay-notice span {
+  flex: 1;
+  min-width: 0;
+}
+.pay-page .pay-notice button {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: #7c3aed;
+  cursor: pointer;
+  padding: 2px 4px;
+}
