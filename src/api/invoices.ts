@@ -42,7 +42,7 @@ const decodeItem = (item: InvoiceItem, currency?: string): InvoiceItem => {
   };
 };
 
-const decodeInvoice = (inv: Invoice): Invoice => {
+export const decodeInvoice = (inv: Invoice): Invoice => {
   if (!inv || typeof inv !== 'object') return inv;
   const c = inv.currency;
   const money = (v: number | undefined): number | undefined =>

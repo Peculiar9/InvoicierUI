@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { decodeInvoice } from './invoices';
 import type {
   Activity,
   ApiResponse,
@@ -75,7 +76,8 @@ interface RealStats {
 const statsToLegacy = (real: RealStats): DashboardStats => {
   const lead = [...(real.by_currency ?? [])].sort((a, b) => b.collected - a.collected)[0];
   return {
-    total_received: lead?.collected ?? 0,
+    // minor units on the wire, like every other money field
+    total_received: (lead?.collected ?? 0) / 100,
     total_invoices: real.total_invoices ?? 0,
     total_clients: real.total_clients ?? 0,
     pending_invoices: real.pending_invoices ?? 0,
@@ -163,7 +165,7 @@ export const dashboardApi = {
       '/dashboard/recent-invoices',
       { params: { limit } }
     );
-    return response.data.data;
+    return (response.data.data ?? []).map(decodeInvoice);
   },
 
   getRecentActivities: async (limit?: number): Promise<Activity[]> => {
@@ -183,7 +185,7 @@ export const dashboardApi = {
         stats: statsToLegacy(data.stats as RealStats),
         revenue_chart: revenueToChart((data.revenue as RevenueRow[]) ?? []),
         invoice_status_chart: statusToChart((data.statuses as StatusRow[]) ?? []),
-        recent_invoices: (data.recent_invoices as Invoice[]) ?? [],
+        recent_invoices: ((data.recent_invoices as Invoice[]) ?? []).map(decodeInvoice),
         recent_activities: ((data.activities as RealActivity[]) ?? []).map(toActivity),
       };
     }
