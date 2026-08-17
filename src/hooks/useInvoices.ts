@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoicesApi } from '@/api/invoices';
 import { devMockInvoice, isDevMockInvoiceId } from '@/lib/devMockInvoice';
-import type { CreateInvoiceDto, MarkPaidDto, UpdateInvoiceDto } from '@/types';
+import type { CreateInvoiceDto, Invoice, MarkPaidDto, UpdateInvoiceDto } from '@/types';
+import { isPaid } from '@/utils/invoiceStatus';
 
 interface UseInvoicesParams {
   status?: string;
@@ -35,6 +36,17 @@ export const useInvoice = (id: string) => {
 export const usePublicInvoice = (id: string, asOwner: boolean) => {
   return useQuery({
     queryKey: ['invoices', id],
+    // The payer often sits on this page waiting for the sender to say the
+    // money landed. Poll while the invoice is unsettled so the page turns
+    // itself into the receipt the moment it is confirmed, with no refresh.
+    // It stops the instant the invoice is paid, and never runs in a
+    // background tab.
+    refetchInterval: (query) => {
+      const inv = query.state.data as Invoice | undefined;
+      if (!inv || isDevMockInvoiceId(id)) return false;
+      return isPaid(inv.status) ? false : 12000;
+    },
+    refetchIntervalInBackground: false,
     queryFn: () => {
       // Dev only: an inv_* id renders a realistic sample so we can refine the
       // pay flow. In prod/staging this branch never runs, so those ids fall
