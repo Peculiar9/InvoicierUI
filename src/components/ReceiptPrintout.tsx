@@ -53,9 +53,12 @@ const SCRIPT: { at: number; text: string }[] = [
 export const ReceiptPrintout = ({
   invoice,
   senderName,
+  onPrinted,
 }: {
   invoice: Invoice;
   senderName: string;
+  /** fires once the paper has fed out and settled */
+  onPrinted?: () => void;
 }) => {
   const [phase, setPhase] = useState<Phase>('idle');
   const [progress, setProgress] = useState(0);
@@ -66,6 +69,9 @@ export const ReceiptPrintout = ({
   const timers = useRef<number[]>([]);
   const outLength = useRef(0);
   const feeding = useRef(false);
+  // held in a ref so the feed effect never restarts when the caller re-renders
+  const onPrintedRef = useRef(onPrinted);
+  onPrintedRef.current = onPrinted;
 
   const reduced = useMemo(
     () =>
@@ -149,7 +155,10 @@ export const ReceiptPrintout = ({
       );
     }
     timers.current.push(
-      window.setTimeout(() => setPhase('done'), total + 90)
+      window.setTimeout(() => {
+        setPhase('done');
+        onPrintedRef.current?.();
+      }, total + 90)
     );
   }, [strip.length, reduced]);
 

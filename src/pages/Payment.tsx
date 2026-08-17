@@ -15,6 +15,7 @@ import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice, PublicPaymentAccount } from '@/types';
 import { PayRailReveal } from '@/components/PayRailReveal';
+import { ReceiptStage } from '@/components/ReceiptStage';
 
 // The delight moment: the surreal receipt printer. Lazy so its CSS and the
 // animation are only paid for at the instant an invoice actually settles.
@@ -164,6 +165,8 @@ export const Payment = ({
   };
 
   const [payNotice, setPayNotice] = useState('');
+  // the full-screen receipt: loading, the printer, then the device's print sheet
+  const [receiptStage, setReceiptStage] = useState(false);
 
   const pay = (inv: Invoice) => {
     if (!requireEmail()) return;
@@ -346,6 +349,13 @@ export const Payment = ({
 
   return (
     <section className={`pay-page${preview ? ' pay-page--preview' : ''}`}>
+      {receiptStage && invoice && (
+        <ReceiptStage
+          invoice={invoice}
+          senderName={senderName}
+          onClose={() => setReceiptStage(false)}
+        />
+      )}
       {preview && (
         <div className="pay-preview-bar" role="note">
           <i className="bx bx-show" aria-hidden="true" />
@@ -887,7 +897,7 @@ export const Payment = ({
                       <button
                         type="button"
                         className="pay-btn pay-btn--ghost pay-btn--block"
-                        onClick={() => window.print()}
+                        onClick={() => setReceiptStage(true)}
                       >
                         <i className="bx bx-download" /> Download receipt
                       </button>

@@ -9559,3 +9559,136 @@
 @media (prefers-reduced-motion: reduce) {
   .share-sheet, .share-scrim { animation: none; }
 }
+
+/* ============================================================================
+   RECEIPT STAGE — "Download receipt" takes the whole screen: a beat of
+   loading, the machine feeding the paper, then the device's own print sheet.
+   The paper is the subject at every width, so a phone gets the receipt
+   itself rather than a card with a button on it.
+   ========================================================================== */
+.rcs {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(120% 90% at 50% -10%, #2b2842 0%, #1d1b2e 55%, #131120 100%);
+  animation: pay-fade 0.3s var(--swift);
+}
+.rcs-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px clamp(16px, 5vw, 28px);
+  flex: none;
+}
+.rcs-brand {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.rcs-brand b { color: #ff5a5f; }
+.rcs-close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.rcs-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+.rcs-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(12px, 4vw, 24px);
+  overflow-y: auto;
+}
+/* the machine sits on the dark stage without its own frame */
+.rcs-body .rp-embed {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  width: 100%;
+  max-width: 460px;
+}
+.rcs-body .rp-embed-head { color: rgba(255, 255, 255, 0.66); }
+
+.rcs-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-align: center;
+}
+.rcs-loading b { font-size: 1rem; font-weight: 600; }
+.rcs-loading small { color: rgba(255, 255, 255, 0.55); font-size: 0.8rem; }
+.rcs-loading .iw-spin {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+  border-color: rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+}
+
+.rcs-foot {
+  flex: none;
+  padding: 14px clamp(16px, 5vw, 28px) calc(18px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+.rcs-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+.rcs-note i { color: #34d3a6; }
+.rcs-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.rcs-actions .pay-btn { min-width: 190px; }
+.rcs-done {
+  padding: 12px 18px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.rcs-done:hover { color: #fff; }
+
+/* only the vector receipt reaches paper */
+.rcs-print { display: none; }
+@media print {
+  body > *:not(.rcs) { display: none !important; }
+  .rcs { position: static; background: #fff; display: block; }
+  .rcs-top, .rcs-body, .rcs-foot { display: none !important; }
+  .rcs-print { display: block !important; }
+}
+
+@media (max-width: 640px) {
+  .rcs-actions { flex-direction: column-reverse; gap: 6px; }
+  .rcs-actions .pay-btn { width: 100%; }
+  .rcs-body .rp-embed { max-width: 100%; }
+}
