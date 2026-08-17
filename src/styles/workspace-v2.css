@@ -9692,3 +9692,76 @@
   .rcs-actions .pay-btn { width: 100%; }
   .rcs-body .rp-embed { max-width: 100%; }
 }
+
+/* ============================================================================
+   PAYMENT-RAIL NUDGE — a business with one way to get paid has a single point
+   of failure. This says so, once, where the money is being watched.
+   ========================================================================== */
+.iw .rail-nudge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border-left: 3px solid var(--brand);
+}
+.iw .rail-nudge--empty {
+  border-left-color: #b97d10;
+  background: rgba(185, 125, 16, 0.05);
+}
+.iw .rail-nudge-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1.4rem;
+}
+.iw .rail-nudge--empty .rail-nudge-icon {
+  background: rgba(185, 125, 16, 0.12);
+  color: #b97d10;
+}
+.iw .rail-nudge-txt { flex: 1; min-width: 0; }
+.iw .rail-nudge-txt b {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.iw .rail-nudge-txt p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+.iw .rail-nudge .iw-btn { flex: none; }
+.iw .rail-nudge-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.iw .rail-nudge-x:hover { background: var(--paper); color: var(--ink); }
+
+@media (max-width: 720px) {
+  .iw .rail-nudge {
+    flex-wrap: wrap;
+    padding-right: 34px;
+  }
+  .iw .rail-nudge .iw-btn { width: 100%; justify-content: center; }
+}

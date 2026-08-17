@@ -78,6 +78,26 @@ export const Dashboard = () => {
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   // the fallback when there is no money at all yet
   const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
+  // How many ways a client can actually pay this business. One rail is a
+  // single point of failure: if the card provider blinks, the money stops.
+  const payRails = useSettingsStore((st) => st.profile.receivingAccounts ?? []);
+  const [railNudgeGone, setRailNudgeGone] = useState(
+    () => {
+      try {
+        return localStorage.getItem('invoicier-rail-nudge') === 'dismissed';
+      } catch {
+        return false;
+      }
+    }
+  );
+  const dismissRailNudge = () => {
+    setRailNudgeGone(true);
+    try {
+      localStorage.setItem('invoicier-rail-nudge', 'dismissed');
+    } catch {
+      // private mode: it simply returns next visit
+    }
+  };
   const [range, setRange] = useState<DateRangeValue>(() => THIS_YEAR.build());
   // one eye for the whole dashboard: money hides, counts stay
   const [hideMoney, setHideMoney] = useState(
@@ -459,6 +479,49 @@ export const Dashboard = () => {
           </section>
         ) : (
           <>
+        {payRails.length === 0 ? (
+          <section className="dash-card rail-nudge rail-nudge--empty">
+            <span className="rail-nudge-icon" aria-hidden="true">
+              <i className="bx bx-wallet" />
+            </span>
+            <div className="rail-nudge-txt">
+              <b>No one can pay you yet</b>
+              <p>
+                Add the account your money should land in. Without one, a client
+                who opens your invoice has nowhere to send it.
+              </p>
+            </div>
+            <Link to="/settings" className="iw-btn">
+              Add an account
+            </Link>
+          </section>
+        ) : payRails.length === 1 && !railNudgeGone ? (
+          <section className="dash-card rail-nudge">
+            <span className="rail-nudge-icon" aria-hidden="true">
+              <i className="bx bx-shield-quarter" />
+            </span>
+            <div className="rail-nudge-txt">
+              <b>Add a backup way to get paid</b>
+              <p>
+                You have one account. If a card fails or a transfer bounces,
+                a second option, another bank, a dollar account, means the
+                money still reaches you instead of waiting.
+              </p>
+            </div>
+            <Link to="/settings" className="iw-btn iw-btn--ghost">
+              Add another
+            </Link>
+            <button
+              type="button"
+              className="rail-nudge-x"
+              onClick={dismissRailNudge}
+              aria-label="Dismiss"
+            >
+              <i className="bx bx-x" />
+            </button>
+          </section>
+        ) : null}
+
         {/* the reporting period: one control, and one eye for the money */}
         <div className="dash-period">
           <DateRangePicker
