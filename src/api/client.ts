@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import { humanizeAxiosError } from '@/lib/apiError';
 
 // Relative by default so the deployed build calls its own origin (`/api`),
 // which MSW intercepts. Set VITE_API_URL to target a real backend instead.
@@ -115,7 +116,8 @@ apiClient.interceptors.response.use(
     } else if (status === 401) {
       signOutHard();
     }
-    return Promise.reject(error);
+    // every failure leaves here saying something a person can act on
+    return Promise.reject(humanizeAxiosError(error));
   }
 );
 

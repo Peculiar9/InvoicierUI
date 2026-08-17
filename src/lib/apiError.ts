@@ -54,3 +54,44 @@ export const errorMessage = (error: unknown, doing?: string): string => {
 /** True when the failure means the session is gone, not that the action was bad. */
 export const isAuthError = (error: unknown): boolean =>
   error instanceof AxiosError && error.response?.status === 401;
+
+/** Server text that describes our insides, never something to show a user. */
+const INTERNALS =
+  /database|transaction|sql|query|column|relation|constraint|undefined|null|internal server|stack|ECONN|ENOTFOUND/i;
+
+/**
+ * Rewrites an AxiosError's message into the sentence a person should see,
+ * IN PLACE, keeping the error object itself intact (status checks like
+ * `error.response?.status === 404` keep working everywhere).
+ *
+ * The api client calls this on every failed response, so every screen that
+ * renders `error.message` says something humane — the server's own words when
+ * they were written for the user, honest fallbacks when they were not. No
+ * screen ever shows "Request failed with status code 401" again.
+ */
+export const humanizeAxiosError = (error: AxiosError): AxiosError => {
+  let message: string;
+
+  if (error.code === 'ECONNABORTED') {
+    message = 'This is taking longer than it should. Check your connection and try again.';
+  } else if (!error.response) {
+    message = navigator.onLine
+      ? 'We could not reach Invoicier. Check your connection and try again.'
+      : 'You are offline. Nothing was lost, try again once you are back.';
+  } else {
+    const status = error.response.status;
+    const fromServer = (error.response.data as { message?: string } | undefined)?.message;
+    if (fromServer && status < 500 && !INTERNALS.test(fromServer)) {
+      message = fromServer;
+    } else if (status === 429) {
+      message = 'Too many attempts in a row. Give it a minute and try again.';
+    } else if (status >= 500) {
+      message = 'The problem is on our side, not yours. Try again in a moment.';
+    } else {
+      message = 'That did not go through. Check the details and try again.';
+    }
+  }
+
+  error.message = message;
+  return error;
+};
