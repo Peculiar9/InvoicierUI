@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import { Fragment, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { ReceiptDocument } from '@/components/ReceiptDocument';
 import { useMarkInvoicePaid } from '@/hooks';
@@ -15,7 +15,6 @@ import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice, PublicPaymentAccount } from '@/types';
 import { PayRailReveal } from '@/components/PayRailReveal';
-import { ReceiptStage } from '@/components/ReceiptStage';
 
 // The delight moment: the surreal receipt printer. Lazy so its CSS and the
 // animation are only paid for at the instant an invoice actually settles.
@@ -110,6 +109,7 @@ export const Payment = ({
     error instanceof AxiosError && error.response?.status === 404;
   const markPaid = useMarkInvoicePaid();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const profile = useSettingsStore((s) => s.profile);
 
   const [stage, setStage] = useState<Stage>('review');
@@ -165,8 +165,6 @@ export const Payment = ({
   };
 
   const [payNotice, setPayNotice] = useState('');
-  // the full-screen receipt: loading, the printer, then the device's print sheet
-  const [receiptStage, setReceiptStage] = useState(false);
 
   const pay = (inv: Invoice) => {
     if (!requireEmail()) return;
@@ -349,13 +347,6 @@ export const Payment = ({
 
   return (
     <section className={`pay-page${preview ? ' pay-page--preview' : ''}`}>
-      {receiptStage && invoice && (
-        <ReceiptStage
-          invoice={invoice}
-          senderName={senderName}
-          onClose={() => setReceiptStage(false)}
-        />
-      )}
       {preview && (
         <div className="pay-preview-bar" role="note">
           <i className="bx bx-show" aria-hidden="true" />
@@ -897,7 +888,12 @@ export const Payment = ({
                       <button
                         type="button"
                         className="pay-btn pay-btn--ghost pay-btn--block"
-                        onClick={() => setReceiptStage(true)}
+                        onClick={() =>
+                          navigate({
+                            to: '/receipt/$invoiceId',
+                            params: { invoiceId: invoice.id },
+                          })
+                        }
                       >
                         <i className="bx bx-download" /> Download receipt
                       </button>

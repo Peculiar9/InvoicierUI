@@ -1290,6 +1290,7 @@ export const Landing = () => {
   const [waitlistBusy, setWaitlistBusy] = useState(false);
   const [refCopied, setRefCopied] = useState(false);
   const waitlisted = waitlistJoin !== null;
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
 
   useEasedAnchors();
 
@@ -1315,6 +1316,8 @@ export const Landing = () => {
     setWaitlistBusy(true);
     try {
       const join = await waitlistApi.join(email);
+      // they pressed subscribe on an address already on the list
+      setAlreadySubscribed(join.already || waitlistJoin !== null);
       setWaitlistJoin(join);
       try {
         localStorage.setItem(WAITLIST_KEY, JSON.stringify(join));
@@ -1631,32 +1634,39 @@ export const Landing = () => {
               <p>{CTA.capture.body}</p>
 
               {waitlisted && waitlistJoin ? (
-                <div className="lp-waitlist-done" role="status">
-                  <i className="bx bx-check" />
-                  <span>
-                    {WAITLIST_MODE ? (
-                      <>You are <b>№{waitlistJoin.position}</b> {CTA.capture.successLead}</>
-                    ) : (
-                      <>You are {CTA.capture.successLead}</>
-                    )}
-                  </span>
-                  <button
-                    type="button"
-                    className="lp-waitlist-ref"
-                    onClick={() => {
-                      navigator.clipboard?.writeText(waitlistJoin.referral_url).then(
-                        () => {
-                          setRefCopied(true);
-                          setTimeout(() => setRefCopied(false), 1600);
-                        },
-                        () => {}
-                      );
-                    }}
-                  >
-                    <code>{waitlistJoin.referral_url}</code>
-                    <i className={`bx ${refCopied ? 'bx-check' : 'bx-copy'}`} />
-                  </button>
-                </div>
+                WAITLIST_MODE ? (
+                  <div className="lp-waitlist-done" role="status">
+                    <i className="bx bx-check" />
+                    <span>
+                      You are <b>№{waitlistJoin.position}</b> {CTA.capture.successLead}
+                    </span>
+                    <button
+                      type="button"
+                      className="lp-waitlist-ref"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(waitlistJoin.referral_url).then(
+                          () => {
+                            setRefCopied(true);
+                            setTimeout(() => setRefCopied(false), 1600);
+                          },
+                          () => {}
+                        );
+                      }}
+                    >
+                      <code>{waitlistJoin.referral_url}</code>
+                      <i className={`bx ${refCopied ? 'bx-check' : 'bx-copy'}`} />
+                    </button>
+                  </div>
+                ) : (
+                  /* the newsletter keeps its manners: no queue number, no
+                     referral link to push, just a warm word that they are in */
+                  <p className="lp-news-done" role="status">
+                    <i className="bx bx-check-circle" aria-hidden="true" />
+                    {alreadySubscribed
+                      ? 'No need, we have got you already. Glad you like our gist that much.'
+                      : 'You are on the list. We will only write when it is worth your time.'}
+                  </p>
+                )
               ) : (
                 <>
                   <form className="lp-waitlist-form" onSubmit={joinWaitlist}>

@@ -1,55 +1,14 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { playCut, playTear, startTransport, type RunningSound } from '@/lib/printerAudio';
+import { DEMO_RECEIPT, type ReceiptData } from '@/lib/receiptData';
+import { formatCurrency } from '@/utils/format';
 import '@/styles/receipt-printer.css';
 
+export { DEMO_RECEIPT };
+export type { ReceiptData };
+
 type Phase = 'ready' | 'printing' | 'done' | 'torn';
-
-/**
- * Everything the printed receipt says. Nothing here is hardcoded in the
- * markup, so the day this runs on a settled invoice it takes real values:
- * `<ReceiptPrinter receipt={fromInvoice(invoice)} />`.
- */
-export interface ReceiptData {
-  /** who was paid */
-  business: string;
-  /** who paid */
-  client: string;
-  receiptNo: string;
-  /** when the money landed */
-  paidOn: string;
-  invoiceNo: string;
-  invoiceIssuedOn: string;
-  /** how it was paid, as the payer would name it */
-  method: string;
-  reference: string;
-  /** ISO 4217, so the figures format themselves */
-  currency: string;
-  lines: { label: string; amount: number }[];
-  taxLabel: string;
-  taxAmount: number;
-  total: number;
-}
-
-/** Stands in until a real invoice is handed over. */
-export const DEMO_RECEIPT: ReceiptData = {
-  business: 'Ada Studio',
-  client: 'Otto Holdings',
-  receiptNo: 'RC-0009',
-  paidOn: '3 Mar 2027',
-  invoiceNo: 'IV2047',
-  invoiceIssuedOn: '21 Feb 2027',
-  method: 'Paystack',
-  reference: 'IV2047-OTT-3M',
-  currency: 'NGN',
-  lines: [
-    { label: 'Brand identity', amount: 2_400_000 },
-    { label: 'Motion design', amount: 1_150_000 },
-  ],
-  taxLabel: 'VAT 7.5%',
-  taxAmount: 266_250,
-  total: 3_816_250,
-};
 
 /** How long the transport runs. */
 const FEED_MS = 3400;
@@ -66,6 +25,110 @@ const SCRIPT: { at: number; text: string }[] = [
   { at: 0.9, text: 'CUTTING' },
 ];
 
+const plural = (n: number) => (n === 1 ? 'copy' : 'copies');
+
+/**
+ * One receipt's worth of paper.
+ *
+ * Shared by the roll on screen and the sheets that go to the printer, so what
+ * comes out of the machine and what comes out of the printer are the same
+ * document.
+ */
+const Slip = ({ r, money }: { r: ReceiptData; money: (n: number) => string }) => (
+  <>
+    <div className="rp-rc-head">
+      <b>
+        invoicier<i>.</i>
+      </b>
+      <span>
+        RECEIPT {r.receiptNo}
+        <br />
+        {r.paidOn}
+      </span>
+    </div>
+
+    <p className="rp-rc-title">PAYMENT RECEIVED</p>
+
+    <div className="rp-rc-party">
+      <span>
+        <small>Paid to</small>
+        <b>{r.business}</b>
+      </span>
+      <span style={{ textAlign: 'right' }}>
+        <small>Paid by</small>
+        <b>{r.client}</b>
+      </span>
+    </div>
+
+    <div className="rp-rc-rows">
+      {r.lines.map((l, i) => (
+        <div className="rp-rc-row" key={`${l.label}-${i}`}>
+          <i>{l.label}</i>
+          <b>{money(l.amount)}</b>
+        </div>
+      ))}
+      {r.taxAmount > 0 && (
+        <div className="rp-rc-row">
+          <i>{r.taxLabel}</i>
+          <b>{money(r.taxAmount)}</b>
+        </div>
+      )}
+      <div className="rp-rc-row total">
+        <i>Paid in full</i>
+        <b>{money(r.total)}</b>
+      </div>
+    </div>
+
+    <div className="rp-rc-stamp">SETTLED</div>
+
+    <p className="rp-rc-foot">
+      Paid via {r.method}, ref <code>{r.reference}</code>
+      <br />
+      Against invoice {r.invoiceNo}, issued {r.invoiceIssuedOn}
+      <br />
+      Keep this. It is your record.
+    </p>
+  </>
+);
+
+/**
+ * The dark stage with nothing on it yet.
+ *
+ * Arriving from "Download receipt" the invoice has to be fetched first; this
+ * holds the room rather than flashing an empty machine at the payer.
+ */
+export const ReceiptPrinterStandby = ({
+  title = 'Loading your receipt',
+  note,
+  failed = false,
+}: {
+  title?: string;
+  note?: string;
+  failed?: boolean;
+}) => (
+  <main className="rp rp--standby">
+    <span className="rp-beam" aria-hidden="true" />
+    <header className="rp-top">
+      <Link to="/" className="rp-back">
+        <i className="bx bx-left-arrow-alt" aria-hidden="true" /> Back
+      </Link>
+      <span className="rp-wordmark">
+        invoicier<b>.</b>
+      </span>
+    </header>
+
+    <div className="rp-standby" role="status" aria-live="polite">
+      {failed ? (
+        <i className="bx bx-error-circle rp-standby-icon" aria-hidden="true" />
+      ) : (
+        <span className="rp-standby-spin" aria-hidden="true" />
+      )}
+      <b>{title}</b>
+      {note && <small>{note}</small>}
+    </div>
+  </main>
+);
+
 /**
  * The receipt printer.
  *
@@ -75,12 +138,32 @@ const SCRIPT: { at: number; text: string }[] = [
  *
  * The feed runs on `steps()` and the sheet jerks with each one, because paper
  * does not glide out of a printer. It ratchets.
+ *
+ * It is also a real tool: every press of Print puts another copy on the roll,
+ * and Download hands exactly what is on the roll to the device's printer, one
+ * copy per page. The paper then leaves the machine and the roll starts clean.
  */
-export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptData }) => {
+export const ReceiptPrinter = ({
+  receipt = DEMO_RECEIPT,
+  autoPrint = false,
+  eyebrow = 'The moment of record',
+  title = 'An invoice was paid. Watch the proof come out.',
+  note = 'Every settled invoice grows a receipt on its own. Both parties get it, nobody clicks anything. This is that instant, slowed down enough to see.',
+  onBack,
+}: {
+  receipt?: ReceiptData;
+  /** run the first copy on arrival, for anyone who came here to get one */
+  autoPrint?: boolean;
+  eyebrow?: string;
+  title?: string;
+  note?: string;
+  /** where "Back" goes, when it is not the marketing home */
+  onBack?: () => void;
+}) => {
   const [phase, setPhase] = useState<Phase>('ready');
   const [progress, setProgress] = useState(0);
   const [muted, setMuted] = useState(false);
-  /** What is on the roll, newest first: the last printed sits at the mouth. */
+  /** What is on the roll, newest first: one entry per completed copy. */
   const [strip, setStrip] = useState<ReceiptData[]>([]);
   const clipRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
@@ -89,6 +172,8 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
   /** How much paper is already out, so a new receipt feeds on from there. */
   const outLength = useRef(0);
   const feeding = useRef(false);
+
+  const copies = strip.length;
 
   const reduced = useMemo(
     () =>
@@ -106,19 +191,14 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
   );
 
   const money = useMemo(
-    () =>
-      new Intl.NumberFormat('en-NG', {
-        style: 'currency',
-        currency: receipt.currency,
-        maximumFractionDigits: 0,
-      }),
+    () => (n: number) => formatCurrency(n, receipt.currency),
     [receipt.currency]
   );
 
   const display = useMemo(() => {
     if (phase === 'ready') return 'READY';
     if (phase === 'done') return 'COMPLETE';
-    if (phase === 'torn') return 'READY';
+    if (phase === 'torn') return 'CUT';
     return ([...SCRIPT].reverse().find((s) => progress >= s.at) ?? SCRIPT[0]).text;
   }, [phase, progress]);
 
@@ -170,6 +250,7 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
     );
   }, [strip.length, muted, reduced]);
 
+  /** One press, one full animation, one more copy on the roll. */
   const print = () => {
     if (phase === 'printing') return;
     timers.current.forEach(clearTimeout);
@@ -180,13 +261,24 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
     setStrip((roll) => [receipt, ...roll]);
   };
 
-  const tear = () => {
-    if (!muted) playTear();
+  // held in a ref so the auto-run below never re-arms on an unrelated render
+  const printRef = useRef(print);
+  printRef.current = print;
+
+  /** Arriving with a receipt to collect, the first copy runs itself. Self
+      cleaning, so StrictMode's double mount re-arms rather than cancels. */
+  useEffect(() => {
+    if (!autoPrint) return;
+    const t = window.setTimeout(() => printRef.current(), reduced ? 120 : 560);
+    return () => window.clearTimeout(t);
+  }, [autoPrint, reduced]);
+
+  /** The strip leaves the machine and the roll pushes a fresh stub out. */
+  const tearOff = () => {
     setPhase('torn');
     timers.current.push(
       window.setTimeout(
         () => {
-          // the strip is gone; the roll pushes a fresh stub into the mouth
           outLength.current = 0;
           setStrip([]);
           setPhase('ready');
@@ -195,6 +287,18 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
         reduced ? 100 : 1500
       )
     );
+  };
+
+  /**
+   * Hand the roll to the device. Every copy on the strip is already rendered
+   * into `.rp-print`, one per page, so what prints is exactly what the counter
+   * says. The paper is gone afterwards, which is why the roll resets.
+   */
+  const download = () => {
+    if (copies === 0 || phase === 'printing') return;
+    if (!muted) playTear();
+    window.print();
+    timers.current.push(window.setTimeout(tearOff, 80));
   };
 
   return (
@@ -214,21 +318,24 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
       </span>
 
       <header className="rp-top">
-        <Link to="/" className="rp-back">
-          <i className="bx bx-left-arrow-alt" aria-hidden="true" /> Back
-        </Link>
+        {onBack ? (
+          <button type="button" className="rp-back" onClick={onBack}>
+            <i className="bx bx-left-arrow-alt" aria-hidden="true" /> Back
+          </button>
+        ) : (
+          <Link to="/" className="rp-back">
+            <i className="bx bx-left-arrow-alt" aria-hidden="true" /> Back
+          </Link>
+        )}
         <span className="rp-wordmark">
           invoicier<b>.</b>
         </span>
       </header>
 
       <div className="rp-lede">
-        <span>The moment of record</span>
-        <h1>An invoice was paid. Watch the proof come out.</h1>
-        <p>
-          Every settled invoice grows a receipt on its own. Both parties get it,
-          nobody clicks anything. This is that instant, slowed down enough to see.
-        </p>
+        <span>{eyebrow}</span>
+        <h1>{title}</h1>
+        <p>{note}</p>
       </div>
 
       <div className="rp-stage">
@@ -279,56 +386,7 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
             <div className="rp-sheet" ref={paperRef}>
               {strip.map((r, i) => (
                 <div className="rp-receipt" key={`${r.receiptNo}-${strip.length - i}`}>
-                  <div className="rp-rc-head">
-                    <b>
-                      invoicier<i>.</i>
-                    </b>
-                    <span>
-                      RECEIPT {r.receiptNo}
-                      <br />
-                      {r.paidOn}
-                    </span>
-                  </div>
-
-                  <p className="rp-rc-title">PAYMENT RECEIVED</p>
-
-                  <div className="rp-rc-party">
-                    <span>
-                      <small>Paid to</small>
-                      <b>{r.business}</b>
-                    </span>
-                    <span style={{ textAlign: 'right' }}>
-                      <small>Paid by</small>
-                      <b>{r.client}</b>
-                    </span>
-                  </div>
-
-                  <div className="rp-rc-rows">
-                    {r.lines.map((l) => (
-                      <div className="rp-rc-row" key={l.label}>
-                        <i>{l.label}</i>
-                        <b>{money.format(l.amount)}</b>
-                      </div>
-                    ))}
-                    <div className="rp-rc-row">
-                      <i>{r.taxLabel}</i>
-                      <b>{money.format(r.taxAmount)}</b>
-                    </div>
-                    <div className="rp-rc-row total">
-                      <i>Paid in full</i>
-                      <b>{money.format(r.total)}</b>
-                    </div>
-                  </div>
-
-                  <div className="rp-rc-stamp">SETTLED</div>
-
-                  <p className="rp-rc-foot">
-                    Paid via {r.method}, ref <code>{r.reference}</code>
-                    <br />
-                    Against invoice {r.invoiceNo}, issued {r.invoiceIssuedOn}
-                    <br />
-                    Keep this. It is your record.
-                  </p>
+                  <Slip r={r} money={money} />
                 </div>
               ))}
 
@@ -343,41 +401,69 @@ export const ReceiptPrinter = ({ receipt = DEMO_RECEIPT }: { receipt?: ReceiptDa
       <span className="rp-floor" aria-hidden="true" />
 
       <div className="rp-controls">
-        <button type="button" className="rp-btn" onClick={print} disabled={phase === 'printing'}>
-          <i className="bx bx-printer" aria-hidden="true" />
-          {strip.length > 0 ? 'Print another' : 'Print the receipt'}
-        </button>
-        <button
-          type="button"
-          className="rp-btn rp-btn--ghost"
-          onClick={tear}
-          disabled={strip.length === 0 || phase === 'printing' || phase === 'torn'}
-        >
-          <i className="bx bx-cut" aria-hidden="true" /> Tear the strip off
-        </button>
-        <button
-          type="button"
-          className="rp-btn rp-btn--ghost rp-btn--icon"
-          onClick={() => {
-            if (!muted) transport.current?.stop();
-            setMuted((m) => !m);
-          }}
-          aria-pressed={muted}
-          aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
-          title={muted ? 'Sound off' : 'Sound on'}
-        >
-          <i className={`bx ${muted ? 'bx-volume-mute' : 'bx-volume-full'}`} aria-hidden="true" />
-        </button>
+        <div className="rp-meter">
+          <span
+            className={`rp-count${copies > 0 ? ' is-live' : ''}`}
+            role="status"
+            aria-live="polite"
+            data-testid="rp-count"
+          >
+            <i className="bx bx-receipt" aria-hidden="true" />
+            {copies === 0 ? 'No copies yet' : `${copies} ${plural(copies)} ready`}
+          </span>
+          <button
+            type="button"
+            className="rp-btn rp-btn--ghost rp-btn--icon"
+            onClick={() => {
+              if (!muted) transport.current?.stop();
+              setMuted((m) => !m);
+            }}
+            aria-pressed={muted}
+            aria-label={muted ? 'Turn sound on' : 'Turn sound off'}
+            title={muted ? 'Sound off' : 'Sound on'}
+          >
+            <i className={`bx ${muted ? 'bx-volume-mute' : 'bx-volume-full'}`} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="rp-actions">
+          <button type="button" className="rp-btn" onClick={print} disabled={phase === 'printing'}>
+            <i className="bx bx-printer" aria-hidden="true" />
+            {copies === 0 ? 'Print a copy' : 'Print another copy'}
+          </button>
+          <button
+            type="button"
+            className="rp-btn rp-btn--ghost"
+            onClick={download}
+            disabled={copies === 0 || phase === 'printing' || phase === 'torn'}
+            title={copies === 0 ? 'Print a copy first' : undefined}
+          >
+            <i className="bx bx-download" aria-hidden="true" />
+            {copies === 0 ? 'Download' : `Download ${copies} ${plural(copies)}`}
+          </button>
+        </div>
+
         <p className="rp-hint">
           {phase === 'ready' &&
-            (strip.length === 0
-              ? 'A fresh roll is loaded and the paper is waiting at the mouth.'
+            (copies === 0
+              ? 'A fresh roll is loaded. Print as many copies as you need, then download the lot.'
               : 'Cut clean. The roll is ready for the next one.')}
           {phase === 'printing' && 'Paper transport engaged. Watch the lamp.'}
           {phase === 'done' &&
-            `${strip.length} on the strip. Print another and it keeps running, or cut the lot off.`}
-          {phase === 'torn' && 'Filed.'}
+            `${copies} ${plural(copies)} on the roll. Print another, or download all ${copies} — one per page.`}
+          {phase === 'torn' && 'Off the roll and on its way to your printer.'}
         </p>
+      </div>
+
+      {/* What the printer actually gets: one page per copy, nothing else. */}
+      <div className="rp-print" aria-hidden="true">
+        {strip.map((r, i) => (
+          <div className="rp-print-copy" key={`print-${r.receiptNo}-${strip.length - i}`}>
+            <div className="rp-receipt">
+              <Slip r={r} money={money} />
+            </div>
+          </div>
+        ))}
       </div>
     </main>
   );

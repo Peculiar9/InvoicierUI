@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { formatCurrency, formatDate } from '@/utils/format';
-import { todayLocal } from '@/utils/day';
+import { formatCurrency } from '@/utils/format';
+import { receiptFromInvoice, type ReceiptData } from '@/lib/receiptData';
 import type { Invoice } from '@/types';
 import '@/styles/receipt-printer.css';
 
@@ -15,25 +15,6 @@ import '@/styles/receipt-printer.css';
  * receipt-printer.css; only a compact `.rp-embed` frame is new.
  */
 type Phase = 'idle' | 'printing' | 'done';
-
-interface RcLine {
-  label: string;
-  amount: number;
-}
-interface ReceiptShape {
-  business: string;
-  client: string;
-  receiptNo: string;
-  paidOn: string;
-  invoiceNo: string;
-  method: string;
-  reference: string;
-  currency: string;
-  lines: RcLine[];
-  taxLabel: string;
-  taxAmount: number;
-  total: number;
-}
 
 /** How long the transport runs. */
 const FEED_MS = 3000;
@@ -63,7 +44,7 @@ export const ReceiptPrintout = ({
   const [phase, setPhase] = useState<Phase>('idle');
   const [progress, setProgress] = useState(0);
   /** The roll, newest first. Here it only ever holds the one receipt. */
-  const [strip, setStrip] = useState<ReceiptShape[]>([]);
+  const [strip, setStrip] = useState<ReceiptData[]>([]);
   const clipRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
@@ -80,30 +61,10 @@ export const ReceiptPrintout = ({
     []
   );
 
-  const receipt = useMemo<ReceiptShape>(() => {
-    const received = invoice.amount_received ?? invoice.total;
-    return {
-      business: senderName,
-      client:
-        invoice.client?.name ?? invoice.bill_to_name ?? 'the payer',
-      receiptNo: invoice.receipt_number ?? invoice.invoice_number,
-      paidOn: formatDate(invoice.date_received ?? todayLocal()),
-      invoiceNo: invoice.invoice_number,
-      method: invoice.payment_method ?? 'Bank transfer',
-      reference: invoice.claim_reference ?? invoice.invoice_number,
-      currency: invoice.currency,
-      lines: (invoice.items ?? []).map((it) => ({
-        label: it.description || 'Item',
-        amount: it.total,
-      })),
-      taxLabel:
-        invoice.tax_rate === 0.075
-          ? 'VAT (7.5%)'
-          : `Tax (${+((invoice.tax_rate ?? 0) * 100).toFixed(2)}%)`,
-      taxAmount: invoice.tax ?? 0,
-      total: received,
-    };
-  }, [invoice, senderName]);
+  const receipt = useMemo(
+    () => receiptFromInvoice(invoice, senderName),
+    [invoice, senderName]
+  );
 
   const money = (n: number) => formatCurrency(n, receipt.currency);
 

@@ -27,6 +27,7 @@ import { Route as CompanyRouteImport } from './routes/company'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReceiptInvoiceIdRouteImport } from './routes/receipt_.$invoiceId'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -119,6 +120,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReceiptInvoiceIdRoute = ReceiptInvoiceIdRouteImport.update({
+  id: '/receipt_/$invoiceId',
+  path: '/receipt/$invoiceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
   id: '/pay/$invoiceId',
   path: '/pay/$invoiceId',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/receipt/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/receipt/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/receipt_/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
+    | '/receipt/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
+    | '/receipt/$invoiceId'
   id:
     | '__root__'
     | '/'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/pay/$invoiceId'
+    | '/receipt_/$invoiceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   WelcomeRoute: typeof WelcomeRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
+  ReceiptInvoiceIdRoute: typeof ReceiptInvoiceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -405,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/receipt_/$invoiceId': {
+      id: '/receipt_/$invoiceId'
+      path: '/receipt/$invoiceId'
+      fullPath: '/receipt/$invoiceId'
+      preLoaderRoute: typeof ReceiptInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pay/$invoiceId': {
       id: '/pay/$invoiceId'
       path: '/pay/$invoiceId'
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   WelcomeRoute: WelcomeRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
+  ReceiptInvoiceIdRoute: ReceiptInvoiceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
