@@ -413,7 +413,7 @@ export const Dashboard = () => {
       active="dashboard"
       title="Dashboard"
       actions={[
-        { label: 'New invoice', bx: 'bx-plus', onClick: openCreate },
+        { label: 'New invoice', bx: 'bx-plus', onClick: () => openCreate() },
         { label: 'Clients', bx: 'bx-user', to: '/clients' },
       ]}
     >

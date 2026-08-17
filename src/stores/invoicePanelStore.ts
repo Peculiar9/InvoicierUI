@@ -35,7 +35,15 @@ export const useInvoicePanelStore = create<InvoicePanelState>((set, get) => ({
   },
   openView: (id) => set({ open: true, mode: 'view', invoice_id: id, prefillClientId: null }),
   openCreate: (client_id) =>
-    set({ open: true, mode: 'create', invoice_id: null, prefillClientId: client_id ?? null }),
+    set({
+      open: true,
+      mode: 'create',
+      invoice_id: null,
+      // Guard: passed straight to onClick, this receives the click event.
+      // Only a real id may prefill, or the form thinks a client is chosen
+      // and hides the fields for billing someone new.
+      prefillClientId: typeof client_id === 'string' && client_id ? client_id : null,
+    }),
   openEdit: (id) => set({ open: true, mode: 'edit', invoice_id: id, prefillClientId: null }),
   close: () => set({ open: false }),
 }));

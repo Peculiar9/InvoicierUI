@@ -222,7 +222,7 @@ export const Invoices = () => {
     <LegacyWorkspace
       active="invoices"
       title="Invoices"
-      actions={[{ label: 'New invoice', bx: 'bx-plus', onClick: openCreate }]}
+      actions={[{ label: 'New invoice', bx: 'bx-plus', onClick: () => openCreate() }]}
     >
       <div className="view">
         <div className="view-toolbar">
