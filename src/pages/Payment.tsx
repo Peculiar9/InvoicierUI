@@ -911,22 +911,6 @@ export const Payment = ({
               </p>
             )}
 
-            {/* mobile: the amount and the way forward, always within thumb reach */}
-            {stage === 'review' && (
-              <div className="pay-mobile-bar">
-                <div className="pay-mobile-amt">
-                  <span>Amount due</span>
-                  <b>{formatCurrency(invoice.total, invoice.currency)}</b>
-                </div>
-                <button
-                  type="button"
-                  className="pay-btn pay-btn--primary"
-                  onClick={() => setStage('method')}
-                >
-                  Pay <i className="bx bx-right-arrow-alt" />
-                </button>
-              </div>
-            )}
           </>
         )}
       </div>

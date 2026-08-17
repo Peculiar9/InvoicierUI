@@ -205,6 +205,14 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
           )}
         </footer>
       )}
+
+      {/* the quiet maker's mark: every document says where it came from */}
+      <div className="invoice-doc-made" aria-label="Made with Invoicier">
+        <span>made with</span>
+        <b>
+          invoicier<i>.</i>
+        </b>
+      </div>
     </article>
   );
 };

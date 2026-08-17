@@ -1,12 +1,38 @@
 import { appBaseUrl } from './email';
 import { toast } from './toast';
+import { formatCurrency, formatDate } from '@/utils/format';
 
-/** Copy the invoice's public payment link (origin-aware) to the clipboard. */
-export async function copyInvoiceLink(id: string) {
+/** What the copy needs to write a line the client can actually read. */
+interface CopyableInvoice {
+  id: string;
+  invoice_number?: string;
+  total?: number;
+  currency?: string;
+  due_date?: string;
+}
+
+/**
+ * Copy the payment link wrapped in a sentence, not bare. The link usually
+ * lands in WhatsApp or a chat, so it should arrive saying who is asking,
+ * for how much and by when, with the link as the way in.
+ */
+export async function copyInvoiceLink(inv: CopyableInvoice, senderName?: string) {
   try {
-    const link = `${appBaseUrl()}/pay/${id}`;
-    await navigator.clipboard.writeText(link);
-    toast.success('Payment link copied to clipboard');
+    const link = `${appBaseUrl()}/pay/${inv.id}`;
+    const number = inv.invoice_number ? `invoice ${inv.invoice_number}` : 'an invoice';
+    const opener = senderName?.trim()
+      ? `Hello! ${senderName.trim()} sent you ${number}`
+      : `Hello! You have received ${number}`;
+    const amount =
+      typeof inv.total === 'number' && inv.currency
+        ? ` for ${formatCurrency(inv.total, inv.currency)}`
+        : '';
+    const due = inv.due_date
+      ? `, due ${formatDate(inv.due_date, { month: 'long', day: 'numeric' })}`
+      : '';
+    const message = `${opener}${amount}${due}. View it and pay securely here: ${link}`;
+    await navigator.clipboard.writeText(message);
+    toast.success('Copied, with a note your client can read');
   } catch {
     toast.error('Could not copy the payment link');
   }

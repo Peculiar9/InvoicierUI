@@ -410,15 +410,18 @@ export const InvoicePanel = () => {
     }
     // Delivery belongs to the backend: the send endpoint emails the client
     // a branded invoice via Brevo. The browser opens nothing on its own.
-    const channel = inv.client?.email ? 'email' : 'link';
+    // The address can live in two places: the saved client's record, or the
+    // bill_to_email typed on the invoice itself (ad-hoc billing). Either sends.
+    const to = inv.client?.email || inv.bill_to_email || undefined;
+    const channel = to ? 'email' : 'link';
     sendInvoice.mutate(
-      { id: inv.id, channel, to: inv.client?.email },
+      { id: inv.id, channel, to },
       {
         onSuccess: () =>
           toast.success(
             channel === 'email'
-              ? `Invoice emailed to ${inv.client?.name ?? inv.bill_to_name ?? 'your client'}`
-              : 'Marked as sent (client has no email)'
+              ? `Invoice emailed to ${inv.client?.name ?? inv.bill_to_name ?? to}`
+              : 'Marked as sent. Add their email to send it directly next time.'
           ),
       }
     );
@@ -464,7 +467,7 @@ export const InvoicePanel = () => {
     setBusy('Copy Link');
     try {
       const inv = await persist();
-      if (inv) await copyInvoiceLink(inv.id);
+      if (inv) await copyInvoiceLink(inv, profile.name);
     } finally {
       setBusy(null);
     }
@@ -609,7 +612,7 @@ export const InvoicePanel = () => {
                   <button
                     type="button"
                     className="btn btn-ghost"
-                    onClick={() => invoice && copyInvoiceLink(invoice.id)}
+                    onClick={() => invoice && copyInvoiceLink(invoice, profile.name)}
                   >
                     <i className="bx bx-link" /> Copy link
                   </button>

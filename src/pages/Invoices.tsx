@@ -18,6 +18,7 @@ import { toast } from '@/lib/toast';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { todayLocal } from '@/utils/day';
 import { useListStateStore } from '@/stores/listStateStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { Client, Invoice, InvoiceStatus } from '@/types';
 
@@ -102,6 +103,7 @@ export const Invoices = () => {
   const { data, isLoading, isError, error, refetch, isFetching } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);
   const openCreate = useInvoicePanelStore((s) => s.openCreate);
+  const businessName = useSettingsStore((s) => s.profile.name);
 
   const toggleSort = (key: SortKey) => {
     patch({
@@ -532,7 +534,7 @@ export const Invoices = () => {
                             type="button"
                             title="Copy the payment link"
                             aria-label="Copy the payment link"
-                            onClick={() => copyInvoiceLink(inv.id)}
+                            onClick={() => copyInvoiceLink(inv, businessName)}
                           >
                             <i className="bx bx-link" />
                           </button>

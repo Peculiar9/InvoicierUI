@@ -4454,77 +4454,19 @@
     position: static;
     order: -1;
   }
-  /* on review the document leads and the sticky bar carries the CTA; the pay
-     card (action) leads on every other stage */
+  /* on review the document leads; the amount card below carries the one CTA */
   .pay-grid--review .pay-side {
     order: 1;
-  }
-  /* leave room for the sticky bar so it never sits over the last line */
-  .pay-grid--review {
-    padding-bottom: 84px;
-  }
-  /* .pay-page prefix out-specifies the base `.pay-mobile-bar { display:none }`,
-     which sits later in the file and would otherwise win at equal specificity */
-  .pay-page .pay-mobile-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    padding: 12px clamp(16px, 5vw, 20px);
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: rgba(255, 255, 255, 0.94);
-    border-top: 1px solid var(--border);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 -6px 24px rgba(29, 27, 46, 0.08);
-    animation: pay-bar-rise 0.4s var(--smooth);
-  }
-  .pay-mobile-amt {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-  }
-  .pay-mobile-amt span {
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 0.56rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-  .pay-mobile-amt b {
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-  .pay-mobile-bar .pay-btn {
-    flex-shrink: 0;
-    padding: 13px 26px;
   }
   /* bigger touch targets on the method list */
   .pay-rail { padding: 14px; }
   .pay-rail-badge { width: 42px; height: 42px; }
-}
-@keyframes pay-bar-rise {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pay-mobile-bar { animation: none; }
 }
 
 @media print {
   .pay-top,
   .pay-steps,
   .pay-side,
-  .pay-mobile-bar,
   .pay-footnote {
     display: none !important;
   }
@@ -5762,7 +5704,6 @@
 }
 
 /* --- mobile: amount + CTA always within thumb reach --- */
-.pay-mobile-bar { display: none; }
 
 /* the wait, made calm and legible */
 .pay-card--waiting {
@@ -9396,4 +9337,82 @@
   color: #7c3aed;
   cursor: pointer;
   padding: 2px 4px;
+}
+
+/* the maker's mark at the document's foot */
+.invoice-doc .invoice-doc-made {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 26px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border, #ece8f6);
+}
+.invoice-doc .invoice-doc-made span {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b3aec9;
+}
+.invoice-doc .invoice-doc-made b {
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #6a6a7b;
+}
+.invoice-doc .invoice-doc-made b i {
+  font-style: normal;
+  color: #ff5a5f;
+}
+
+/* ============================================================================
+   PRINT — one page unless the items truly need more, wearing the sender's
+   brand. Browsers drop background colour on paper unless told not to, which
+   is why "branded" printing came out grey.
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  .invoice-doc,
+  .invoice-doc * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .invoice-doc {
+    font-size: 12px;
+    border: 0;
+    box-shadow: none;
+  }
+  .invoice-doc .invoice-doc-top {
+    margin-bottom: 16px;
+  }
+  .invoice-doc .invoice-doc-parties {
+    margin-bottom: 14px;
+    gap: 14px;
+  }
+  .invoice-doc .invoice-doc-table {
+    margin-bottom: 14px;
+  }
+  .invoice-doc .invoice-doc-table td {
+    padding: 8px 0;
+    font-size: 12px;
+  }
+  .invoice-doc .invoice-doc-table tr,
+  .invoice-doc .invoice-doc-totals,
+  .invoice-doc .invoice-doc-foot > div,
+  .invoice-doc .invoice-doc-made {
+    break-inside: avoid;
+  }
+  .invoice-doc .invoice-doc-foot {
+    margin-top: 10px;
+  }
+  .invoice-doc .invoice-doc-foot p {
+    font-size: 11px;
+  }
+  .invoice-doc .invoice-doc-made {
+    margin-top: 14px;
+  }
 }
