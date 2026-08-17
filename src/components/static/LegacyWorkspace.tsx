@@ -12,6 +12,7 @@ import { useVerification } from '@/hooks/useVerification';
 import { toast } from '@/lib/toast';
 import { useInvoicePanelStore } from '@/stores/invoicePanelStore';
 import { InvoicePanel } from '@/components/InvoicePanel';
+import { ShareSheet } from '@/components/ShareSheet';
 import { formatDate } from '@/utils/format';
 import type { Activity } from '@/types';
 
@@ -435,6 +436,7 @@ export const LegacyWorkspace = ({
       </Modal>
 
       <InvoicePanel />
+      <ShareSheet />
     </div>
   );
 };

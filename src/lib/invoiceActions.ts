@@ -1,6 +1,7 @@
 import { appBaseUrl } from './email';
 import { toast } from './toast';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { useShareSheetStore } from '@/stores/shareSheetStore';
 
 /** What the copy needs to write a line the client can actually read. */
 interface CopyableInvoice {
@@ -32,7 +33,8 @@ export async function copyInvoiceLink(inv: CopyableInvoice, senderName?: string)
       : '';
     const message = `${opener}${amount}${due}. View it and pay securely here: ${link}`;
     await navigator.clipboard.writeText(message);
-    toast.success('Copied, with a note your client can read');
+    // the copy is half the job; the sheet offers the send
+    useShareSheetStore.getState().open({ message, link, number: inv.invoice_number });
   } catch {
     toast.error('Could not copy the payment link');
   }

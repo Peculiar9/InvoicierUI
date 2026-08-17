@@ -9416,3 +9416,146 @@
     margin-top: 14px;
   }
 }
+
+/* ============================================================================
+   SHARE SHEET — the copy's second half. Pops when a payment link is copied:
+   the direct rails up front, the phone's own sheet behind "More".
+   ========================================================================== */
+.share-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1700;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(29, 27, 46, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: scrim-in 0.22s ease;
+}
+.share-sheet {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 22px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 24px 60px rgba(29, 27, 46, 0.28);
+  animation: share-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes share-pop {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.share-grab { display: none; }
+.share-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.share-check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(12, 141, 111, 0.12);
+  color: #0c8d6f;
+  font-size: 1.3rem;
+}
+.share-head b {
+  display: block;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.share-head small {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+.share-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.share-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.25s var(--ease-out), box-shadow 0.2s ease;
+}
+.share-target:hover {
+  transform: translateY(-2px);
+  border-color: rgba(146, 78, 233, 0.35);
+  box-shadow: var(--shadow-sm);
+}
+.share-target-badge {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  font-size: 1.4rem;
+  color: #fff;
+}
+.share-target-badge.is-whatsapp { background: #25d366; }
+.share-target-badge.is-telegram { background: #26a5e4; }
+.share-target-badge.is-x { background: #1d1b2e; }
+.share-target-badge.is-email { background: rgba(146, 78, 233, 0.14); color: #7c3aed; }
+.share-target-badge.is-more { background: var(--paper); color: var(--ink-soft); border: 1px solid var(--border); }
+.share-done {
+  width: 100%;
+  padding: 11px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--paper);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.share-done:hover {
+  background: var(--brand-tint);
+  color: var(--brand-600);
+}
+
+@media (max-width: 640px) {
+  /* on a phone it rises from the bottom, the way share sheets do */
+  .share-scrim {
+    place-items: end center;
+    padding: 0;
+  }
+  .share-sheet {
+    width: 100%;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    animation: sheet-up 0.3s var(--ease-out);
+  }
+  .share-grab {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: var(--border);
+  }
+}
+
+[data-theme='dark'] .share-sheet { background: var(--card, #1d1b2e); }
+[data-theme='dark'] .share-target { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .share-sheet, .share-scrim { animation: none; }
+}
