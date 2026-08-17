@@ -4566,6 +4566,35 @@
   }
   .invoice-doc .invoice-doc-table {
     font-size: 0.8rem;
+    table-layout: auto;
+  }
+  /* breathing room the desktop table gets from sheer width */
+  .invoice-doc .invoice-doc-table th,
+  .invoice-doc .invoice-doc-table td {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .invoice-doc .invoice-doc-table th:first-child,
+  .invoice-doc .invoice-doc-table td:first-child {
+    padding-left: 0;
+    overflow-wrap: anywhere;
+  }
+  .invoice-doc .invoice-doc-table th:last-child,
+  .invoice-doc .invoice-doc-table td:last-child {
+    padding-right: 0;
+    white-space: nowrap;
+  }
+  .invoice-doc .invoice-doc-table th {
+    font-size: 0.62rem;
+    letter-spacing: 0.02em;
+  }
+  /* a phone reads Qty and Amount; the unit price returns with the room */
+  .invoice-doc .invoice-doc-table th:nth-child(3),
+  .invoice-doc .invoice-doc-table td:nth-child(3) {
+    display: none;
+  }
+  .invoice-doc .invoice-doc-totals {
+    width: 100%;
   }
 }
 
