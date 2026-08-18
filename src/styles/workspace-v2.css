@@ -9765,3 +9765,25 @@
   }
   .iw .rail-nudge .iw-btn { width: 100%; justify-content: center; }
 }
+
+/* ============================================================================
+   CLIENT'S VIEW ON A PHONE
+   The preview fakes a 1080px desktop and zooms it, which is honest on a laptop
+   and unusable on a phone: 1080 x 0.62 is still ~670px of content in a 390px
+   window. On small screens it renders at the device's own width instead, so
+   the sender sees the mobile layout their client will actually get.
+   ========================================================================== */
+@media (max-width: 900px) {
+  .pay-preview-scale {
+    width: 100%;
+    zoom: 1;
+  }
+  .pay-preview-scale .pay-grid {
+    grid-template-columns: 1fr;
+  }
+  /* the modal itself should not add a second scrollbar around it */
+  .ui-modal--lg .ui-modal-body {
+    padding: 12px;
+    overflow-x: hidden;
+  }
+}

@@ -28,7 +28,7 @@
   --font: 'Poppins', sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --fs-display: clamp(2.75rem, 1.35rem + 6vw, 5.5rem);
+  --fs-display: clamp(2.15rem, 1.15rem + 4.4vw, 4.35rem);
   --fs-mega: clamp(2.25rem, 1.3rem + 4vw, 3.5rem);
   --fs-h2: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
   --fs-h3: 1.25rem;
