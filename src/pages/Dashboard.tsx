@@ -487,8 +487,9 @@ export const Dashboard = () => {
             <div className="rail-nudge-txt">
               <b>No one can pay you yet</b>
               <p>
-                Add the account your money should land in. Without one, a client
-                who opens your invoice has nowhere to send it.
+                Card payments are not switched on yet, so bank transfer is how
+                your money arrives. Add the account it should land in, or a
+                client who opens your invoice has nowhere to send it.
               </p>
             </div>
             <Link to="/settings" className="iw-btn">
@@ -501,11 +502,12 @@ export const Dashboard = () => {
               <i className="bx bx-shield-quarter" />
             </span>
             <div className="rail-nudge-txt">
-              <b>Add a backup way to get paid</b>
+              <b>Add a second way to get paid</b>
               <p>
-                You have one account. If a card fails or a transfer bounces,
-                a second option, another bank, a dollar account, means the
-                money still reaches you instead of waiting.
+                Card payments are not live yet, so every invoice is settled by
+                transfer. One account is one point of failure: a second, another
+                bank or a dollar account, keeps the money moving if the first
+                gives your client trouble.
               </p>
             </div>
             <Link to="/settings" className="iw-btn iw-btn--ghost">

@@ -260,7 +260,12 @@ export const Payment = ({
   );
 
   // Paystack is the marquee NGN rail; everything else is a transfer.
-  const paystackAvailable = Boolean(invoice) && invoice?.currency === 'NGN' && routes.instant;
+  // Paystack is not connected yet. The rail stays visible so a payer knows
+  // card is coming, but it cannot be chosen, and the flow opens on the
+  // transfer rails that actually move money today.
+  const PAYSTACK_LIVE = import.meta.env.VITE_PAYSTACK_LIVE === 'true';
+  const paystackShown = Boolean(invoice) && invoice?.currency === 'NGN' && routes.instant;
+  const paystackAvailable = paystackShown && PAYSTACK_LIVE;
 
   // Every rail the sender has added is on offer — a Naira payer may still
   // settle from a dom account, through Wise, or in USDT. Grouped so the
@@ -300,7 +305,7 @@ export const Payment = ({
   // entering the Pay step: NGN leads with Paystack, everything else with rails
   useEffect(() => {
     if (stage !== 'method') return;
-    setPayView(paystackAvailable ? 'choose' : 'rails');
+    setPayView(paystackShown ? 'choose' : 'rails');
   }, [stage, paystackAvailable]);
 
   const openRails = () => {
@@ -581,17 +586,23 @@ export const Payment = ({
                       <div className="pay-pick">
                         <button
                           type="button"
-                          className="pay-paystack"
-                          onClick={() => setPayView('paystack')}
-                          disabled={stage === 'processing'}
+                          className={`pay-paystack${paystackAvailable ? '' : ' is-soon'}`}
+                          onClick={() => paystackAvailable && setPayView('paystack')}
+                          disabled={stage === 'processing' || !paystackAvailable}
+                          aria-disabled={!paystackAvailable}
                         >
                           <span className="pay-paystack-badge" aria-hidden="true">
                             <i className="bx bx-credit-card-front" />
                           </span>
                           <span className="pay-paystack-txt">
                             <b>Pay by card</b>
-                            <small>Card, transfer or USSD · powered by Paystack</small>
+                            <small>
+                              {paystackAvailable
+                                ? 'Card, transfer or USSD · powered by Paystack'
+                                : 'Coming soon · powered by Paystack'}
+                            </small>
                           </span>
+                          {!paystackAvailable && <span className="pay-soon-tag">Soon</span>}
                           <i className="bx bx-right-arrow-alt pay-paystack-go" />
                         </button>
 
@@ -607,8 +618,12 @@ export const Payment = ({
                         >
                           <i className="bx bx-transfer" aria-hidden="true" />
                           <span>
-                            <b>Can't pay by card?</b>
-                            <small>See other ways to pay, like a bank transfer</small>
+                            <b>{paystackAvailable ? "Can't pay by card?" : 'Pay by bank transfer'}</b>
+                            <small>
+                              {paystackAvailable
+                                ? 'See other ways to pay, like a bank transfer'
+                                : 'Send from your banking app, it takes under a minute'}
+                            </small>
                           </span>
                           <i className="bx bx-chevron-right" />
                         </button>

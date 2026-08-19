@@ -9787,3 +9787,84 @@
     overflow-x: hidden;
   }
 }
+
+/* ============================================================================
+   NO SIDEWAYS PAGES — a phone should never pan left and right to read a
+   screen. Whatever a page contains, the page itself stays the width of the
+   device; anything genuinely wide (a table, a code block) scrolls inside its
+   own box instead of dragging the whole layout with it.
+   `clip` rather than `hidden` so position: sticky keeps working.
+   ========================================================================== */
+@media (max-width: 900px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  /* long unbroken strings are the usual culprit: account numbers, wallet
+     addresses, references, emails, ids */
+  .iw code,
+  .pay-page code,
+  .iw .cinv-line-total,
+  .pay-transfer-rows dd span,
+  .pay-crypto-addr code,
+  .iw .dash-table td,
+  .iw td,
+  .iw .invoice-doc-name,
+  .iw a[href^='mailto'],
+  .pay-page a[href^='mailto'] {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  /* wide tables scroll in their own box, never the page */
+  .iw .dash-table-wrap,
+  .iw .legacy-table-container,
+  .pay-page .invoice-doc-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* grid and flex children default to min-width:auto, which is what lets a
+     single wide child push a whole row past the screen */
+  .iw .dash-grid > *,
+  .iw .dash > *,
+  .pay-grid > *,
+  .iw .cinv-fields > * {
+    min-width: 0;
+  }
+  /* nothing may be wider than the screen, whatever it thinks it is */
+  .iw img,
+  .pay-page img,
+  .iw pre,
+  .pay-page pre {
+    max-width: 100%;
+  }
+}
+
+/* the card rail before Paystack is connected: present, plainly not yet usable */
+.pay-page .pay-paystack.is-soon {
+  background: var(--paper);
+  color: var(--ink-soft);
+  box-shadow: none;
+  border: 1px dashed var(--border-strong, #d6cfe6);
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+.pay-page .pay-paystack.is-soon .pay-paystack-badge {
+  background: rgba(146, 78, 233, 0.1);
+  color: var(--ink-faint);
+}
+.pay-page .pay-paystack.is-soon .pay-paystack-txt b,
+.pay-page .pay-paystack.is-soon .pay-paystack-txt small { color: var(--ink-faint); }
+.pay-page .pay-paystack.is-soon .pay-paystack-go { display: none; }
+.pay-page .pay-soon-tag {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(185, 125, 16, 0.14);
+  color: #b97d10;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
