@@ -9868,3 +9868,82 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* the standing reminder that sending is one confirmation away */
+.iw .ws-verify-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 clamp(14px, 3vw, 28px) 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(185, 125, 16, 0.28);
+  border-radius: 14px;
+  background: rgba(185, 125, 16, 0.07);
+}
+.iw .ws-verify-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(185, 125, 16, 0.14);
+  color: #b97d10;
+  font-size: 1.15rem;
+}
+.iw .ws-verify-bar p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.iw .ws-verify-bar p b { font-size: 0.9rem; color: var(--ink); }
+.iw .ws-verify-bar p span { font-size: 0.8rem; color: var(--ink-soft); overflow-wrap: anywhere; }
+.iw .ws-verify-bar .iw-btn { flex: none; }
+@media (max-width: 720px) {
+  .iw .ws-verify-bar { flex-wrap: wrap; }
+  .iw .ws-verify-bar .iw-btn { width: 100%; justify-content: center; }
+}
+
+/* Once an account is chosen, a phone does not need the other options in the
+   way: the list folds to the one picked, so the details and the confirm are
+   reachable without scrolling a screen and a half. */
+@media (max-width: 720px) {
+  .pay-page .pay-rails.has-choice .pay-rail:not(.active),
+  .pay-page .pay-rails.has-choice .pay-rails-group,
+  .pay-page .pay-rails.has-choice + .pay-rails-title { display: none; }
+}
+.pay-page .pay-change-rail {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.pay-page .pay-change-rail:hover { color: var(--ink); border-color: var(--border-strong, #d6cfe6); }
+@media (max-width: 720px) {
+  .pay-page .pay-change-rail { display: inline-flex; }
+}
+
+/* the reveal card on a phone: same information, less air, so the confirm is
+   nearer the thumb */
+@media (max-width: 720px) {
+  .pay-page .pay-reveal-body { padding: 14px; gap: 10px; }
+  .pay-page .pay-reveal-head { margin-bottom: 8px; }
+  .pay-page .pay-window-clock { padding: 10px 12px; }
+  .pay-page .pay-transfer-rows > div { padding: 8px 0; }
+  .pay-page .pay-reveal .pay-field { margin-top: 8px; }
+  .pay-page .pay-reveal .pay-field span { font-size: 0.68rem; }
+  .pay-page .pay-copyall { margin: 8px 0; padding: 10px; }
+  .pay-page .pay-card--checkout { padding: 16px 14px; }
+}

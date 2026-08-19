@@ -323,6 +323,25 @@ export const LegacyWorkspace = ({
           </div>
         </header>
 
+        {unverified && (
+          /* Sending is the one thing an unverified address cannot do, so say
+             it here, on every screen, with the fix one tap away, rather than
+             letting someone discover it at the moment they press Send. */
+          <div className="ws-verify-bar" role="status">
+            <span className="ws-verify-icon" aria-hidden="true">
+              <i className="bx bx-envelope" />
+            </span>
+            <p>
+              <b>Confirm your email to start sending invoices.</b>
+              <span>
+                Everything else works. We sent a code to {user?.email ?? 'your address'}.
+              </span>
+            </p>
+            <button type="button" className="iw-btn iw-btn--ghost" onClick={resendVerification}>
+              Resend the code
+            </button>
+          </div>
+        )}
         <main className="ws-content">{children}</main>
       </div>
 

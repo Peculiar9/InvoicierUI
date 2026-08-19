@@ -725,7 +725,10 @@ export const Payment = ({
                         ) : (
                           <>
                             <span className="pay-rails-title">Choose an account to pay into</span>
-                            <div className="pay-rails" role="list">
+                            <div
+                              className={`pay-rails${selectedRail != null ? ' has-choice' : ''}`}
+                              role="list"
+                            >
                               {railItems.map((item, i) => {
                                 const meta = railMeta(item.provider);
                                 const heading =
@@ -766,6 +769,15 @@ export const Payment = ({
                           </>
                         )}
 
+                        {active && (
+                          <button
+                            type="button"
+                            className="pay-change-rail"
+                            onClick={() => setSelectedRail(null)}
+                          >
+                            <i className="bx bx-transfer-alt" aria-hidden="true" /> Change account
+                          </button>
+                        )}
                         {active ? (
                           <PayRailReveal
                             key={`${selectedRail}-${railNonce}`}

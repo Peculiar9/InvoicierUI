@@ -239,7 +239,7 @@ export const InvoicePanel = () => {
   );
   const formReady = Boolean(billToName) && hasValidItem && subtotal > 0;
   // sending needs somewhere to send it; saving and printing do not
-  const canSend = formReady && Boolean(billToEmail);
+  const canSend = formReady && Boolean(billToEmail) && email_verified;
   const flowHint = !billToName
     ? { step: '1 of 2', text: 'Who is this invoice for?' }
     : !formReady
@@ -1179,9 +1179,11 @@ export const InvoicePanel = () => {
                   data-label={
                     action.needsReady && !formReady
                       ? `${action.label} · finish the invoice first`
-                      : action.needsEmail && !canSend
-                        ? `${action.label} · add an email address first`
-                        : action.label
+                      : action.needsEmail && !email_verified
+                        ? `${action.label} · verify your email to send`
+                        : action.needsEmail && !canSend
+                          ? `${action.label} · add an email address first`
+                          : action.label
                   }
                   aria-label={action.label}
                   onClick={action.onClick}
