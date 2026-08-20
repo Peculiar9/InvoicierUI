@@ -48,6 +48,7 @@ export const PROVIDER_LABELS: Record<string, string> = {
   bank: 'Bank account',
   wise: 'Wise',
   paypal: 'PayPal',
+  crypto: 'Crypto wallet',
   other: 'Other',
 };
 
@@ -60,7 +61,15 @@ export const PROVIDER_LABELS: Record<string, string> = {
    ========================================================================== */
 
 export interface AccountFieldSpec {
-  key: 'account_number' | 'bank_name' | 'routing_number' | 'swift' | 'iban';
+  key:
+    | 'account_number'
+    | 'bank_name'
+    | 'routing_number'
+    | 'swift'
+    | 'iban'
+    | 'wallet_address'
+    | 'network'
+    | 'asset';
   label: string;
   placeholder?: string;
   required?: boolean;
@@ -71,12 +80,34 @@ export interface AccountFieldSpec {
   hint?: string;
 }
 
+/** every field key a spec can name; used to clear the ones a new shape drops */
+export const ACCOUNT_FIELD_KEYS: AccountFieldSpec['key'][] = [
+  'account_number',
+  'bank_name',
+  'routing_number',
+  'swift',
+  'iban',
+  'wallet_address',
+  'network',
+  'asset',
+];
+
 /**
  * What this kind of account, in this currency, is made of. NUBAN for Nigerian
  * banks, sort codes for GBP, IBAN+BIC for EUR, ABA routing for USD, and
  * PayPal is just an email wearing a trench coat.
  */
 export const accountFieldsFor = (provider: string, currency: string): AccountFieldSpec[] => {
+  if (provider === 'crypto') {
+    // a wallet is not a bank account: no bank, no account number, and the
+    // chain matters as much as the address — USDT sent over the wrong network
+    // is USDT that never arrives
+    return [
+      { key: 'asset', label: 'Asset', placeholder: 'USDT', required: true, hint: 'The token you want, e.g. USDT or USDC' },
+      { key: 'network', label: 'Network', placeholder: 'TRC-20', required: true, hint: 'The chain the address lives on. Get this wrong and the money is gone.' },
+      { key: 'wallet_address', label: 'Wallet address', placeholder: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE', required: true },
+    ];
+  }
   if (provider === 'paypal') {
     return [{ key: 'account_number', label: 'PayPal email', placeholder: 'you@example.com', required: true, kind: 'email' }];
   }
@@ -126,7 +157,7 @@ export const accountFieldsFor = (provider: string, currency: string): AccountFie
 
 /** the payer-facing rows, derived from the same spec the form used */
 export const accountDisplayRows = (
-  account: Partial<Record<'provider' | 'currency' | 'account_name' | 'account_number' | 'bank_name' | 'routing_number' | 'swift' | 'iban' | 'instructions', string | null | undefined>>
+  account: Partial<Record<'provider' | 'currency' | 'account_name' | 'account_number' | 'bank_name' | 'routing_number' | 'swift' | 'iban' | 'wallet_address' | 'network' | 'asset' | 'instructions', string | null | undefined>>
 ): [string, string][] => {
   const spec = accountFieldsFor(account.provider ?? 'bank', account.currency ?? 'USD');
   const rows: [string, string][] = [];

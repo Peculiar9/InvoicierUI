@@ -13,13 +13,25 @@ interface AccountRow {
   routing_number?: string | null;
   swift_code?: string | null;
   iban?: string | null;
+  wallet_address?: string | null;
+  network?: string | null;
+  asset?: string | null;
   instructions?: string | null;
 }
+
+/**
+ * The wire says `domiciliary`, the UI says `dom`. Two words for one rail, so
+ * they are reconciled here and nowhere else — the same trade `normaliseRail`
+ * makes on the payment page.
+ */
+const providerIn = (p: string): ReceivingAccount['provider'] =>
+  (p === 'domiciliary' ? 'dom' : p) as ReceivingAccount['provider'];
+const providerOut = (p?: string): string | undefined => (p === 'dom' ? 'domiciliary' : p);
 
 const toAccount = (row: AccountRow): ReceivingAccount => ({
   id: row.id,
   label: row.label,
-  provider: row.provider as ReceivingAccount['provider'],
+  provider: providerIn(row.provider),
   currency: row.currency,
   account_name: row.account_name,
   account_number: row.account_number ?? undefined,
@@ -27,18 +39,25 @@ const toAccount = (row: AccountRow): ReceivingAccount => ({
   routing_number: row.routing_number ?? undefined,
   swift: row.swift_code ?? undefined,
   iban: row.iban ?? undefined,
+  wallet_address: row.wallet_address ?? undefined,
+  network: row.network ?? undefined,
+  asset: row.asset ?? undefined,
   instructions: row.instructions ?? undefined,
 });
 
 const toWire = (account: Partial<ReceivingAccount>) => ({
   label: account.label,
-  provider: account.provider,
+  provider: providerOut(account.provider),
   currency: account.currency,
   account_name: account.account_name,
   account_number: account.account_number || undefined,
   bank_name: account.bank_name || undefined,
   routing_number: account.routing_number || undefined,
   swift_code: account.swift || undefined,
+  iban: account.iban || undefined,
+  wallet_address: account.wallet_address || undefined,
+  network: account.network || undefined,
+  asset: account.asset || undefined,
   instructions: account.instructions || undefined,
 });
 

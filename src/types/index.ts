@@ -149,6 +149,7 @@ export type AccountProvider =
   | 'bank'
   | 'wise'
   | 'paypal'
+  | 'crypto'
   | 'other';
 
 /** An account a client can send money straight into. */
@@ -156,6 +157,7 @@ export interface ReceivingAccount {
   id: string;
   label: string;
   provider: AccountProvider;
+  /** what the invoice is priced in; a USDT rail is still a USD account */
   currency: string;
   account_name: string;
   account_number?: string;
@@ -163,6 +165,10 @@ export interface ReceivingAccount {
   routing_number?: string;
   swift?: string;
   iban?: string;
+  /** crypto rails: the address to send to, its chain, and the asset */
+  wallet_address?: string;
+  network?: string;
+  asset?: string;
   /** anything the payer needs to be told, e.g. a reference to quote */
   instructions?: string;
 }

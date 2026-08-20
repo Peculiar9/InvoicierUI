@@ -34,6 +34,8 @@ export interface PayRailRevealProps {
   onRetry: () => void;
   /** the window closed: go back and pick a different account */
   onBack: () => void;
+  /** on a phone the confirm rides at the bottom of the screen */
+  stickyConfirm?: boolean;
 }
 
 /**
@@ -61,6 +63,7 @@ export const PayRailReveal = ({
   expiresAt,
   onRetry,
   onBack,
+  stickyConfirm = false,
 }: PayRailRevealProps) => {
   const [loading, setLoading] = useState(true);
   const [left, setLeft] = useState(WINDOW_SECONDS);
@@ -264,7 +267,9 @@ export const PayRailReveal = ({
 
         <button
           type="button"
-          className="pay-btn pay-btn--primary pay-btn--block"
+          className={`pay-btn pay-btn--primary pay-btn--block${
+            stickyConfirm ? ' pay-confirm-sticky' : ''
+          }`}
           disabled={processing}
           onClick={onConfirm}
         >

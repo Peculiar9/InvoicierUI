@@ -780,6 +780,7 @@ export const Payment = ({
                         )}
                         {active ? (
                           <PayRailReveal
+                            stickyConfirm
                             key={`${selectedRail}-${railNonce}`}
                             onRetry={() => setRailNonce((n) => n + 1)}
                             onBack={() => setSelectedRail(null)}

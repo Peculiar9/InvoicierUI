@@ -23,7 +23,7 @@ import {
 } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 import { settingsApi } from '@/api/settings';
-import { accountFieldsFor } from '@/utils/paymentRoutes';
+import { accountFieldsFor, ACCOUNT_FIELD_KEYS } from '@/utils/paymentRoutes';
 
 interface MethodForm {
   type: PayoutType;
@@ -45,7 +45,28 @@ const emptyAccount: ReceivingAccount = {
   routing_number: '',
   swift: '',
   iban: '',
+  wallet_address: '',
+  network: '',
+  asset: '',
   instructions: '',
+};
+
+/**
+ * Changing the provider or the currency changes what the account IS. The
+ * fields the new shape does not have leave with the old one, so a crypto
+ * wallet never quietly carries the bank name typed a moment earlier.
+ */
+const reshapeAccount = (
+  form: ReceivingAccount,
+  next: { provider?: AccountProvider; currency?: string }
+): ReceivingAccount => {
+  const provider = next.provider ?? form.provider;
+  const currency = next.currency ?? form.currency;
+  const keep = new Set(accountFieldsFor(provider, currency).map((f) => f.key));
+  const cleared = Object.fromEntries(
+    ACCOUNT_FIELD_KEYS.filter((k) => !keep.has(k)).map((k) => [k, ''])
+  );
+  return { ...form, ...cleared, provider, currency };
 };
 
 const ROUTE_CHOICES: { key: PaymentRoute; label: string; hint: string }[] = [
@@ -821,7 +842,9 @@ export const Settings = () => {
                   label,
                 }))}
                 onChange={(provider) =>
-                  setAcctForm({ ...acctForm, provider: provider as AccountProvider })
+                  setAcctForm(
+                    reshapeAccount(acctForm, { provider: provider as AccountProvider })
+                  )
                 }
               />
             </div>
@@ -831,7 +854,7 @@ export const Settings = () => {
                 value={acctForm.currency}
                 aria-label="Account currency"
                 options={['NGN', 'USD', 'EUR', 'GBP'].map((c) => ({ value: c, label: c }))}
-                onChange={(currency) => setAcctForm({ ...acctForm, currency })}
+                onChange={(currency) => setAcctForm(reshapeAccount(acctForm, { currency }))}
               />
             </div>
           </div>

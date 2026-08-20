@@ -9947,3 +9947,27 @@
   .pay-page .pay-copyall { margin: 8px 0; padding: 10px; }
   .pay-page .pay-card--checkout { padding: 16px 14px; }
 }
+
+/* ============================================================================
+   THE CONFIRM STAYS WITHIN REACH
+   Copying account details means scrolling. The button that says "I have sent
+   it" should not be somewhere down the page when they come back from their
+   banking app: on a phone it rides at the bottom of the screen, always.
+   ========================================================================== */
+@media (max-width: 720px) {
+  /* Fixed, not sticky: sticky only appears once you have scrolled down to it,
+     which is the very scrolling this is meant to spare. This sits on the
+     screen from the moment the account details appear. */
+  .pay-page .pay-confirm-sticky {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    z-index: 40;
+    margin: 0;
+    box-shadow: 0 12px 30px rgba(146, 78, 233, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.55);
+  }
+  /* the page keeps room so nothing ever hides beneath it */
+  .pay-page .pay-reveal-body { padding-bottom: 76px; }
+}
