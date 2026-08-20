@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { MarketingFooter, MarketingNav } from '@/pages/Landing';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import '@/styles/landing-v2.css';
 
 interface ComingSoonProps {
@@ -27,6 +28,8 @@ export const ComingSoon = ({
     'Recipes: embed invoicing in your own product',
   ],
 }: ComingSoonProps) => {
+  // each holding page (Docs, Blog, Company, Legal) titles itself from its props
+  usePageMeta(eyebrow, { description: blurb, canonicalPath: window.location.pathname });
   const rootRef = useRef<HTMLElement>(null);
   const [nudged, setNudged] = useState(false);
 

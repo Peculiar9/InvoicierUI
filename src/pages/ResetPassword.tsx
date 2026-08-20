@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link } from '@tanstack/react-router';
 import { useResetPassword } from '@/hooks/useAuth';
 
@@ -8,6 +9,7 @@ import { useResetPassword } from '@/hooks/useAuth';
  * words, not a stack trace.
  */
 export const ResetPassword = () => {
+  usePageMeta('Choose a new password');
   const token = new URLSearchParams(window.location.search).get('token') ?? '';
   const { mutate: reset, isPending, isError } = useResetPassword();
   const [password, setPassword] = useState('');

@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from '@tanstack/react-router';
@@ -13,6 +14,7 @@ type ForgotFormData = z.infer<typeof forgotSchema>;
 
 /** Same room as sign in: one card, one field, no ceremony. */
 export const ForgotPassword = () => {
+  usePageMeta('Forgot password');
   const { mutate: requestReset, isPending, isSuccess, error } = useForgotPassword();
   const {
     register,

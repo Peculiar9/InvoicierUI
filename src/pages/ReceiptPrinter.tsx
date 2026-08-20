@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link } from '@tanstack/react-router';
 import { playCut, playTear, startTransport, type RunningSound } from '@/lib/printerAudio';
 import { DEMO_RECEIPT, type ReceiptData } from '@/lib/receiptData';
@@ -143,7 +144,12 @@ export const ReceiptPrinterStandby = ({
  * and Download hands exactly what is on the roll to the device's printer, one
  * copy per page. The paper then leaves the machine and the roll starts clean.
  */
-export const ReceiptPrinter = ({
+export const ReceiptPrinter = (props: Parameters<typeof ReceiptPrinterInner>[0]) => {
+  usePageMeta('Receipt');
+  return <ReceiptPrinterInner {...props} />;
+};
+
+const ReceiptPrinterInner = ({
   receipt = DEMO_RECEIPT,
   autoPrint = false,
   eyebrow = 'The moment of record',

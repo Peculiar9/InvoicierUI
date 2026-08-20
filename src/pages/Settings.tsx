@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
@@ -93,6 +94,7 @@ const methodSummary = (m: PayoutMethod) =>
   m.type === 'paypal' ? m.email ?? '' : `${m.bank_name ?? ''} · ${maskAccount(m.account_number)}`;
 
 export const Settings = () => {
+  usePageMeta('Settings');
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
   const {

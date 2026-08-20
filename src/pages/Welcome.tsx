@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useSaveBusinessProfile, useSignup } from '@/hooks';
 import type { ChangeEvent, CSSProperties } from 'react';
 import { useNavigate } from '@tanstack/react-router';
@@ -35,6 +36,7 @@ const PREP_MSGS = [
 const PREP_MS = 3400;
 
 export const Welcome = () => {
+  usePageMeta('Welcome');
   const navigate = useNavigate();
   const { mutate: saveProfile } = useSaveBusinessProfile();
   const completeOnboarding = useSettingsStore((s) => s.completeOnboarding);

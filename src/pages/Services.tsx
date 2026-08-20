@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
 import { EmptyState } from '@/components/EmptyState';
@@ -8,6 +9,7 @@ import { isFilled, isNonNegativeNumber } from '@/lib/validate';
 import { toast } from '@/lib/toast';
 
 export const Services = () => {
+  usePageMeta('Services');
   const services = useServicesStore((s) => s.services);
   const addService = useServicesStore((s) => s.addService);
   const removeService = useServicesStore((s) => s.removeService);

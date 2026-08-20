@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { MarketingFooter, MarketingNav } from '@/pages/Landing';
 import { KineticBand } from '@/components/static/MarketingFx';
 import { useTiltRipple } from '@/hooks/useTiltRipple';
@@ -35,6 +36,11 @@ const useReveal = (rootRef: React.RefObject<HTMLElement>) => {
 };
 
 export const HowItWorks = () => {
+  usePageMeta('How it works', {
+    description:
+      'Send a branded invoice in about thirty seconds; your client taps a link and pays with no app and no signup — every payment lands with its VAT and WHT worked out.',
+    canonicalPath: '/how-it-works',
+  });
   const rootRef = useRef<HTMLElement>(null);
   useReveal(rootRef);
   useTiltRipple(rootRef);

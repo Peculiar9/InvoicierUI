@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link, useSearch } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
 import { PENDING_VERIFICATION_KEY } from '@/hooks/useAuth';
@@ -28,6 +29,7 @@ const readPending = (): PendingVerification | null => {
  * user back to work.
  */
 export const VerifyEmail = () => {
+  usePageMeta('Verify your email');
   const updateUser = useAuthStore((s) => s.updateUser);
   const setSession = useAuthStore((s) => s.setSession);
   const user = useAuthStore((s) => s.user);

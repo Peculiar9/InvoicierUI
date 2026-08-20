@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import type { Client } from '@/types';
 import { LegacyWorkspace } from '@/components/static';
 import type { WsAction } from '@/components/static/LegacyWorkspace';
@@ -25,6 +26,7 @@ import { ClientAvatar } from '@/components/ClientAvatar';
 import { ClientInsights } from '@/components/ClientInsights';
 
 export const Clients = () => {
+  usePageMeta('Clients');
   const { data, isLoading, isError, error, refetch, isFetching } = useClients();
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();

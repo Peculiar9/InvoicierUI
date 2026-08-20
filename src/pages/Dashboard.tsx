@@ -1,3 +1,4 @@
+import { usePageMeta } from '@/hooks/usePageMeta';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -70,6 +71,7 @@ const statusLabel: Record<InvoiceStatus, string> = {
 };
 
 export const Dashboard = () => {
+  usePageMeta('Dashboard');
   const { data, isLoading, isError, error, refetch, isFetching } = useDashboardData();
   const { data: invData } = useInvoices();
   const openView = useInvoicePanelStore((s) => s.openView);

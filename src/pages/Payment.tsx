@@ -5,6 +5,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
 import { ReceiptDocument } from '@/components/ReceiptDocument';
 import { useMarkInvoicePaid } from '@/hooks';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { usePublicInvoice } from '@/hooks/useInvoices';
 import { invoicesApi } from '@/api/invoices';
 import { resolveRoutes, PROVIDER_LABELS, accountDisplayRows } from '@/utils/paymentRoutes';
@@ -100,6 +101,7 @@ export const Payment = ({
   /** the sender looking over their client's shoulder: show, never record */
   preview?: boolean;
 }) => {
+  usePageMeta(preview ? 'Invoice preview' : 'Pay invoice');
   // the preview is the owner looking at their own record; a payer is a
   // stranger with a link and gets the public shape
   const { data: invoice, isLoading, isError, error, refetch, isFetching } =

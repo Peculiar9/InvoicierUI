@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
 import {
@@ -46,6 +47,7 @@ type Mode = 'email' | 'method' | 'password' | 'otp';
  * email — instead of assuming. One card, one question at a time.
  */
 export const Login = () => {
+  usePageMeta('Log in');
   // The interceptor leaves this behind when a 401 bounced them here. The
   // read has to stay pure: StrictMode calls the initialiser twice, so
   // clearing the flag in here meant the second call found nothing.

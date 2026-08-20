@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import type { CSSProperties, FormEvent, MouseEvent as ReactMouseEvent, RefObject } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -1258,6 +1259,7 @@ const WAITLIST_KEY = 'invoicier-waitlist';
 const INTRO_KEY = 'invoicier-intro-played';
 
 export const Landing = () => {
+  usePageMeta();
   const rootRef = useRef<HTMLElement>(null);
   // The brand loader exists to cover the first paint while assets land.
   // After it has played once this session, going Home skips straight in.

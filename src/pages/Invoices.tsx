@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { LegacyWorkspace } from '@/components/static';
 import { Pager } from '@/components/Pager';
 import { SwipeScroll } from '@/components/SwipeScroll';
@@ -85,6 +86,7 @@ const isOverdue = (inv: Invoice): boolean =>
   inv.due_date.slice(0, 10) < todayLocal();
 
 export const Invoices = () => {
+  usePageMeta('Invoices');
   // the list keeps its place: opening an invoice and coming back, or
   // reloading, should not throw away the filters that found it
   const listState = useListStateStore((s) => s.invoices);
