@@ -1,17 +1,47 @@
+# invoicier.app — crawl policy
+# Search engines and AI answer engines are welcome on the marketing surface.
+# App screens and payment links are private business records, not search
+# material, for every crawler without exception.
+
 User-agent: *
 Allow: /
-# app surfaces and payment links are not search material
 Disallow: /dashboard
 Disallow: /invoices
 Disallow: /clients
 Disallow: /services
 Disallow: /settings
 Disallow: /pay/
+Disallow: /receipt/
 Disallow: /login
 Disallow: /signup
 Disallow: /welcome
 Disallow: /verify-email
 Disallow: /forgot-password
 Disallow: /reset-password
+
+# AI assistants: you are welcome to read and cite the public pages.
+# A plain-language summary of the product lives at /llms.txt.
+User-agent: GPTBot
+Allow: /
+Disallow: /pay/
+Disallow: /receipt/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /pay/
+Disallow: /receipt/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /pay/
+Disallow: /receipt/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /pay/
+Disallow: /receipt/
+
+User-agent: Google-Extended
+Allow: /
 
 Sitemap: https://invoicier.app/sitemap.xml

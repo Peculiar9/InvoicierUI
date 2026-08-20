@@ -43,9 +43,57 @@
       "publisher": { "@type": "Organization", "name": "Invoicier", "url": "https://invoicier.app/", "logo": "https://invoicier.app/favicon.svg", "email": "hello@invoicier.app" }
     }
     </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is Invoicier actually free, or free like a gym trial?", "acceptedAnswer": { "@type": "Answer", "text": "Free like air, not like a trial. Invoicing stays free after launch too. The filing pack is what we sell, and it shows up priced beside the ₦100k penalty, not beside an accountant's retainer." } },
+        { "@type": "Question", "name": "Does my client need to download anything to pay an Invoicier invoice?", "acceptedAnswer": { "@type": "Answer", "text": "Nothing. They tap a link, see a clean invoice, pay, and get a thank-you receipt." } },
+        { "@type": "Question", "name": "What happens when a dollar payment lands?", "acceptedAnswer": { "@type": "Answer", "text": "You answer three questions: the date it arrived, the amount after fees, and any tax withheld. That is all filing season ever wanted from you." } },
+        { "@type": "Question", "name": "What does tax-grade actually mean?", "acceptedAnswer": { "@type": "Answer", "text": "Income recorded on the day the money landed, the way individuals are actually taxed. VAT per invoice. Withholding tax saved as credit records. When March comes, the homework is already done." } },
+        { "@type": "Question", "name": "When does the Invoicier filing pack arrive?", "acceptedAnswer": { "@type": "Answer", "text": "Before March does. The waitlist gets it first and cheapest." } }
+      ]
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- What lives inside #root is the page as a crawler without JavaScript
+         reads it: the same message the app renders. React replaces it the
+         moment it mounts, so for people it is only the instant first paint. -->
+    <div id="root">
+      <div style="min-height:100vh;background:#1d1b2e;color:#f4f2fb;font-family:Poppins,system-ui,sans-serif;padding:48px 24px;display:flex;justify-content:center">
+        <main style="max-width:640px;width:100%">
+          <p style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin:0 0 28px">invoicier<span style="color:#ff5a5f">.</span></p>
+          <h1 style="font-size:34px;line-height:1.1;letter-spacing:-0.02em;margin:0 0 14px">Your invoices, your tax return.</h1>
+          <p style="font-size:16px;line-height:1.65;color:#b9b5cc;margin:0 0 24px">
+            Invoicing built for Nigerian freelancers and small businesses. Send a branded
+            invoice from your phone in about thirty seconds. Your client taps a link and
+            pays — bank transfer, domiciliary dollar account, Wise or USDT — with no app
+            and no signup. Every payment lands tax-grade: income on the day the money
+            arrived, VAT worked out per invoice, withholding tax saved as credit records.
+            When March comes, the books are already done.
+          </p>
+          <ul style="font-size:15px;line-height:1.7;color:#b9b5cc;margin:0 0 24px;padding-left:20px">
+            <li>Invoices carry your own numbering (ADA-0001, not INV-), your logo and colours.</li>
+            <li>Payment details never travel in email — they live only on the secure payment page.</li>
+            <li>Paid in naira, dollars, euros or pounds; official FX rates snapshotted the day money lands.</li>
+            <li>Receipts generate and email themselves the moment a payment is confirmed.</li>
+            <li>Invoicing is free, and stays free. The filing pack is the product, priced beside the ₦100k late-filing penalty.</li>
+          </ul>
+          <p style="font-size:15px;line-height:1.65;color:#b9b5cc;margin:0 0 24px">
+            <a href="/how-it-works" style="color:#b892f5">How it works</a> ·
+            <a href="/docs" style="color:#b892f5">Docs</a> ·
+            <a href="/blog" style="color:#b892f5">Blog</a> ·
+            <a href="/company" style="color:#b892f5">Company</a> ·
+            <a href="/legal" style="color:#b892f5">Legal</a>
+          </p>
+          <p style="font-size:13px;color:#8a85a4;margin:0">
+            Invoicier is in beta. Join the waitlist at invoicier.app — made with steeze by PeculiarLabs.
+          </p>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
