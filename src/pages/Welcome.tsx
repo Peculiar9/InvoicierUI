@@ -606,9 +606,17 @@ export const Welcome = () => {
             thing that creates the workspace. From step 3 on it is all
             dressing, and dressing can wait for the dashboard. */}
         {step > 2 && step < 7 && (
-          <button type="button" className="ob-skip" onClick={() => setStep(7)}>
-            Skip the dressing room
-          </button>
+          <div className="ob-skip-row">
+            <span className="ob-skip-hint">In a hurry?</span>
+            <button type="button" className="ob-skip" onClick={() => setStep(7)}>
+              Skip the dressing room
+              <i className="bx bx-right-arrow-alt" aria-hidden="true" />
+            </button>
+            <span className="ob-skip-note">
+              Your logo, colours and template can wait. We will keep them on your
+              dashboard for whenever you want them.
+            </span>
+          </div>
         )}
       </div>
     </div>

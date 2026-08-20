@@ -2736,8 +2736,9 @@
 }
 .ob-card {
   position: relative;
-  width: min(680px, 100%);
+  width: min(760px, 100%);
   padding: clamp(28px, 5vw, 48px);
+  padding-bottom: clamp(24px, 4vw, 36px);
   background: #fff;
   border-radius: 28px;
   box-shadow: 0 40px 100px rgba(20, 8, 36, 0.45);
@@ -2853,21 +2854,53 @@
 .ob-back:hover {
   color: var(--ink);
 }
-.ob-skip {
-  position: absolute;
-  right: clamp(28px, 5vw, 48px);
-  bottom: 12px;
-  border: 0;
-  background: transparent;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
+/* The way out for anyone who does not want the full fitting. It used to sit
+   absolutely positioned under the Continue button, in tiny faint mono, where
+   nobody found it. Now it is its own row: a real choice, plainly offered. */
+.ob-skip-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border);
+  text-align: center;
+}
+.ob-skip-hint {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+.ob-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--border-strong, #d6cfe6);
+  border-radius: 999px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--brand-600);
   cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s var(--ease-out);
 }
 .ob-skip:hover {
-  color: var(--brand-600);
+  border-color: var(--brand);
+  background: var(--brand-tint);
+  transform: translateY(-1px);
+}
+.ob-skip i { font-size: 1.1rem; }
+.ob-skip-note {
+  max-width: 40ch;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
 }
 
 /* brand step */
