@@ -601,7 +601,11 @@ export const Welcome = () => {
           </div>
         )}
 
-        {step < 7 && (
+        {/* The skip only exists once the account does. Steps 0 to 2 are the
+            name and the address: skipping those would jump past the very
+            thing that creates the workspace. From step 3 on it is all
+            dressing, and dressing can wait for the dashboard. */}
+        {step > 2 && step < 7 && (
           <button type="button" className="ob-skip" onClick={() => setStep(7)}>
             Skip the dressing room
           </button>

@@ -81,6 +81,12 @@ export const Dashboard = () => {
   // How many ways a client can actually pay this business. One rail is a
   // single point of failure: if the card provider blinks, the money stops.
   const payRails = useSettingsStore((st) => st.profile.receivingAccounts ?? []);
+  // what the dressing room would have collected, so a skip becomes a deferral
+  const dressing = useSettingsStore((st) => ({
+    logo: st.profile.logo,
+    tin: st.profile.tin,
+    currency: st.profile.currency || 'NGN',
+  }));
   const [railNudgeGone, setRailNudgeGone] = useState(
     () => {
       try {
@@ -475,6 +481,35 @@ export const Dashboard = () => {
                   <p>Date received is the field March cares about.</p>
                 </div>
               </li>
+              {/* Anything skipped in the dressing room waits here rather than
+                  defaulting away silently. Each disappears once it is done. */}
+              {!dressing.logo && (
+                <li>
+                  <i className="bx bx-image-add" />
+                  <div>
+                    <b>Add your logo</b>
+                    <p>Your invoices wear your initials until you do.</p>
+                  </div>
+                  <Link to="/settings" className="iw-btn iw-btn--ghost">
+                    Add logo
+                  </Link>
+                </li>
+              )}
+              {!dressing.tin && (
+                <li>
+                  <i className="bx bx-receipt" />
+                  <div>
+                    <b>Check your tax details</b>
+                    <p>
+                      We assumed {dressing.currency} and VAT at 7.5%. Worth confirming, it
+                      lands on every invoice.
+                    </p>
+                  </div>
+                  <Link to="/settings" className="iw-btn iw-btn--ghost">
+                    Review
+                  </Link>
+                </li>
+              )}
             </ol>
           </section>
         ) : (
