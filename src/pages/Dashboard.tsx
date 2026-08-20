@@ -38,6 +38,9 @@ import type { Invoice, InvoiceStatus } from '@/types';
 
 const THIS_YEAR = RANGE_PRESETS.find((preset) => preset.key === 'year')!;
 
+/** one shared empty list, so a missing-accounts snapshot stays stable */
+const EMPTY_RAILS: never[] = [];
+
 /** The sentence fragment the cards read, e.g. "received this tax year". */
 const periodPhrase = (range: DateRangeValue): string => {
   const label = describeRange(range, 'all time');
@@ -79,16 +82,22 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const setSiblings = useInvoicePanelStore((s) => s.setSiblings);
   // the fallback when there is no money at all yet
-  const baseCurrency = useSettingsStore((st) => st.profile.currency) || 'USD';
+  const profileCurrency = useSettingsStore((st) => st.profile.currency);
+  const baseCurrency = profileCurrency || 'USD';
   // How many ways a client can actually pay this business. One rail is a
   // single point of failure: if the card provider blinks, the money stops.
-  const payRails = useSettingsStore((st) => st.profile.receivingAccounts ?? []);
+  // Selectors must return stable references — a `?? []` or object literal
+  // inside one mints a new snapshot every call and loops the render.
+  const payRailsStored = useSettingsStore((st) => st.profile.receivingAccounts);
+  const payRails = payRailsStored ?? EMPTY_RAILS;
   // what the dressing room would have collected, so a skip becomes a deferral
-  const dressing = useSettingsStore((st) => ({
-    logo: st.profile.logo,
-    tin: st.profile.tin,
-    currency: st.profile.currency || 'NGN',
-  }));
+  const dressingLogo = useSettingsStore((st) => st.profile.logo);
+  const dressingTin = useSettingsStore((st) => st.profile.tin);
+  const dressing = {
+    logo: dressingLogo,
+    tin: dressingTin,
+    currency: profileCurrency || 'NGN',
+  };
   const [railNudgeGone, setRailNudgeGone] = useState(
     () => {
       try {
