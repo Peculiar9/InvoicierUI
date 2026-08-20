@@ -54,9 +54,15 @@ export const SessionGuard = () => {
     const tick = () => {
       const rem = exp - Date.now();
       if (rem <= 0) {
+        // A dead access token is not a dead session: a tab that slept past
+        // expiry (closed laptop, backgrounded phone) usually still holds a
+        // valid refresh token. Renew first; sign out only when that fails.
+        // Success rotates the tokens, which restarts this effect clean.
         if (!expired.current) {
           expired.current = true;
-          forceSignOut();
+          void tryProactiveRefresh().then((ok) => {
+            if (!ok) forceSignOut();
+          });
         }
         return;
       }
