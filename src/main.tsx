@@ -102,11 +102,9 @@ enableMocking()
   .then(() => {
   const rootElement = document.getElementById('root')!;
 
-  // index.html ships real content inside #root — the page a crawler without
-  // JavaScript reads, and the instant first paint. React owns the element
-  // from here; hand it over clean. (The data flag replaces the old
-  // innerHTML-empty guard against double-mounting, which the static content
-  // would otherwise trip.)
+  // the crawler-facing copy of the page lives in a <noscript> beside #root,
+  // so a browser with JS never paints it; the data flag guards against a
+  // double mount regardless of what #root happens to contain
   if (!rootElement.dataset.mounted) {
     rootElement.dataset.mounted = 'true';
     rootElement.innerHTML = '';

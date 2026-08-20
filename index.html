@@ -58,10 +58,11 @@
     </script>
   </head>
   <body>
-    <!-- What lives inside #root is the page as a crawler without JavaScript
-         reads it: the same message the app renders. React replaces it the
-         moment it mounts, so for people it is only the instant first paint. -->
-    <div id="root">
+    <div id="root"></div>
+    <!-- The page as a reader without JavaScript gets it: the same message
+         the app renders. A browser with JS never paints this, so the app
+         opens clean; crawlers and AI answer engines read it from source. -->
+    <noscript>
       <div style="min-height:100vh;background:#1d1b2e;color:#f4f2fb;font-family:Poppins,system-ui,sans-serif;padding:48px 24px;display:flex;justify-content:center">
         <main style="max-width:640px;width:100%">
           <p style="font-size:22px;font-weight:800;letter-spacing:-0.02em;margin:0 0 28px">invoicier<span style="color:#ff5a5f">.</span></p>
@@ -93,7 +94,7 @@
           </p>
         </main>
       </div>
-    </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
