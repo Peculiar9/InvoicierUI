@@ -10,7 +10,13 @@ import type { Invoice } from '@/types';
  */
 export const ReceiptDocument = ({ invoice }: { invoice: Invoice }) => {
   const profile = useSettingsStore((s) => s.profile);
-  const received = invoice.amount_received ?? invoice.total;
+  // a paid invoice with no recorded amount (or a zero) was paid in full; only
+  // a real, positive part-payment counts as short, so a settled receipt never
+  // prints "still owed" against money that has actually arrived
+  const received =
+    invoice.amount_received && invoice.amount_received > 0
+      ? invoice.amount_received
+      : invoice.total;
   const short = received < invoice.total;
 
   return (

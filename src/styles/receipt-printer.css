@@ -636,3 +636,90 @@
   .rp-embed { padding-top: 18px; }
   .rp-stage--embed { width: min(230px, 82%); }
 }
+
+/* ============================================================================
+   THE RECEIPT PAGE, MADE FOR PHONES
+   The desktop machine is theatre with room to breathe. On a phone the paper
+   is the point: the slip goes wide and legible, the chassis stops shouting,
+   and the two things you came to do — print, download — live in a fixed bar
+   your thumb can always reach, instead of below a tall machine you must
+   scroll past. Reachability first, spectacle second.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  .rp {
+    /* the machine gives up some height so the paper and the bar can own the screen */
+    --body-h: clamp(150px, 40vw, 188px);
+    /* leave room for the fixed action bar so nothing hides behind it */
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+  .rp-beam { opacity: 0.6; }
+  .rp-motes { opacity: 0.3; }
+
+  .rp-top { padding-left: 16px; padding-right: 16px; }
+  .rp-lede { padding: 0 18px; margin-top: 4px; }
+  .rp-lede h1 { font-size: clamp(1.32rem, 6vw, 1.7rem); letter-spacing: -0.02em; }
+  .rp-lede p { font-size: 0.8rem; }
+
+  .rp-stage {
+    width: min(500px, 94vw);
+    margin-top: clamp(10px, 2vh, 20px);
+    min-height: 0;
+  }
+  /* the slip goes wide: readable is worth more than dainty */
+  .rp-well { width: min(360px, 86vw); }
+  .rp-receipt { padding: 17px 19px 12px; }
+  .rp-rc-head b { font-size: 1rem; }
+  .rp-rc-row { font-size: 0.8rem; }
+  .rp-rc-row.total b { font-size: 1.04rem; }
+  .rp-rc-party { font-size: 0.72rem; }
+
+  /* the controls leave the flow and become a standing bar */
+  .rp-controls {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 20;
+    gap: 10px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(23, 16, 38, 0) 0%, rgba(23, 16, 38, 0.86) 34%, #140e22 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    align-items: stretch;
+  }
+  /* the count and mute ride small, above the buttons */
+  .rp-meter {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+  .rp-actions {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+  /* two full-width targets a thumb cannot miss */
+  .rp-actions .rp-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 15px 18px;
+    font-size: 0.9rem;
+  }
+  /* the paragraph of hint is desktop nicety; the bar speaks for itself */
+  .rp-hint { display: none; }
+}
+
+@media (max-width: 460px) {
+  .rp { --body-h: clamp(132px, 42vw, 164px); }
+  .rp-well { width: 90vw; }
+  .rp-lede h1 { font-size: 1.36rem; }
+  .rp-actions { flex-direction: row; }
+  .rp-meter .rp-count { font-size: 0.72rem; }
+}
+
+/* the reachable bar must not sit over a tall machine's shadow on landscape
+   phones either: cap the stage so the paper always clears the bar */
+@media (max-width: 760px) and (orientation: landscape) {
+  .rp { --body-h: clamp(120px, 26vw, 150px); }
+  .rp-stage { margin-top: 8px; }
+}

@@ -1,9 +1,8 @@
 import { AxiosError } from 'axios';
-import { Fragment, Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { InvoiceDocument } from '@/components/InvoiceDocument';
-import { ReceiptDocument } from '@/components/ReceiptDocument';
 import { useMarkInvoicePaid } from '@/hooks';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { usePublicInvoice } from '@/hooks/useInvoices';
@@ -17,9 +16,6 @@ import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice, PublicPaymentAccount } from '@/types';
 import { PayRailReveal } from '@/components/PayRailReveal';
 
-// The delight moment: the surreal receipt printer. Lazy so its CSS and the
-// animation are only paid for at the instant an invoice actually settles.
-const ReceiptPrintout = lazy(() => import('@/components/ReceiptPrintout'));
 
 type Stage = 'review' | 'method' | 'processing' | 'done' | 'reported';
 
@@ -513,28 +509,13 @@ export const Payment = ({
             )}
 
             <div className={`pay-grid pay-grid--${stage}`}>
-              {!checkoutMode && (
-                <div className={`pay-doc${showPrinter ? ' pay-doc--printer' : ''}`}>
-                  {showPrinter ? (
-                    <>
-                      <Suspense
-                        fallback={
-                          <div className="pay-printer-fallback">
-                            <span className="iw-spin iw-spin--dark" aria-hidden="true" />
-                            Warming up the printer&hellip;
-                          </div>
-                        }
-                      >
-                        <ReceiptPrintout invoice={invoice} senderName={senderName} />
-                      </Suspense>
-                      {/* the vector receipt is what a Download / print actually captures */}
-                      <div className="pay-doc-print">
-                        <ReceiptDocument invoice={invoice} />
-                      </div>
-                    </>
-                  ) : (
-                    renderDoc()
-                  )}
+              {/* the done stage is the success card alone; the full receipt
+                  (printer, print, download) lives one tap away on /receipt, so
+                  nothing renders under the Download button and the page stays
+                  clean on every screen */}
+              {!checkoutMode && stage !== 'done' && (
+                <div className="pay-doc">
+                  {renderDoc()}
                 </div>
               )}
 
