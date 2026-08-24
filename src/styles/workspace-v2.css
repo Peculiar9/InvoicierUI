@@ -10004,3 +10004,28 @@
   /* the page keeps room so nothing ever hides beneath it */
   .pay-page .pay-reveal-body { padding-bottom: 76px; }
 }
+
+/* ============================================================================
+   THE INVOICE CARD WHILE PAYING — phones
+   The document carries 40px of padding built for a desktop sheet; on a phone
+   that eats the screen and crushes the content. Scoped through .pay-doc so it
+   only tightens the copy a payer reads on the pay page (never the owner's
+   panel or print), and wins on specificity without fighting import order.
+   ========================================================================== */
+@media (max-width: 620px) {
+  .pay-doc .invoice-doc {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+  .pay-doc .invoice-doc .invoice-doc-top {
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+  .pay-doc .invoice-doc .invoice-doc-parties { margin-bottom: 18px; }
+  .pay-doc .invoice-doc .invoice-doc-table { margin-bottom: 18px; }
+}
+@media (max-width: 430px) {
+  .pay-doc .invoice-doc { padding: 16px 14px; }
+  .pay-doc .invoice-doc .invoice-doc-top { margin-bottom: 16px; }
+}

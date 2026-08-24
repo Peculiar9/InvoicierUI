@@ -124,10 +124,15 @@ export const Payment = ({
   // in checkout the invoice folds into a summary strip; this reopens it
   const [docOpen, setDocOpen] = useState(false);
 
-  // a settled invoice opens straight on the receipt
+  // The link is a bookmark to where the payer left off, never a fresh start.
+  // A settled invoice opens on the receipt; one the payer has already claimed
+  // opens on the "awaiting confirmation" view, so re-opening the email link
+  // resumes the flow instead of restarting it.
   const invoiceStatus = invoice?.status;
   useEffect(() => {
-    if (invoiceStatus && isPaid(invoiceStatus)) setStage('done');
+    if (!invoiceStatus) return;
+    if (isPaid(invoiceStatus)) setStage('done');
+    else if (invoiceStatus === 'awaiting') setStage('reported');
   }, [invoiceStatus]);
 
   // leaving review on a phone, the action card jumps to the top of the grid;

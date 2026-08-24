@@ -723,3 +723,111 @@
   .rp { --body-h: clamp(120px, 26vw, 150px); }
   .rp-stage { margin-top: 8px; }
 }
+
+/* ============================================================================
+   WHAT THE PRINTER ACTUALLY GETS
+   The page on screen is a dark machine; paper must be a clean receipt. Off
+   screen the .rp-print copies are hidden; in print they are the only thing
+   on the page. The slip is fluid and capped at 80mm, so it fills a POS
+   thermal roll (58/80mm) and prints as a centred receipt on A4 alike, with
+   one copy per page. Design mirrors the on-screen slip: ink on paper, the
+   coral dot, the SETTLED stamp, a hand-torn top and foot.
+   ========================================================================== */
+
+/* off screen the print layer never shows: the machine is the screen story */
+.rp-print { display: none; }
+
+@media print {
+  /* Two older print blocks hide the whole app on print for other components:
+     one blanks everything with `body * { visibility: hidden }` and re-shows
+     only .invoice-doc/.rcpt; another does `body > *:not(.rcs) { display:none }`
+     which kills #root. The receipt page is neither, so it vanished. Re-assert
+     it here — by id and across the subtree — so it beats both on specificity. */
+  /* :has() confines this to the receipt page, so invoice/other print paths on
+     pages that also loaded this stylesheet are never touched */
+  body > #root:has(.rp) { display: block !important; visibility: visible !important; }
+  .rp, .rp-print, .rp-print-copy,
+  .rp-print .rp-receipt, .rp-print .rp-receipt * { visibility: visible !important; }
+
+  /* the page box is the receipt's world: force the whole chain to full
+     width so a collapsed screen ancestor cannot zero it out in print */
+  html, body { width: 100% !important; margin: 0 !important; padding: 0 !important;
+               background: #ffffff !important; }
+  /* only the receipt copies reach the paper */
+  .rp { position: static !important; min-height: 0 !important; overflow: visible !important;
+        display: block !important; width: 100% !important; background: #ffffff !important;
+        color: #1d1b2e !important; padding: 0 !important; }
+  .rp > *:not(.rp-print) { display: none !important; }
+  .rp-beam, .rp-motes, .rp-floor { display: none !important; }
+
+  .rp-print { display: block !important; width: 100% !important; }
+  .rp-print-copy {
+    display: block; width: 100% !important;
+    break-after: page; page-break-after: always;
+  }
+  .rp-print-copy:last-child { break-after: auto; page-break-after: auto; }
+
+  /* the slip: an absolute thermal-roll width (72mm inside an 80mm roll's
+     margins), so it renders even if the flow width cannot be resolved, and
+     centres on wider paper. mm is measured against the page, never a parent. */
+  .rp-print .rp-receipt {
+    position: relative;
+    display: block;
+    width: 72mm; max-width: 100%; margin: 0 auto;
+    padding: 7mm 7mm 9mm;
+    background: #ffffff !important;
+    color: #1d1b2e !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    font-family: 'Poppins', 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  /* clean stock: drop the on-screen fibre and roller banding for crisp paper */
+  .rp-print .rp-receipt,
+  .rp-print .rp-receipt::before { background-image: none !important; }
+  /* hand-torn edges, top and foot */
+  .rp-print .rp-receipt::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, #1d1b2e 0 2px, transparent 2px 6px);
+    opacity: 0.35;
+  }
+
+  .rp-print .rp-rc-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .rp-print .rp-rc-head b { font-size: 13pt; font-weight: 800; letter-spacing: -0.03em; color: #1d1b2e; }
+  .rp-print .rp-rc-head b i { color: #ff5a5f; font-style: normal; }
+  .rp-print .rp-rc-head span { font-size: 6.5pt; text-align: right; color: #5f5d72; letter-spacing: 0.04em; }
+
+  .rp-print .rp-rc-title {
+    margin: 9pt 0 0; text-align: center;
+    font-size: 7.5pt; font-weight: 700; letter-spacing: 0.28em; color: #7c3aed;
+  }
+  .rp-print .rp-rc-party { display: flex; justify-content: space-between; gap: 8pt; margin-top: 8pt; font-size: 8pt; }
+  .rp-print .rp-rc-party small { display: block; font-size: 6pt; letter-spacing: 0.06em; text-transform: uppercase; color: #9b99ab; }
+  .rp-print .rp-rc-party b { font-weight: 600; color: #1d1b2e; }
+
+  .rp-print .rp-rc-rows { margin-top: 10pt; border-top: 0.5pt dashed #c9c4d8; padding-top: 6pt; }
+  .rp-print .rp-rc-row { display: flex; justify-content: space-between; gap: 10pt; padding: 2.5pt 0; font-size: 8.5pt; }
+  .rp-print .rp-rc-row i { font-style: normal; color: #3d3a4e; }
+  .rp-print .rp-rc-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rp-print .rp-rc-row.total {
+    margin-top: 4pt; border-top: 1pt solid #1d1b2e; padding-top: 6pt;
+  }
+  .rp-print .rp-rc-row.total i { font-weight: 800; color: #1d1b2e; }
+  .rp-print .rp-rc-row.total b { font-size: 12pt; letter-spacing: -0.02em; }
+
+  .rp-print .rp-rc-stamp {
+    margin: 10pt auto 0; width: max-content;
+    padding: 3pt 12pt; border: 1.4pt solid #0c8d6f; border-radius: 4pt;
+    color: #0c8d6f; font-size: 8pt; font-weight: 800; letter-spacing: 0.32em;
+    transform: rotate(-3deg);
+  }
+  .rp-print .rp-rc-foot {
+    margin-top: 11pt; text-align: center;
+    font-size: 6.5pt; line-height: 1.7; color: #6b6880;
+    border-top: 0.5pt dashed #c9c4d8; padding-top: 7pt;
+  }
+  .rp-print .rp-rc-foot code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 6.5pt; }
+
+  /* let the driver choose the sheet; the slip stays narrow on any of them */
+  @page { size: auto; margin: 6mm; }
+}
