@@ -35,7 +35,7 @@ const railModeLabel: Record<RailMode, string> = {
   closed: 'Pinned shut. Click to let it breathe.',
 };
 
-type ActiveItem = 'dashboard' | 'invoices' | 'clients' | 'services' | 'settings';
+type ActiveItem = 'dashboard' | 'invoices' | 'clients' | 'services' | 'settings' | 'support';
 
 export interface WsAction {
   label: string;
@@ -61,6 +61,7 @@ const navItems: { id: ActiveItem; label: string; to: string; icon: string }[] = 
   { id: 'invoices', label: 'Invoices', to: '/invoices', icon: 'bx-receipt' },
   { id: 'clients', label: 'Clients', to: '/clients', icon: 'bx-user' },
   { id: 'settings', label: 'Settings', to: '/settings', icon: 'bx-cog' },
+  { id: 'support', label: 'Support', to: '/support', icon: 'bx-help-circle' },
 ];
 
 const ActionInner = ({ action }: { action: WsAction }) => (
