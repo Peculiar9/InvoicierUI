@@ -143,22 +143,6 @@ export const useDuplicateInvoice = () => {
   });
 };
 
-export const useDownloadInvoicePdf = () => {
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const blob = await invoicesApi.downloadPdf(id);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `invoice-${id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    },
-  });
-};
-
 export const useInvoiceShareLink = () => {
   return useMutation({
     mutationFn: (id: string) => invoicesApi.getShareLink(id),

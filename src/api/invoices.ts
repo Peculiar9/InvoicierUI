@@ -278,13 +278,6 @@ export const invoicesApi = {
     return mergeInvoice(response.data.data);
   },
 
-  downloadPdf: async (id: string): Promise<Blob> => {
-    const response = await apiClient.get(`/invoices/${id}/pdf`, {
-      responseType: 'blob',
-    });
-    return response.data;
-  },
-
   getShareLink: async (id: string): Promise<string> => {
     const response = await apiClient.get<ApiResponse<{ link: string }>>(
       `/invoices/${id}/share-link`
