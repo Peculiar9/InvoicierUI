@@ -8,6 +8,7 @@ import { NewPasswordField } from '@/components/ui/NewPasswordField';
 import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceTemplate, Persona } from '@/stores/settingsStore';
+import { filesApi } from '@/api/files';
 
 /**
  * The welcome journey: three small steps and a stamp. Collects only what the
@@ -55,6 +56,7 @@ export const Welcome = () => {
   const [wantsPassword, setWantsPassword] = useState(false);
   const [persona, setPersona] = useState<Persona | null>(null);
   const [logo, setLogo] = useState<string | undefined>(undefined);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [color, setColor] = useState('#924ee9');
   const [vat, setVat] = useState(true);
   const [wht, setWht] = useState(false);
@@ -127,6 +129,9 @@ export const Welcome = () => {
   const onLogoPick = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    // the data URL gives an instant preview; the File itself is kept so we can
+    // hand it to object storage at submit and persist a hosted URL, not a blob
+    setLogoFile(file);
     const reader = new FileReader();
     reader.onload = () => setLogo(String(reader.result));
     reader.readAsDataURL(file);
@@ -146,9 +151,10 @@ export const Welcome = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prepping]);
 
-  const finish = () => {
+  const finish = async () => {
     // Local first, so the workspace behind the loader already looks like
-    // theirs: brand colour, logo and persona are this browser's business.
+    // theirs: brand colour, logo and persona are this browser's business. The
+    // inline data URL is the instant preview the dashboard reads.
     completeOnboarding({
       name: displayName,
       logo,
@@ -162,19 +168,30 @@ export const Welcome = () => {
       tin: tin.trim() || undefined,
     });
 
-    // Then the account's own record, which is what a second device and every
-    // invoice document read from. Fire it alongside the loader rather than
-    // before it: the save and the three-second preparation overlap instead of
-    // queueing, so nobody waits for a round trip they cannot see.
+    // Start the loader now; the upload and the three-second preparation overlap
+    // behind it, so the object-storage round trip costs the user no visible wait.
+    setPrepping(true);
+
+    // A hosted URL is what a second device and every invoice document should
+    // read — a data URL would bloat the row. Upload the picked file and persist
+    // its URL; if storage is unreachable, fall back to the inline preview so
+    // onboarding still completes with a working logo.
+    let logoUrl = logo || undefined;
+    if (logoFile) {
+      try {
+        logoUrl = await filesApi.uploadImage(logoFile, 'business_logo');
+      } catch {
+        // storage not configured or file rejected: the data URL still renders
+      }
+    }
+
     saveProfile({
       business_name: displayName,
       email: email.trim() || undefined,
-      logo_url: logo || undefined,
+      logo_url: logoUrl,
       default_currency: currency,
       invoice_template: template,
     });
-
-    setPrepping(true);
   };
 
   return (
@@ -444,7 +461,7 @@ export const Welcome = () => {
                   <i className="bx bx-image-add" /> {logo ? 'Change logo' : 'Upload a logo'}
                 </button>
                 {logo && (
-                  <button type="button" className="ob-clear" onClick={() => setLogo(undefined)}>
+                  <button type="button" className="ob-clear" onClick={() => { setLogo(undefined); setLogoFile(null); }}>
                     Use the default mark instead
                   </button>
                 )}
