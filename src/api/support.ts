@@ -6,6 +6,7 @@ export type TicketStatus = 'open' | 'awaiting_user' | 'resolved';
 
 export interface SupportTicket {
   _id: string;
+  reference?: string | null;
   category: TicketCategory;
   subject: string;
   status: TicketStatus;
@@ -15,6 +16,11 @@ export interface SupportTicket {
   created_at: string;
   updated_at: string;
 }
+
+/** the ticket's handle: its stored reference, or one derived from the id for
+ *  threads opened before references existed, so every ticket reads as a ticket */
+export const ticketRef = (t: Pick<SupportTicket, 'reference' | '_id'>): string =>
+  t.reference ?? `TKT-${t._id.replace(/-/g, '').slice(0, 6).toUpperCase()}`;
 
 export interface SupportMessage {
   _id: string;

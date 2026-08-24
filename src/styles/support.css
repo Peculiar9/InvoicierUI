@@ -67,3 +67,11 @@ p.sup-resolved { background: none; padding: 0; color: #9b99ab; font-size: 0.8rem
   .sup-contact { grid-template-columns: 1fr; }
   .sup-grid { grid-template-columns: 1fr; }
 }
+
+/* the ticket handle, quotable: TKT-4F2A9K */
+.sup-ref {
+  font-family: ui-monospace, 'SF Mono', 'Roboto Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--brand, #924ee9);
+}

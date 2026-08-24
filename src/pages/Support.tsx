@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LegacyWorkspace } from '@/components/static/LegacyWorkspace';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { supportApi, type TicketCategory, type SupportTicket } from '@/api/support';
+import { supportApi, ticketRef, type TicketCategory, type SupportTicket } from '@/api/support';
 import '@/styles/support.css';
 
 const SUPPORT_EMAIL = 'hello@invoicier.app';
@@ -73,7 +73,7 @@ export const Support = () => {
                         <small>{CATEGORY_LABEL[t.category]}</small>
                       </span>
                       <b>{t.subject}</b>
-                      <small className="sup-faint">updated {when(t.updated_at)}</small>
+                      <small className="sup-faint"><span className="sup-ref">{ticketRef(t)}</span> · updated {when(t.updated_at)}</small>
                     </button>
                     {openId === t._id && <Thread ticket={t} />}
                   </li>
@@ -91,14 +91,14 @@ const NewConversation = ({ onOpened }: { onOpened: (id: string) => void }) => {
   const [category, setCategory] = useState<TicketCategory>('feedback');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: () => supportApi.open({ category, subject: subject.trim(), message: message.trim() }),
     onSuccess: (thread) => {
-      setDone(true);
+      setDone(ticketRef(thread.ticket));
       setSubject(''); setMessage('');
-      setTimeout(() => setDone(false), 3000);
+      setTimeout(() => setDone(null), 5000);
       onOpened(thread.ticket._id);
     },
   });
@@ -126,7 +126,7 @@ const NewConversation = ({ onOpened }: { onOpened: (id: string) => void }) => {
       </label>
       {error && <p className="sup-err">{error instanceof Error ? error.message : 'That did not send. Try again.'}</p>}
       <div className="sup-actions">
-        {done && <span className="sup-ok"><i className="bx bx-check" /> Sent. We will reply here.</span>}
+        {done && <span className="sup-ok"><i className="bx bx-check" /> Sent as <b>{done}</b>. We will reply here.</span>}
         <button type="button" className="iw-btn" disabled={isPending || subject.trim().length < 2 || message.trim().length < 2}
           onClick={() => mutate()}>
           {isPending ? 'Sending…' : 'Send message'}
