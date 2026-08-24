@@ -8,9 +8,16 @@ export const Route = createFileRoute('/verify-email')({
   // the emailed button lands here with the handle in the URL, so verifying
   // works on a device that never saw the signup
   validateSearch: (search: Record<string, unknown>) => {
-    const out: { email?: string; ref?: string } = {};
+    const out: { email?: string; ref?: string; code?: string } = {};
     if (typeof search.email === 'string') out.email = search.email;
     if (typeof search.ref === 'string') out.ref = search.ref;
+    // the code rides the emailed button so it verifies in one click. the
+    // router coerces a bare "4115" to the number 4115, so accept both and
+    // normalise back to the four-character string the verify endpoint wants.
+    if (search.code !== undefined && search.code !== null) {
+      const asText = String(search.code);
+      if (/^\d{4}$/.test(asText)) out.code = asText;
+    }
     return out;
   },
   component: VerifyEmail,

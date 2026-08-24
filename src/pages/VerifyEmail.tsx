@@ -50,12 +50,13 @@ export const VerifyEmail = () => {
     }
     return readPending();
   });
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => (typeof search.code === 'string' ? search.code : ''));
   const [state, setState] = useState<'entering' | 'working' | 'done' | 'failed'>(
     'entering'
   );
   const [note, setNote] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const autoTried = useRef(false);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -90,6 +91,18 @@ export const VerifyEmail = () => {
       inputRef.current?.focus();
     }
   };
+
+  // The emailed "Confirm this address" button lands here with the code in the
+  // URL: verify it at once, so the button actually confirms instead of asking
+  // the user to type what they just clicked. Guarded so it fires once.
+  useEffect(() => {
+    if (autoTried.current) return;
+    if (pending && typeof search.code === 'string' && /^\d{4}$/.test(search.code)) {
+      autoTried.current = true;
+      void submit(search.code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, search.code]);
 
   const resend = async () => {
     if (!pending) return;
@@ -179,15 +192,16 @@ export const VerifyEmail = () => {
                 if (code.length === 4) void submit(code);
               }}
             >
-              <label className="ob-field">
+              <label className="ob-field ob-code-field">
                 <span>Verification code</span>
                 <input
+                  className="ob-code"
                   ref={inputRef}
                   value={code}
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   maxLength={4}
-                  placeholder="••••"
+                  placeholder="0000"
                   disabled={state === 'working'}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
