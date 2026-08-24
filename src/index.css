@@ -84,3 +84,18 @@ html {
     scroll-behavior: auto;
   }
 }
+
+/* ============================================================================
+   iOS: stop the zoom-on-focus. Mobile Safari zooms into any form control
+   whose font-size is under 16px, and the app's inputs sit around 14px, so a
+   tap zoomed the page in and left it there. Sixteen pixels on touch widths
+   is the documented floor that prevents it, and it reads better on a phone
+   anyway. Scoped to mobile so the desktop type scale is untouched.
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

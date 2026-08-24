@@ -10029,3 +10029,52 @@
   .pay-doc .invoice-doc { padding: 16px 14px; }
   .pay-doc .invoice-doc .invoice-doc-top { margin-bottom: 16px; }
 }
+
+/* ============================================================================
+   ONBOARDING & VERIFY — the modal a phone can actually use
+   The card lived in a 100vh box with overflow hidden, so on iOS the top of a
+   tall card sat under the address bar with no way to scroll to it. It reads
+   as broken. This lets the container scroll, honours the dynamic viewport,
+   and gives the verify code its own big, thumb-friendly field.
+   ========================================================================== */
+.ob {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* the grid track must be definite, or a child sized min(760px,100%) resolves
+     its 100% against max-content and blows past the viewport on a phone */
+  grid-template-columns: minmax(0, 1fr);
+}
+.ob-card { max-width: 100%; }
+@media (max-width: 560px) {
+  .ob { padding: 16px 14px 40px; align-content: start; }
+  .ob-card { padding: 24px 20px 22px; border-radius: 22px; }
+  .ob-nav--center { flex-direction: column; }
+  .ob-nav--center .iw-btn { width: 100%; justify-content: center; }
+}
+/* the app-wide 16px input floor (the iOS no-zoom rule) outweighs a lone
+   .ob-code, so this reclaims the big code field with enough specificity to
+   win — still well above 16px, so it never triggers the zoom either */
+.ob .ob-card .ob-code-field input.ob-code { font-size: 1.9rem !important; }
+
+/* the one code, given room */
+.ob-code-field { gap: 8px; }
+.ob-code {
+  width: 100%;
+  text-align: center;
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 2rem !important;   /* far above the iOS 16px floor; no zoom */
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;           /* balance the trailing tracking */
+  color: var(--ink);
+  background: #fbfaff;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 12px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ob-code:focus { border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-tint, rgba(146,78,233,0.12)); }
+.ob-code::placeholder { color: #cfc9e0; letter-spacing: 0.5em; }
+.ob-code:disabled { opacity: 0.6; }
