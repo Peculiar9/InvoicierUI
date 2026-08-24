@@ -1,5 +1,20 @@
 import { StagingBadge } from '@/components/StagingBadge';
 
+// pay.invoicier.app is the payment surface, nothing else. It shares this SPA,
+// so a host guard keeps it to /pay and /receipt; every other path belongs on
+// the app domain and is bounced there before the app even mounts (and before
+// analytics fires below), so the pay domain never shows a dashboard or a
+// marketing page.
+if (window.location.hostname === 'pay.invoicier.app') {
+  const path = window.location.pathname;
+  const isPaySurface = path.startsWith('/pay/') || path.startsWith('/receipt/');
+  if (!isPaySurface) {
+    window.location.replace(
+      'https://invoicier.app' + path + window.location.search + window.location.hash
+    );
+  }
+}
+
 // Cloudflare Web Analytics — exact-host gated to production, so staging
 // (staging.invoicier.app, *.netlify.app) and localhost never pollute the
 // numbers. Cookieless; route changes tracked via the History API (SPA mode).
