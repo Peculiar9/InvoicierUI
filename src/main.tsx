@@ -94,11 +94,13 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Mock API (MSW). This is the demo's backend, so it runs in BOTH dev and
-// production builds (Vercel/Netlify), opt out with VITE_USE_MOCKS=false to
-// point the app at a real backend via VITE_API_URL.
+// Mock API (MSW). Opt-IN only: the demo backend runs solely when a build
+// explicitly sets VITE_USE_MOCKS=true. Every other build — real deploys and a
+// deploy that simply forgot the flag — talks to the real backend via
+// VITE_API_URL, so a misconfigured environment can never silently serve fake
+// data to users.
 async function enableMocking() {
-  if (import.meta.env.VITE_USE_MOCKS === 'false') return;
+  if (import.meta.env.VITE_USE_MOCKS !== 'true') return;
   const { worker } = await import('./mocks/browser');
   await worker.start({
     onUnhandledRequest: 'bypass',
