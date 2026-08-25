@@ -37,6 +37,8 @@ import './styles/legacy-static.css';
 import './styles/workspace-v2.css';
 import { errorMessage, isAuthError } from './lib/apiError';
 import { toast } from './lib/toast';
+import { initAnalytics, analytics } from './lib/analytics';
+import { useAuthStore } from './stores/authStore';
 
 /**
  * Nothing fails quietly.
@@ -93,6 +95,17 @@ declare module '@tanstack/react-router' {
     router: typeof router;
   }
 }
+
+// Product analytics (PostHog), no-op until VITE_PUBLIC_POSTHOG_KEY is set.
+initAnalytics();
+// a person returning with a live session is already known
+const persisted = useAuthStore.getState().user;
+if (persisted?.id) analytics.identify(String(persisted.id), { email: persisted.email });
+// one pageview per resolved route — pathname only, so a verify code or email
+// riding the query string never reaches analytics
+router.subscribe('onResolved', () => {
+  analytics.pageview(router.state.location.pathname);
+});
 
 // Mock API (MSW). Opt-IN only: the demo backend runs solely when a build
 // explicitly sets VITE_USE_MOCKS=true. Every other build — real deploys and a

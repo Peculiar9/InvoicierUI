@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User, AuthState } from '@/types';
+import { analytics } from '@/lib/analytics';
 
 interface AuthActions {
   setSession: (user: User, token: string, refreshToken: string) => void;
@@ -23,15 +24,21 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       ...initialState,
-      setSession: (user, token, refreshToken) =>
+      setSession: (user, token, refreshToken) => {
+        // a funnel can only follow a real person once we name them
+        analytics.identify(String(user.id), { email: user.email });
         set({
           user,
           token,
           refreshToken,
           isAuthenticated: true,
-        }),
+        });
+      },
       setTokens: (token, refreshToken) => set({ token, refreshToken }),
-      logout: () => set(initialState),
+      logout: () => {
+        analytics.reset();
+        set(initialState);
+      },
       updateUser: (updates) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,
