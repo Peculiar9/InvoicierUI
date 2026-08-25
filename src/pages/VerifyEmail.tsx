@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AxiosError } from 'axios';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link, useSearch } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
@@ -84,9 +85,28 @@ export const VerifyEmail = () => {
         // stale handle in private mode is harmless
       }
       setState('done');
-    } catch {
+    } catch (err) {
+      const status = err instanceof AxiosError ? err.response?.status : undefined;
+      const msg =
+        err instanceof AxiosError ? String(err.response?.data?.message ?? '') : '';
+
+      // The address is in fact already confirmed — usually the emailed link did
+      // it a moment ago. That is a success, not a failure to wave in their face.
+      if (/already/i.test(msg)) {
+        updateUser({ email_verified: true });
+        setState('done');
+        return;
+      }
+
       setState('entering');
-      setNote('That code did not match. Check the email and try again.');
+      if (status === 500 || /expire/i.test(msg)) {
+        // stale code or a hiccup on our side: send a fresh one and say so, so
+        // nobody is left staring at a dead code with no way forward
+        void resend();
+        setNote('That code was stale, so we sent a fresh one to your inbox. Use the new one.');
+      } else {
+        setNote('That code is not right. Check the email, or tap “Send a fresh code”.');
+      }
       setCode('');
       inputRef.current?.focus();
     }
@@ -233,7 +253,7 @@ export const VerifyEmail = () => {
                   onClick={() => void resend()}
                   disabled={state === 'working'}
                 >
-                  Resend the code
+                  <i className="bx bx-mail-send" /> Send a fresh code
                 </button>
               </div>
             </form>
