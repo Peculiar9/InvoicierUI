@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
 import { businessProfileApi } from '@/api/businessProfile';
+import { analytics } from '@/lib/analytics';
 import { businessProfileKey, hasOnboarded } from '@/hooks/useBusinessProfile';
 import { useAuthStore } from '@/stores/authStore';
 import type { AuthSession } from '@/api/auth';
@@ -99,6 +100,7 @@ export const useSignup = () => {
     meta: { doing: 'Creating your account' },
     onSuccess: (data) => {
       setSession(data.user, data.accessToken, data.refreshToken);
+      analytics.capture('account_created');
       // the verify-email page needs the reference the backend just minted;
       // sessionStorage survives the redirect without polluting the store
       if (data.verification) {

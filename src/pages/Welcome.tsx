@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceTemplate, Persona } from '@/stores/settingsStore';
 import { filesApi } from '@/api/files';
+import { analytics } from '@/lib/analytics';
 
 /**
  * The welcome journey: three small steps and a stamp. Collects only what the
@@ -167,6 +168,8 @@ export const Welcome = () => {
       currency,
       tin: tin.trim() || undefined,
     });
+
+    analytics.capture('onboarding_completed', { persona: persona ?? undefined, currency });
 
     // Start the loader now; the upload and the three-second preparation overlap
     // behind it, so the object-storage round trip costs the user no visible wait.

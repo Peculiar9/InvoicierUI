@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { invoicesApi } from '@/api/invoices';
+import { analytics } from '@/lib/analytics';
 import { devMockInvoice, isDevMockInvoiceId } from '@/lib/devMockInvoice';
 import type { CreateInvoiceDto, Invoice, MarkPaidDto, UpdateInvoiceDto } from '@/types';
 import { isPaid } from '@/utils/invoiceStatus';
@@ -110,6 +111,8 @@ export const useSendInvoice = () => {
     meta: { doing: 'Sending the invoice' },
     onSuccess: (_, vars) => {
       const id = typeof vars === 'string' ? vars : vars.id;
+      const channel = typeof vars === 'string' ? 'email' : vars.channel ?? 'email';
+      analytics.capture('invoice_sent', { channel });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
     },
@@ -124,6 +127,7 @@ export const useMarkInvoicePaid = () => {
       invoicesApi.markAsPaid(id, data),
     meta: { doing: 'Recording the payment' },
     onSuccess: (_, { id }) => {
+      analytics.capture('invoice_collected');
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices', id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
