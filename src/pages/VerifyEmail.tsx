@@ -107,8 +107,10 @@ export const VerifyEmail = () => {
       } else {
         setNote('That code is not right. Check the email, or tap “Send a fresh code”.');
       }
-      setCode('');
+      // keep the digits and select them: the Confirm button stays live so it
+      // never looks broken, and the next keystroke overwrites cleanly
       inputRef.current?.focus();
+      inputRef.current?.select();
     }
   };
 
@@ -239,11 +241,11 @@ export const VerifyEmail = () => {
                 >
                   {state === 'working' ? (
                     <>
-                      <span className="iw-spin" aria-hidden="true" /> Checking
+                      <span className="iw-spin" aria-hidden="true" /> Verifying
                     </>
                   ) : (
                     <>
-                      Confirm <i className="bx bx-right-arrow-alt" />
+                      <i className="bx bx-badge-check" /> Verify email
                     </>
                   )}
                 </button>
