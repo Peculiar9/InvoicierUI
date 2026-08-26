@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 
 export interface FieldOption {
@@ -36,9 +36,35 @@ export const FieldSelect = ({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // desktop only: pin the menu to the trigger with position:fixed so it floats
+  // over the panel's scroll container instead of being clipped by its overflow.
+  // On phones (<=720px) the stylesheet turns the menu into a bottom sheet, so we
+  // leave the style off and let CSS own it.
+  const [menuStyle, setMenuStyle] = useState<CSSProperties | undefined>();
 
   // let floating action rails duck while this menu is open
   useBodyFlagWhileOpen(open);
+
+  const placeMenu = () => {
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    if (window.matchMedia('(max-width: 720px)').matches) {
+      setMenuStyle(undefined); // CSS bottom sheet takes over
+      return;
+    }
+    const r = trigger.getBoundingClientRect();
+    const room = window.innerHeight - r.bottom;
+    const openUp = room < 260 && r.top > room; // flip above when there's no room below
+    setMenuStyle({
+      position: 'fixed',
+      left: r.left,
+      minWidth: r.width,
+      ...(openUp
+        ? { bottom: window.innerHeight - r.top + 6, top: 'auto' }
+        : { top: r.bottom + 6, bottom: 'auto' }),
+    });
+  };
 
   const rows: FieldOption[] = placeholder !== undefined
     ? [{ value: '', label: placeholder }, ...options]
@@ -49,17 +75,28 @@ export const FieldSelect = ({
     if (!open) return;
     const index = rows.findIndex((option) => option.value === value);
     setActive(index < 0 ? 0 : index);
+    placeMenu();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
     const onDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      // the fixed menu is not inside rootRef, so also spare clicks landing in it
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t)) return;
+      if ((t as HTMLElement).closest?.('.fs-menu')) return;
+      setOpen(false);
     };
+    // the menu is pinned to the trigger; follow it as the panel scrolls/resizes
+    const reflow = () => placeMenu();
     document.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', onDown);
+    window.addEventListener('scroll', reflow, true);
+    window.addEventListener('resize', reflow);
     return () => {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('scroll', reflow, true);
+      window.removeEventListener('resize', reflow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -90,6 +127,7 @@ export const FieldSelect = ({
   return (
     <div className="ffield" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         className={`ffield-trigger${invalid ? ' is-invalid' : ''}${value ? ' has-value' : ''}`}
         aria-haspopup="listbox"
@@ -106,7 +144,7 @@ export const FieldSelect = ({
       {open && (
         <>
           <div className="filter-scrim" onClick={() => setOpen(false)} />
-          <div className="fs-menu ffield-menu" role="listbox">
+          <div className="fs-menu ffield-menu" role="listbox" style={menuStyle}>
             {rows.map((option, index) => (
               <button
                 key={option.value || '∅'}

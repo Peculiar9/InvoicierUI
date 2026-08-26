@@ -42,9 +42,12 @@ interface DraftItem {
 
 const emptyItem: DraftItem = { description: '', quantity: 1, unit_price: 0 };
 
-/** Short, human time for the history rows. */
-const formatWhen = (iso: string) => {
+/** Short, human time for the history rows. Empty or unparseable dates render
+ *  as nothing rather than the literal "Invalid Date". */
+const formatWhen = (iso: string | null | undefined) => {
+  if (!iso) return '';
   const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
   const mins = Math.round((Date.now() - then) / 60000);
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} min ago`;
@@ -404,6 +407,7 @@ export const InvoicePanel = () => {
   };
 
   const emailAndSend = async (inv: Invoice) => {
+    if (sendInvoice.isPending) return; // a send is already on its way
     if (!email_verified) {
       toast.error('Verify your email first, so invoices go out under your name');
       return;
@@ -591,8 +595,13 @@ export const InvoicePanel = () => {
                     type="button"
                     className="btn btn-ghost"
                     onClick={() => invoice && emailAndSend(invoice)}
+                    disabled={sendInvoice.isPending}
                   >
-                    <i className="bx bx-send" /> Send
+                    {sendInvoice.isPending ? (
+                      <><span className="iw-spin" aria-hidden="true" /> Sending…</>
+                    ) : (
+                      <><i className="bx bx-send" /> Send</>
+                    )}
                   </button>
                   {invoice && !isSettled(invoice.status) && invoice.sends?.length ? (
                     <button
