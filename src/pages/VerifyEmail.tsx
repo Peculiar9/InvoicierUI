@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Link, useSearch } from '@tanstack/react-router';
 import { authApi } from '@/api/auth';
@@ -36,6 +37,19 @@ export const VerifyEmail = () => {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const search = useSearch({ from: '/verify-email' });
+  const queryClient = useQueryClient();
+
+  // The badge across the workspace reads email_verified from the cached profile
+  // query, which the store update alone does not touch. Patch that cache the
+  // moment we confirm, so the badge clears on the way back with no reload.
+  const markVerifiedEverywhere = () => {
+    updateUser({ email_verified: true });
+    queryClient.setQueryData(
+      ['user', 'profile'],
+      (old: Record<string, unknown> | undefined) =>
+        old ? { ...old, email_verified: true } : old
+    );
+  };
 
   // three sources, in order of freshness: the URL (the emailed deep link),
   // this tab's sessionStorage, and finally an authed resend below
@@ -78,7 +92,7 @@ export const VerifyEmail = () => {
         session.accessToken,
         session.refreshToken
       );
-      updateUser({ email_verified: true });
+      markVerifiedEverywhere();
       try {
         sessionStorage.removeItem(PENDING_VERIFICATION_KEY);
       } catch {
@@ -93,7 +107,7 @@ export const VerifyEmail = () => {
       // The address is in fact already confirmed — usually the emailed link did
       // it a moment ago. That is a success, not a failure to wave in their face.
       if (/already/i.test(msg)) {
-        updateUser({ email_verified: true });
+        markVerifiedEverywhere();
         setState('done');
         return;
       }
