@@ -326,16 +326,6 @@ export const Settings = () => {
     setWithdrawOpen(false);
   };
 
-  const [resetOpen, setResetOpen] = useState(false);
-  const resetDemo = () => {
-    setResetOpen(false);
-    ['invoicier-db', 'invoicier-services', 'invoicier-payouts'].forEach((k) =>
-      localStorage.removeItem(k)
-    );
-    toast.info('Demo data reset');
-    setTimeout(() => window.location.reload(), 400);
-  };
-
   return (
     <LegacyWorkspace active="settings" title="Settings">
       <div className="view view--narrow">
@@ -714,15 +704,6 @@ export const Settings = () => {
           </>
         )}
 
-        <div className="settings-reset">
-          <div>
-            <strong>Reset demo data</strong>
-            <p>Restore invoices, clients, services and payouts to the original sample data.</p>
-          </div>
-          <button type="button" className="btn btn-danger" onClick={() => setResetOpen(true)}>
-            Reset demo
-          </button>
-        </div>
       </div>
 
       {/* add / edit payout method */}
@@ -1006,30 +987,6 @@ export const Settings = () => {
         </div>
       </Modal>
 
-      {/* The one thing here with no way back, so it still asks first. */}
-      <Modal
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        title="Reset the demo data?"
-      >
-        <p className="dash-muted">
-          This clears every invoice, client, service and payout and puts the
-          original sample data back. Unlike everything else in Invoicier, this
-          one cannot be undone.
-        </p>
-        <div className="iw-paid-actions">
-          <button
-            type="button"
-            className="iw-btn iw-btn--ghost"
-            onClick={() => setResetOpen(false)}
-          >
-            Keep my data
-          </button>
-          <button type="button" className="iw-btn iw-btn--danger" onClick={resetDemo}>
-            Reset everything
-          </button>
-        </div>
-      </Modal>
     </LegacyWorkspace>
   );
 };
