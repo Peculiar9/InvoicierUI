@@ -444,8 +444,8 @@ export const Payment = ({
             </span>
             <h2>This link has nothing behind it</h2>
             <p>
-              The invoice may have been deleted, or this demo link was created
-              in a different browser.
+              The invoice may have been deleted, or the link is incomplete.
+              Check with whoever sent it to you.
             </p>
             <Link to="/" className="pay-btn pay-btn--primary">
               Go to Invoicier
@@ -632,10 +632,10 @@ export const Payment = ({
                           <span className="pay-checkout-brand">
                             <i className="bx bx-credit-card-front" /> Paystack
                           </span>
-                          <p className="pay-checkout-lede">Paystack checkout opens here.</p>
+                          <p className="pay-checkout-lede">Card payments are coming soon.</p>
                           <p className="pay-checkout-note">
-                            Card, bank transfer and USSD all run through Paystack. This
-                            checkout is not wired up in the demo.
+                            Card, bank transfer and USSD through Paystack are on the way.
+                            For now, use the bank transfer option to pay this invoice.
                           </p>
                         </div>
                         <label className="pay-field">
@@ -939,7 +939,7 @@ export const Payment = ({
 
       <footer className="pay-footnote">
         <span>
-          Demo checkout, no real payment is processed.
+          Pay only into the account shown above.
         </span>
         <Link to="/">
           Invoicing by invoicier<b>.</b>
