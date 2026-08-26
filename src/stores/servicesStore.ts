@@ -17,23 +17,23 @@ interface ServicesState {
   removeService: (id: string) => void;
 }
 
-const seed: ServiceItem[] = [
-  { id: 'svc_1', name: 'Brand & identity design', description: 'Logo, palette and guidelines', price: 1200 },
-  { id: 'svc_2', name: 'Website build', description: 'Design and front-end build', price: 3500 },
-  { id: 'svc_3', name: 'Monthly retainer', description: 'Ongoing support and updates', price: 800 },
-];
+// Production starts empty: a real user's services are their own, not sample
+// data. (Existing local seeds age out as people add their own.)
+let counter = 0;
+const nextId = () => `svc_${Date.now().toString(36)}${(++counter).toString(36)}`;
 
-let counter = seed.length;
-const nextId = () => `svc_${++counter}_${seed.length}`;
+const sameService = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 export const useServicesStore = create<ServicesState>()(
   persist(
     (set) => ({
-      services: seed,
+      services: [],
       addService: (service) =>
-        set((state) => ({
-          services: [{ id: nextId(), ...service }, ...state.services],
-        })),
+        set((state) => {
+          // idempotency: a second tap with the same name does not duplicate it
+          if (state.services.some((s) => sameService(s.name, service.name))) return state;
+          return { services: [{ id: nextId(), ...service }, ...state.services] };
+        }),
       replaceAll: (services) => set({ services }),
       updateService: (id, updates) =>
         set((state) => ({
