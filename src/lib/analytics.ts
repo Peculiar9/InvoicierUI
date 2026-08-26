@@ -1,4 +1,6 @@
 import posthog from 'posthog-js';
+// build tag: posthog config wiring (CONFIG_ vars) — forces a rebuild so the
+// env values set in the host are inlined into this bundle.
 
 /**
  * Product analytics, PostHog, behind one door.
