@@ -21,6 +21,16 @@ import posthog from 'posthog-js';
  */
 const KEY = (import.meta.env.CONFIG_POSTHOG_KEY ??
   import.meta.env.VITE_PUBLIC_POSTHOG_KEY) as string | undefined;
+
+// Build-time diagnostic (safe, non-secret): reports whether a PostHog key was
+// present when THIS bundle was built. Grep the deployed JS for the marker —
+// "phdiag-v3-keyed" means the key was inlined, "phdiag-v3-nokey" means it was
+// not set at build. Remove once analytics is confirmed live.
+if (typeof window !== 'undefined') {
+  (window as unknown as Record<string, string>).__phdiag = KEY
+    ? 'phdiag-v3-keyed'
+    : 'phdiag-v3-nokey';
+}
 const HOST = (import.meta.env.CONFIG_POSTHOG_HOST ??
   import.meta.env.VITE_PUBLIC_POSTHOG_HOST ??
   'https://us.i.posthog.com') as string;
