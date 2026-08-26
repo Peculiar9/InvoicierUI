@@ -3,19 +3,25 @@ import posthog from 'posthog-js';
 /**
  * Product analytics, PostHog, behind one door.
  *
- * It only ever runs when VITE_PUBLIC_POSTHOG_KEY is set, so a build without the
- * key — a preview, a fork, a deploy that simply forgot it — sends nothing and
- * throws nothing. Every helper is a no-op until init() has actually connected.
+ * It only ever runs when the PostHog key is set, so a build without the key — a
+ * preview, a fork, a deploy that simply forgot it — sends nothing and throws
+ * nothing. Every helper is a no-op until init() has actually connected.
+ *
+ * The key is read from CONFIG_POSTHOG_KEY (a plain-config name Vercel does not
+ * gate as a public prefix), falling back to the older VITE_PUBLIC_POSTHOG_KEY so
+ * nothing breaks mid-rename. Both are inlined into the client bundle — which is
+ * correct: the PostHog project token is a public, client-side key.
  *
  * This is a money app, so the defaults lean private: no session recording, and
  * autocapture records which elements people touch, never what they type into a
  * field. Identify runs on sign-in so a funnel can follow a real person; reset
  * runs on sign-out so the next person on the device is not mistaken for them.
  */
-const KEY = import.meta.env.VITE_PUBLIC_POSTHOG_KEY as string | undefined;
-const HOST =
-  (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string | undefined) ??
-  'https://us.i.posthog.com';
+const KEY = (import.meta.env.CONFIG_POSTHOG_KEY ??
+  import.meta.env.VITE_PUBLIC_POSTHOG_KEY) as string | undefined;
+const HOST = (import.meta.env.CONFIG_POSTHOG_HOST ??
+  import.meta.env.VITE_PUBLIC_POSTHOG_HOST ??
+  'https://us.i.posthog.com') as string;
 
 let ready = false;
 
