@@ -132,6 +132,7 @@ export const Settings = () => {
   const [acctEditingId, setAcctEditingId] = useState<string | null>(null);
   const [acctForm, setAcctForm] = useState<ReceivingAccount>(emptyAccount);
   const [acctErrors, setAcctErrors] = useState<Record<string, string>>({});
+  const [savingAccount, setSavingAccount] = useState(false);
 
   const openAddAccount = () => {
     setAcctEditingId(null);
@@ -164,19 +165,29 @@ export const Settings = () => {
     }
     setAcctErrors(errs);
     if (Object.keys(errs).length) return;
+    if (savingAccount) return; // a second click while the first is in flight
 
+    setSavingAccount(true);
+    // hold the loading state a beat even on a fast reply, so the click reads as
+    // "working" and never invites an impatient second tap
+    const minShown = new Promise((r) => setTimeout(r, 700));
     try {
       const saved = acctEditingId
         ? await settingsApi.updateAccount(acctEditingId, acctForm)
         : await settingsApi.createAccount(acctForm);
+      await minShown;
       const next = acctEditingId
         ? accounts.map((a) => (a.id === acctEditingId ? saved : a))
-        : [...accounts, saved];
+        : // createAccount is idempotent server-side: a duplicate returns the
+          // existing row, so de-dupe by id here too rather than append blindly
+          [...accounts.filter((a) => a.id !== saved.id), saved];
       setProfile({ receivingAccounts: next });
       toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
       setAcctOpen(false);
     } catch {
       toast.error('That did not save. Check the details and try again.');
+    } finally {
+      setSavingAccount(false);
     }
   };
   const removeAccount = (a: ReceivingAccount) => {
@@ -925,8 +936,15 @@ export const Settings = () => {
             <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
               Cancel
             </button>
-            <button type="button" className="iw-btn" onClick={saveAccount}>
-              {acctEditingId ? 'Save changes' : 'Add account'}
+            <button type="button" className="iw-btn" onClick={saveAccount} disabled={savingAccount}>
+              {savingAccount ? (
+                <>
+                  <span className="iw-spin" aria-hidden="true" />{' '}
+                  {acctEditingId ? 'Saving…' : 'Adding…'}
+                </>
+              ) : (
+                acctEditingId ? 'Save changes' : 'Add account'
+              )}
             </button>
           </div>
         </div>
