@@ -2739,9 +2739,25 @@
   width: min(760px, 100%);
   padding: clamp(28px, 5vw, 48px);
   padding-bottom: clamp(24px, 4vw, 36px);
-  background: #fff;
+  /* follows the theme: white on the light gradient, a dark surface on the dark
+     one, so the token-coloured text inside stays readable either way */
+  background: var(--card);
   border-radius: 28px;
   box-shadow: 0 40px 100px rgba(20, 8, 36, 0.45);
+}
+[data-theme='dark'] .ob-card {
+  border: 1px solid var(--border);
+}
+/* surfaces inside the card that were literal white; the invoice preview and the
+   stamp keep their own look (a preview is white paper, a stamp is a stamp) */
+[data-theme='dark'] .ob-personas button {
+  background: var(--paper);
+}
+[data-theme='dark'] .ob-personas button.active {
+  background: linear-gradient(160deg, var(--card), var(--brand-tint));
+}
+[data-theme='dark'] .ob-skip {
+  background: var(--paper);
 }
 .ob-progress {
   display: flex;
