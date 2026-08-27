@@ -15,6 +15,23 @@ if (window.location.hostname === 'pay.invoicier.app') {
   }
 }
 
+// The complement, production only: /pay must never render on the app domain.
+// A pay link that lands on invoicier.app is bounced to the pay domain before
+// the app mounts, so the payment surface lives on pay.invoicier.app alone.
+// Staging and localhost are not in this list — they have no pay subdomain, so
+// /pay keeps working there exactly as before.
+if (
+  ['invoicier.app', 'www.invoicier.app'].includes(window.location.hostname) &&
+  window.location.pathname.startsWith('/pay/')
+) {
+  window.location.replace(
+    'https://pay.invoicier.app' +
+      window.location.pathname +
+      window.location.search +
+      window.location.hash
+  );
+}
+
 // Cloudflare Web Analytics — exact-host gated to production, so staging
 // (staging.invoicier.app, *.netlify.app) and localhost never pollute the
 // numbers. Cookieless; route changes tracked via the History API (SPA mode).

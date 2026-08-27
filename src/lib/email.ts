@@ -10,7 +10,23 @@ export const appBaseUrl = () => {
   return typeof window !== 'undefined' ? window.location.origin : '';
 };
 
-export const invoicePayLink = (invoice: Invoice) => `${appBaseUrl()}/pay/${invoice.id}`;
+/**
+ * The base for a shared/copied payment link. In production the pay surface is
+ * its own subdomain, so a pay link must point at pay.invoicier.app, never the
+ * app domain. Staging and localhost have no pay subdomain, so the link stays on
+ * the current app origin (their /pay works). VITE_PAY_URL overrides if ever set.
+ */
+export const payLinkBase = () => {
+  const configured = import.meta.env.VITE_PAY_URL?.replace(/\/$/, '');
+  if (configured) return configured;
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (host === 'invoicier.app' || host === 'www.invoicier.app') {
+    return 'https://pay.invoicier.app';
+  }
+  return appBaseUrl();
+};
+
+export const invoicePayLink = (invoice: Invoice) => `${payLinkBase()}/pay/${invoice.id}`;
 
 /** Full, email-client-safe HTML, generated here so EmailJS only needs a {{{content}}} passthrough. */
 function invoiceEmailHtml(opts: {
