@@ -1,4 +1,4 @@
-import { appBaseUrl } from './email';
+import { payLinkBase } from './email';
 import { toast } from './toast';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useShareSheetStore } from '@/stores/shareSheetStore';
@@ -19,7 +19,7 @@ interface CopyableInvoice {
  */
 export async function copyInvoiceLink(inv: CopyableInvoice, senderName?: string) {
   try {
-    const link = `${appBaseUrl()}/pay/${inv.id}`;
+    const link = `${payLinkBase()}/pay/${inv.id}`;
     const number = inv.invoice_number ? `invoice ${inv.invoice_number}` : 'an invoice';
     const opener = senderName?.trim()
       ? `Hello! ${senderName.trim()} sent you ${number}`
