@@ -4220,6 +4220,19 @@
 .toast--warning > .bx:first-child {
   color: #d98c00;
 }
+/* toasts render at the app root, outside .iw, so they carry explicit dark
+   values rather than the workspace tokens */
+[data-theme='dark'] .toast {
+  background: #1c1926;
+  border-color: #2b2739;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+[data-theme='dark'] .toast span {
+  color: #f1eff8;
+}
+[data-theme='dark'] .toast button {
+  color: #7d7992;
+}
 
 @keyframes ui-fade {
   from {
