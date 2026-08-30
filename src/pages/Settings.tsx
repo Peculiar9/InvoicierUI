@@ -322,7 +322,6 @@ export const Settings = () => {
   const saveMethod = () => {
     const f = methodForm;
     const errs: Partial<Record<keyof MethodForm, string>> = {};
-    if (!isFilled(f.label)) errs.label = 'Give this method a name';
     if (f.type === 'bank') {
       if (!isFilled(f.bank_name)) errs.bank_name = 'Required';
       if (!isFilled(f.account_name)) errs.account_name = 'Required';
@@ -334,17 +333,25 @@ export const Settings = () => {
     setMethodErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    // Label is optional: keep what was typed, otherwise infer a sensible one
+    // (the verified account name for a bank, the email for PayPal).
+    const label =
+      f.label.trim() ||
+      (f.type === 'bank'
+        ? f.account_name.trim() || f.bank_name.trim() || 'Bank account'
+        : f.email.trim() || 'PayPal');
+
     const payload =
       f.type === 'bank'
         ? {
             type: 'bank' as const,
-            label: f.label.trim(),
+            label,
             bank_name: f.bank_name.trim(),
             bank_code: f.bank_code || undefined,
             account_name: f.account_name.trim(),
             account_number: digitsOnly(f.account_number),
           }
-        : { type: 'paypal' as const, label: f.label.trim(), email: f.email.trim() };
+        : { type: 'paypal' as const, label, email: f.email.trim() };
 
     if (editingId) {
       updateMethod(editingId, payload);
@@ -804,20 +811,6 @@ export const Settings = () => {
             </select>
           </label>
 
-          <label className="cinv-field">
-            <span>Label</span>
-            <input
-              value={methodForm.label}
-              className={methodErrors.label ? 'is-invalid' : ''}
-              placeholder={methodForm.type === 'paypal' ? 'e.g. PayPal' : 'e.g. Main account'}
-              onChange={(e) => {
-                setMethodForm({ ...methodForm, label: e.target.value });
-                setMethodErrors((er) => ({ ...er, label: undefined }));
-              }}
-            />
-            {methodErrors.label && <small className="field-error">{methodErrors.label}</small>}
-          </label>
-
           {methodForm.type === 'bank' ? (
             <>
               <label className="cinv-field">
@@ -912,6 +905,19 @@ export const Settings = () => {
               {methodErrors.email && <small className="field-error">{methodErrors.email}</small>}
             </label>
           )}
+
+          <label className="cinv-field">
+            <span>Label <em className="iw-optional">optional</em></span>
+            <input
+              value={methodForm.label}
+              placeholder={
+                methodForm.type === 'paypal'
+                  ? 'A nickname — defaults to your email'
+                  : 'A nickname — defaults to the account name'
+              }
+              onChange={(e) => setMethodForm({ ...methodForm, label: e.target.value })}
+            />
+          </label>
         </div>
       </Modal>
 
