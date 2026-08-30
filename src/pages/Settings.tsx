@@ -135,22 +135,34 @@ export const Settings = () => {
   const [resolvedName, setResolvedName] = useState('');
   const [resolveError, setResolveError] = useState('');
 
-  // Load the bank list the first time the bank form is opened.
+
+  // receiving accounts: where clients send money directly
+  const accounts = profile.receivingAccounts ?? [];
+  const [acctOpen, setAcctOpen] = useState(false);
+  const [acctEditingId, setAcctEditingId] = useState<string | null>(null);
+  const [acctForm, setAcctForm] = useState<ReceivingAccount>(emptyAccount);
+  const [acctErrors, setAcctErrors] = useState<Record<string, string>>({});
+  const [savingAccount, setSavingAccount] = useState(false);
+
+  // the Nigerian-bank rail is the one that gets the picker + live verification
+  const isNgnBank = acctForm.provider === 'bank' && acctForm.currency === 'NGN';
+
+  // Load the bank list the first time the NGN-bank account form is open.
   useEffect(() => {
-    if (!methodOpen || methodForm.type !== 'bank' || banks.length > 0 || banksLoading) return;
+    if (!acctOpen || !isNgnBank || banks.length > 0 || banksLoading) return;
     setBanksLoading(true);
     settingsApi
       .listBanks()
       .then(setBanks)
       .catch(() => setBanks([]))
       .finally(() => setBanksLoading(false));
-  }, [methodOpen, methodForm.type, banks.length, banksLoading]);
+  }, [acctOpen, isNgnBank, banks.length, banksLoading]);
 
-  // Verify the account with the gateway once a bank and a full NUBAN are set.
-  // Debounced, and cancels in-flight lookups so only the latest answer lands.
+  // Verify the account once a bank and a full 10-digit NUBAN are set. Debounced,
+  // and cancels in-flight lookups so only the latest answer lands.
   useEffect(() => {
     setResolveError('');
-    if (methodForm.type !== 'bank' || !methodForm.bank_code || methodForm.account_number.length !== 10) {
+    if (!isNgnBank || !acctForm.bank_code || (acctForm.account_number ?? '').length !== 10) {
       setResolvedName('');
       setResolving(false);
       return;
@@ -159,12 +171,12 @@ export const Settings = () => {
     setResolving(true);
     const timer = window.setTimeout(() => {
       settingsApi
-        .resolveAccount(methodForm.account_number, methodForm.bank_code)
+        .resolveAccount(acctForm.account_number as string, acctForm.bank_code as string)
         .then((res) => {
           if (cancelled) return;
           setResolvedName(res.accountName);
-          setMethodForm((f) => ({ ...f, account_name: res.accountName }));
-          setMethodErrors((er) => ({ ...er, account_name: undefined, account_number: undefined }));
+          setAcctForm((f) => ({ ...f, account_name: res.accountName }));
+          setAcctErrors((er) => ({ ...er, account_name: '', account_number: '' }));
         })
         .catch(() => {
           if (cancelled) return;
@@ -180,31 +192,27 @@ export const Settings = () => {
       window.clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [methodForm.bank_code, methodForm.account_number, methodForm.type]);
-
-  // receiving accounts: where clients send money directly
-  const accounts = profile.receivingAccounts ?? [];
-  const [acctOpen, setAcctOpen] = useState(false);
-  const [acctEditingId, setAcctEditingId] = useState<string | null>(null);
-  const [acctForm, setAcctForm] = useState<ReceivingAccount>(emptyAccount);
-  const [acctErrors, setAcctErrors] = useState<Record<string, string>>({});
-  const [savingAccount, setSavingAccount] = useState(false);
+  }, [acctForm.bank_code, acctForm.account_number, isNgnBank]);
 
   const openAddAccount = () => {
     setAcctEditingId(null);
     setAcctForm({ ...emptyAccount, currency: profile.currency || 'USD' });
     setAcctErrors({});
+    resetResolve();
     setAcctOpen(true);
   };
   const openEditAccount = (a: ReceivingAccount) => {
     setAcctEditingId(a.id);
     setAcctForm(a);
     setAcctErrors({});
+    // an existing bank account already carries its verified name
+    setResolvedName(a.provider === 'bank' && a.currency === 'NGN' ? (a.account_name ?? '') : '');
+    setResolveError('');
+    setResolving(false);
     setAcctOpen(true);
   };
   const saveAccount = async () => {
     const errs: Record<string, string> = {};
-    if (!isFilled(acctForm.label)) errs.label = 'Give this account a name';
     if (!isFilled(acctForm.account_name)) errs.account_name = 'Required';
     if (!isFilled(acctForm.currency)) errs.currency = 'Required';
     // the spec that drew the form is the spec that judges it
@@ -223,14 +231,23 @@ export const Settings = () => {
     if (Object.keys(errs).length) return;
     if (savingAccount) return; // a second click while the first is in flight
 
+    // Label is optional: keep what was typed, else infer a sensible nickname
+    // (the verified account name, then the bank name).
+    const label =
+      acctForm.label.trim() ||
+      acctForm.account_name.trim() ||
+      acctForm.bank_name?.trim() ||
+      'Account';
+    const account = { ...acctForm, label };
+
     setSavingAccount(true);
     // hold the loading state a beat even on a fast reply, so the click reads as
     // "working" and never invites an impatient second tap
     const minShown = new Promise((r) => setTimeout(r, 700));
     try {
       const saved = acctEditingId
-        ? await settingsApi.updateAccount(acctEditingId, acctForm)
-        : await settingsApi.createAccount(acctForm);
+        ? await settingsApi.updateAccount(acctEditingId, account)
+        : await settingsApi.createAccount(account);
       await minShown;
       const next = acctEditingId
         ? accounts.map((a) => (a.id === acctEditingId ? saved : a))
@@ -238,7 +255,7 @@ export const Settings = () => {
           // existing row, so de-dupe by id here too rather than append blindly
           [...accounts.filter((a) => a.id !== saved.id), saved];
       setProfile({ receivingAccounts: next });
-      toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
+      toast.success(acctEditingId ? 'Account updated' : `${label} added`);
       setAcctOpen(false);
     } catch {
       toast.error('That did not save. Check the details and try again.');
@@ -956,61 +973,141 @@ export const Settings = () => {
             </div>
           </div>
 
-          <label className="cinv-field">
-            <span>Name it</span>
-            <input
-              value={acctForm.label}
-              placeholder="Grey USD"
-              className={acctErrors.label ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
-            />
-            {acctErrors.label && <small className="field-error">{acctErrors.label}</small>}
-          </label>
+          {isNgnBank ? (
+            <>
+              {/* Nigerian bank: pick the bank, type the NUBAN, the name verifies */}
+              <label className="cinv-field">
+                <span>Bank</span>
+                <BankPicker
+                  value={acctForm.bank_code ?? ''}
+                  bankName={acctForm.bank_name}
+                  banks={banks}
+                  loading={banksLoading}
+                  invalid={!!acctErrors.bank_name}
+                  aria-label="Bank"
+                  onChange={(bank) => {
+                    setAcctForm({
+                      ...acctForm,
+                      bank_code: bank?.code ?? '',
+                      bank_name: bank?.name ?? '',
+                      account_name: '',
+                    });
+                    setResolvedName('');
+                    setAcctErrors((er) => ({ ...er, bank_name: '' }));
+                  }}
+                />
+                {acctErrors.bank_name && <small className="field-error">{acctErrors.bank_name}</small>}
+              </label>
+              <label className="cinv-field">
+                <span>Account number</span>
+                <input
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={acctForm.account_number ?? ''}
+                  placeholder="10-digit account number"
+                  className={acctErrors.account_number ? 'is-invalid' : ''}
+                  onChange={(e) => {
+                    const account_number = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setAcctForm({ ...acctForm, account_number });
+                    setAcctErrors((er) => ({ ...er, account_number: '' }));
+                  }}
+                />
+                {acctErrors.account_number && (
+                  <small className="field-error">{acctErrors.account_number}</small>
+                )}
+              </label>
+              <label className="cinv-field">
+                <span>Account name</span>
+                <input
+                  value={acctForm.account_name}
+                  readOnly={!!resolvedName}
+                  className={`${acctErrors.account_name ? 'is-invalid' : ''}${resolvedName ? ' is-verified' : ''}`}
+                  placeholder={resolving ? 'Verifying…' : 'Auto-fills once the account is verified'}
+                  onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
+                />
+                {resolving && (
+                  <small className="iw-field-hint">
+                    <span className="iw-spin" aria-hidden="true" /> Verifying account…
+                  </small>
+                )}
+                {!resolving && resolvedName && (
+                  <small className="field-ok">
+                    <i className="bx bx-check-circle" aria-hidden="true" /> Verified: {resolvedName}
+                  </small>
+                )}
+                {!resolving && resolveError && <small className="field-error">{resolveError}</small>}
+                {acctErrors.account_name && !resolvedName && (
+                  <small className="field-error">{acctErrors.account_name}</small>
+                )}
+              </label>
+              <label className="cinv-field">
+                <span>Name it <em className="iw-optional">optional</em></span>
+                <input
+                  value={acctForm.label}
+                  placeholder="A nickname — defaults to the account name"
+                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+                />
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="cinv-field">
+                <span>Name it</span>
+                <input
+                  value={acctForm.label}
+                  placeholder="Grey USD"
+                  className={acctErrors.label ? 'is-invalid' : ''}
+                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+                />
+                {acctErrors.label && <small className="field-error">{acctErrors.label}</small>}
+              </label>
 
-          <label className="cinv-field">
-            <span>Account name</span>
-            <input
-              value={acctForm.account_name}
-              placeholder="Ada Obi"
-              className={acctErrors.account_name ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
-            />
-            {acctErrors.account_name && (
-              <small className="field-error">{acctErrors.account_name}</small>
-            )}
-          </label>
+              <label className="cinv-field">
+                <span>Account name</span>
+                <input
+                  value={acctForm.account_name}
+                  placeholder="Ada Obi"
+                  className={acctErrors.account_name ? 'is-invalid' : ''}
+                  onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
+                />
+                {acctErrors.account_name && (
+                  <small className="field-error">{acctErrors.account_name}</small>
+                )}
+              </label>
 
-          {/* the fields this KIND of account, in THIS currency, is made of;
-              a Nigerian NUBAN is not an IBAN is not a PayPal email */}
-          {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
-            <label className="cinv-field" key={field.key}>
-              <span>
-                {field.label}
-                {!field.required && <em className="iw-optional"> optional</em>}
-              </span>
-              <input
-                value={(acctForm[field.key] as string | undefined) ?? ''}
-                placeholder={field.placeholder}
-                inputMode={field.kind === 'digits' ? 'numeric' : undefined}
-                maxLength={field.kind === 'digits' ? field.digits : undefined}
-                className={acctErrors[field.key] ? 'is-invalid' : ''}
-                onChange={(e) => {
-                  // digit fields accept digits only, capped at the field's width
-                  const value =
-                    field.kind === 'digits'
-                      ? e.target.value.replace(/\D/g, '').slice(0, field.digits ?? 34)
-                      : e.target.value;
-                  setAcctForm({ ...acctForm, [field.key]: value });
-                }}
-              />
-              {field.hint && !acctErrors[field.key] && (
-                <small className="iw-field-hint">{field.hint}</small>
-              )}
-              {acctErrors[field.key] && (
-                <small className="field-error">{acctErrors[field.key]}</small>
-              )}
-            </label>
-          ))}
+              {/* the fields this KIND of account, in THIS currency, is made of;
+                  a Nigerian NUBAN is not an IBAN is not a PayPal email */}
+              {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
+                <label className="cinv-field" key={field.key}>
+                  <span>
+                    {field.label}
+                    {!field.required && <em className="iw-optional"> optional</em>}
+                  </span>
+                  <input
+                    value={(acctForm[field.key] as string | undefined) ?? ''}
+                    placeholder={field.placeholder}
+                    inputMode={field.kind === 'digits' ? 'numeric' : undefined}
+                    maxLength={field.kind === 'digits' ? field.digits : undefined}
+                    className={acctErrors[field.key] ? 'is-invalid' : ''}
+                    onChange={(e) => {
+                      // digit fields accept digits only, capped at the field's width
+                      const value =
+                        field.kind === 'digits'
+                          ? e.target.value.replace(/\D/g, '').slice(0, field.digits ?? 34)
+                          : e.target.value;
+                      setAcctForm({ ...acctForm, [field.key]: value });
+                    }}
+                  />
+                  {field.hint && !acctErrors[field.key] && (
+                    <small className="iw-field-hint">{field.hint}</small>
+                  )}
+                  {acctErrors[field.key] && (
+                    <small className="field-error">{acctErrors[field.key]}</small>
+                  )}
+                </label>
+              ))}
+            </>
+          )}
 
           <label className="cinv-field">
             <span>Anything they should know</span>

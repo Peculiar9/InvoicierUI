@@ -26,6 +26,7 @@ interface AccountRow {
   account_name: string;
   account_number?: string | null;
   bank_name?: string | null;
+  bank_code?: string | null;
   routing_number?: string | null;
   swift_code?: string | null;
   iban?: string | null;
@@ -52,6 +53,7 @@ const toAccount = (row: AccountRow): ReceivingAccount => ({
   account_name: row.account_name,
   account_number: row.account_number ?? undefined,
   bank_name: row.bank_name ?? undefined,
+  bank_code: row.bank_code ?? undefined,
   routing_number: row.routing_number ?? undefined,
   swift: row.swift_code ?? undefined,
   iban: row.iban ?? undefined,
@@ -68,6 +70,7 @@ const toWire = (account: Partial<ReceivingAccount>) => ({
   account_name: account.account_name,
   account_number: account.account_number || undefined,
   bank_name: account.bank_name || undefined,
+  bank_code: account.bank_code || undefined,
   routing_number: account.routing_number || undefined,
   swift_code: account.swift || undefined,
   iban: account.iban || undefined,

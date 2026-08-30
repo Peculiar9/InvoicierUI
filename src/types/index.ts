@@ -162,6 +162,8 @@ export interface ReceivingAccount {
   account_name: string;
   account_number?: string;
   bank_name?: string;
+  /** Paystack bank code, for resolving/verifying a Nigerian account */
+  bank_code?: string;
   routing_number?: string;
   swift?: string;
   iban?: string;
