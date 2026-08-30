@@ -460,6 +460,56 @@
   border-color: rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
 }
+
+/* The action label is hidden on the compact icon dock (mobile / mid widths);
+   the hover tooltip carries the meaning there. */
+.iw .ws-action-label {
+  display: none;
+}
+
+/* On a desktop-width screen the invoice action rail has room to say what each
+   button does, so the labels ride inline and the dock reads as a proper menu
+   instead of a column of mystery icons. Scoped to the invoice panel rail. */
+@media (min-width: 1100px) {
+  .iw .ipanel-rail.ws-rail-right {
+    top: 96px;
+    transform: none;
+    right: 20px;
+    padding: 10px;
+    border-radius: 18px;
+  }
+  .iw .ipanel-rail.ws-rail-right ul {
+    gap: 6px;
+  }
+  .iw .ipanel-rail .ws-action {
+    display: grid;
+    grid-template-columns: 22px auto;
+    align-items: center;
+    justify-content: start;
+    gap: 12px;
+    width: 100%;
+    min-width: 176px;
+    height: auto;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+  }
+  .iw .ipanel-rail .ws-action:hover {
+    transform: translateX(-2px);
+  }
+  .iw .ipanel-rail .ws-action-label {
+    display: inline;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  /* the slide-out tooltip is redundant once the label is always shown */
+  .iw .ipanel-rail .ws-action::after {
+    content: none;
+  }
+}
 /* the floating action rail stays visible on smaller screens too; the mobile
    position (bottom-right, above the nav) is set in the max-width:900px block */
 
@@ -1067,6 +1117,22 @@
 .iw .field-error {
   color: var(--danger);
   font-size: 0.72rem;
+}
+/* the verified-account confirmation and its input state */
+.iw .field-ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--paid, #0c8d6f);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.iw .field-ok .bx {
+  font-size: 0.95rem;
+}
+.iw input.is-verified {
+  border-color: var(--paid, #0c8d6f);
+  background: rgba(12, 141, 111, 0.05);
 }
 .iw .cinv-section-title {
   font-size: 0.9rem;
@@ -2846,6 +2912,31 @@
   font-size: 0.72rem;
   color: var(--ink-faint);
 }
+/* the "verification link is waiting at <email>" badge on the done step. A
+   long address must wrap inside the badge instead of blowing out the layout
+   on a narrow screen. */
+.ob-mail {
+  max-width: min(440px, 100%);
+  margin: 6px auto 0;
+  padding: 11px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--brand-tint);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.ob-mail i {
+  margin-right: 4px;
+  color: var(--brand-600);
+  vertical-align: -1px;
+}
+.ob-mail b {
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
 .ob-nav {
   display: flex;
   align-items: center;
@@ -3102,9 +3193,17 @@
 
 @media (max-width: 640px) {
   .ob-brand,
-  .ob-row,
-  .ob-personas {
+  .ob-row {
     grid-template-columns: 1fr;
+  }
+  /* keep the four hats in a 2x2 grid on mobile so all of them stay visible
+     instead of stacking into one tall column that overflows the card */
+  .ob-personas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .ob-personas button {
+    padding: 12px 12px;
   }
   .ob-card {
     border-radius: 20px;
@@ -6692,6 +6791,88 @@
   padding: 6px;
   overflow-y: auto;
 }
+/* bank picker: a typable combobox field that filters the list live, with a
+   monogram per bank and a loading state while the list arrives. */
+.iw .bankpicker {
+  position: relative;
+}
+.iw .bankpicker-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  transition: border-color 0.15s ease;
+}
+.iw .bankpicker.is-invalid .bankpicker-control {
+  border-color: var(--danger);
+}
+.iw .bankpicker-control:focus-within {
+  border-color: var(--brand);
+}
+.iw .bankpicker-lead {
+  flex: none;
+  color: var(--ink-faint);
+  font-size: 1rem;
+}
+.iw .bankpicker-lead.iw-spin {
+  width: 15px;
+  height: 15px;
+}
+.iw .bankpicker-input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+}
+.iw .bankpicker-caret {
+  flex: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.iw .bankpicker-caret.is-open {
+  transform: rotate(180deg);
+}
+.iw .bank-option {
+  gap: 12px;
+}
+.iw .bank-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.iw .bank-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iw .fs-loading,
+.iw .fs-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
 .iw .fs-option {
   display: flex;
   align-items: center;
@@ -7707,14 +7888,9 @@
   border-radius: 20px;
   overflow: hidden;
 }
-/* a hairline of brand down the left edge, so a section has a spine */
+/* no left rail: the card's own border carries it, cleaner without a bar */
 .iw .settings-page .dash-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--brand), transparent 70%);
-  opacity: 0.5;
+  content: none;
 }
 
 .iw .cinv-section-title {
@@ -9753,10 +9929,12 @@
   gap: 14px;
   padding: 16px 18px;
   margin-bottom: 14px;
-  border-left: 3px solid var(--brand);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 .iw .rail-nudge--empty {
-  border-left-color: #b97d10;
+  border-color: rgba(185, 125, 16, 0.3);
   background: rgba(185, 125, 16, 0.05);
 }
 .iw .rail-nudge-icon {

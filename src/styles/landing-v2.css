@@ -52,6 +52,25 @@
   --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
 }
 
+/* ---------------------------------------------------------------- dark ----
+   A considered dark identity for the landing, not an inversion: a deep
+   purple-ink ground that belongs to the brand, near-white ink, and a brand
+   purple lifted so it still carries on a dark field. The literal-white
+   surfaces and shine gradients scattered through the page get their own
+   overrides further down; this only moves the tokens the page reads from. */
+[data-theme='dark'] .lp {
+  --brand-600: #a884f5;
+  --brand-tint: rgba(168, 132, 245, 0.16);
+  --ink: #f3f1fb;
+  --ink-soft: #b8b4cb;
+  --ink-faint: #807c95;
+  --surface: #0f0c17;
+  --surface-muted: #171320;
+  --border: #2a2537;
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.6);
+}
+
 .lp *,
 .lp *::before,
 .lp *::after,
@@ -3544,6 +3563,34 @@
   }
 }
 
+/* On a touch screen an auto-drifting marquee fights the finger: you cannot
+   hover to pause it and you cannot read a card that is sliding away. Turn it
+   into a real swipeable, snapping carousel with cards sized to be read. */
+@media (max-width: 640px) {
+  .lp-quotes-drift {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .lp-quotes-drift::-webkit-scrollbar {
+    display: none;
+  }
+  .lp-quotes-track {
+    animation: none;
+    width: max-content;
+  }
+  .lp-quotes-set {
+    padding-inline: 4vw;
+  }
+  .lp-quotes-set .lp-quote {
+    width: 82vw;
+    scroll-snap-align: center;
+  }
+}
+
 /* ============================================================================
    SAGA v2 — stack, pulse, voila
    ========================================================================== */
@@ -5388,3 +5435,35 @@ html.lenis body {
   text-align: center;
 }
 .lp .lp-news-done i { font-size: 1.15rem; flex: none; }
+
+/* ================================================================== dark ==
+   Landing dark variant, part two: the token flip above handles everything
+   that reads its color from a token. What remains here are the literal-light
+   surfaces the token flip cannot reach: the statement band painted a fixed
+   near-white, the scrolled nav's white glass, and the feature cards whose
+   fill leaned on a white overlay. Each gets a considered dark counterpart so
+   the page stays one continuous dark field, not a dark page with light holes. */
+[data-theme='dark'] .lp-statement {
+  /* a whisper of elevation off the page ground, brand-biased, not a light slab */
+  background: #141021;
+}
+[data-theme='dark'] .lp-nav.is-scrolled {
+  /* dark glass so the light nav ink reads, matching the app's own chrome */
+  background: rgba(18, 14, 28, 0.72);
+  border-color: var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+[data-theme='dark'] .lp-fcard {
+  /* the fill leaned on a 45%-white stop that turned milky on a dark ground;
+     keep the brand tint, drop the white to a faint lift, and let the border
+     define the card the way it does everywhere else in dark */
+  background: linear-gradient(165deg, var(--tint), rgba(255, 255, 255, 0.04) 58%);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+[data-theme='dark'] .lp-fcard--slate {
+  /* slate's tint is near-black ink, invisible on dark — lift it to a cool grey */
+  --tint: rgba(255, 255, 255, 0.05);
+  --tint-deep: rgba(255, 255, 255, 0.08);
+  --ink-accent: var(--ink-soft);
+}
