@@ -27,7 +27,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
-import { todayLocal } from '@/utils/day';
+import { todayLocal, addDaysLocal, daysBetween } from '@/utils/day';
 import { isPaid, isSettled } from '@/utils/invoiceStatus';
 import { invoicesApi } from '@/api/invoices';
 import { useQueryClient } from '@tanstack/react-query';
@@ -144,6 +144,9 @@ export const InvoicePanel = () => {
   const [payment_route, setPaymentRoute] = useState<PaymentRoute | ''>('');
   const [receiving_account_id, setReceivingAccountId] = useState('');
   const [terms, setTerms] = useState('Payment due within 14 days');
+  // terms track the due date ("Payment due within N days") until the sender
+  // types their own, after which we stop rewriting them.
+  const [termsEdited, setTermsEdited] = useState(false);
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<DraftItem[]>([{ ...emptyItem }]);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -187,13 +190,15 @@ export const InvoicePanel = () => {
       setRecipientName('');
       setRecipientEmail('');
       setCurrency(profile.currency || 'NGN');
-      setDueDate('');
+      // a sensible net-14 by default; the terms line follows it
+      setDueDate(addDaysLocal(14));
       // onboarding answers set the defaults; every invoice can still differ
       setVatEnabled(profile.vatRegistered ?? true);
       setWhtExpected(profile.whtUsual ?? false);
       setPaymentRoute('');
       setReceivingAccountId('');
       setTerms('Payment due within 14 days');
+      setTermsEdited(false);
       setNotes('');
       setItems([{ ...emptyItem }]);
       setSavedId(null);
@@ -211,6 +216,8 @@ export const InvoicePanel = () => {
       setPaymentRoute(invoice.payment_route ?? '');
       setReceivingAccountId(invoice.receiving_account_id ?? '');
       setTerms(invoice.terms ?? '');
+      // an existing invoice keeps its own terms; do not rewrite them
+      setTermsEdited(true);
       setNotes(invoice.notes ?? '');
       setItems(
         invoice.items.length
@@ -224,6 +231,14 @@ export const InvoicePanel = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mode, invoice?.id, prefillClientId]);
+
+  // Keep the terms line in step with the due date until the sender writes their
+  // own: "Payment due within N days", counted from today.
+  useEffect(() => {
+    if (termsEdited || !due_date) return;
+    const days = Math.max(daysBetween(todayLocal(), due_date), 0);
+    setTerms(`Payment due within ${days} ${days === 1 ? 'day' : 'days'}`);
+  }, [due_date, termsEdited]);
 
   const client = clients.find((c) => c.id === client_id) ?? null;
   // either a saved client, or a name typed straight onto the invoice
@@ -941,7 +956,12 @@ export const InvoicePanel = () => {
                     </div>
                     <div className="cinv-field">
                       <span>Due date</span>
-                      <DateField value={due_date} onChange={setDueDate} aria-label="Due date" />
+                      <DateField
+                        value={due_date}
+                        onChange={setDueDate}
+                        min={addDaysLocal(1)}
+                        aria-label="Due date"
+                      />
                     </div>
                   </div>
 
@@ -1166,7 +1186,14 @@ export const InvoicePanel = () => {
                   </label>
                   <label className="cinv-field">
                     <span>Terms</span>
-                    <input type="text" value={terms} onChange={(e) => setTerms(e.target.value)} />
+                    <input
+                      type="text"
+                      value={terms}
+                      onChange={(e) => {
+                        setTerms(e.target.value);
+                        setTermsEdited(true);
+                      }}
+                    />
                   </label>
                 </div>
 
@@ -1207,6 +1234,7 @@ export const InvoicePanel = () => {
                   ) : (
                     <i className={`bx ${action.bx}`} aria-hidden="true" />
                   )}
+                  <span className="ws-action-label">{action.label}</span>
                 </button>
               </li>
             ))}
