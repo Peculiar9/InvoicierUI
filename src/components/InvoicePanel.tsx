@@ -1234,7 +1234,6 @@ export const InvoicePanel = () => {
                   ) : (
                     <i className={`bx ${action.bx}`} aria-hidden="true" />
                   )}
-                  <span className="ws-action-label">{action.label}</span>
                 </button>
               </li>
             ))}

@@ -461,55 +461,6 @@
   border-top-color: #fff;
 }
 
-/* The action label is hidden on the compact icon dock (mobile / mid widths);
-   the hover tooltip carries the meaning there. */
-.iw .ws-action-label {
-  display: none;
-}
-
-/* On a desktop-width screen the invoice action rail has room to say what each
-   button does, so the labels ride inline and the dock reads as a proper menu
-   instead of a column of mystery icons. Scoped to the invoice panel rail. */
-@media (min-width: 1100px) {
-  .iw .ipanel-rail.ws-rail-right {
-    top: 96px;
-    transform: none;
-    right: 20px;
-    padding: 10px;
-    border-radius: 18px;
-  }
-  .iw .ipanel-rail.ws-rail-right ul {
-    gap: 6px;
-  }
-  .iw .ipanel-rail .ws-action {
-    display: grid;
-    grid-template-columns: 22px auto;
-    align-items: center;
-    justify-content: start;
-    gap: 12px;
-    width: 100%;
-    min-width: 176px;
-    height: auto;
-    padding: 11px 16px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-  }
-  .iw .ipanel-rail .ws-action:hover {
-    transform: translateX(-2px);
-  }
-  .iw .ipanel-rail .ws-action-label {
-    display: inline;
-    font-family: var(--font);
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1;
-  }
-  /* the slide-out tooltip is redundant once the label is always shown */
-  .iw .ipanel-rail .ws-action::after {
-    content: none;
-  }
-}
 /* the floating action rail stays visible on smaller screens too; the mobile
    position (bottom-right, above the nav) is set in the max-width:900px block */
 
