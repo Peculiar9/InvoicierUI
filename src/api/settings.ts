@@ -1,6 +1,22 @@
 import apiClient from './client';
 import type { ApiResponse, ReceivingAccount } from '@/types';
 
+/** A bank the account picker chooses from. */
+export interface Bank {
+  name: string;
+  code: string;
+  slug?: string;
+  currency?: string;
+  type?: string;
+}
+
+/** The verified holder of a resolved account. */
+export interface ResolvedAccount {
+  bankCode: string;
+  accountNumber: string;
+  accountName: string;
+}
+
 /** the backend's account row; swift travels as swift_code on the wire */
 interface AccountRow {
   id: string;
@@ -105,6 +121,20 @@ export const settingsApi = {
 
   deleteAccount: async (id: string): Promise<void> => {
     await apiClient.delete(`/settings/receiving-accounts/${id}`);
+  },
+
+  /** Paystack's supported banks, for the account picker. */
+  listBanks: async (): Promise<Bank[]> => {
+    const response = await apiClient.get<ApiResponse<Bank[]>>('/settings/banks');
+    return response.data.data;
+  },
+
+  /** Confirm a NUBAN and get the official account holder name. */
+  resolveAccount: async (accountNumber: string, bankCode: string): Promise<ResolvedAccount> => {
+    const response = await apiClient.get<ApiResponse<ResolvedAccount>>('/settings/resolve-account', {
+      params: { account_number: accountNumber, bank_code: bankCode },
+    });
+    return response.data.data;
   },
 
   listServices: async (): Promise<ServiceRow[]> => {

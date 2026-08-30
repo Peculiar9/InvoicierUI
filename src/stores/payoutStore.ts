@@ -9,6 +9,8 @@ export interface PayoutMethod {
   label: string;
   /* bank */
   bank_name?: string;
+  /** Paystack bank code, used to resolve and re-verify the account */
+  bank_code?: string;
   account_name?: string;
   account_number?: string;
   /* paypal */

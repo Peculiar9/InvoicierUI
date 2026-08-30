@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
 import { FieldSelect } from '@/components/ui/FieldSelect';
+import { BankPicker } from '@/components/ui/BankPicker';
 import { TemplatePicker } from '@/components/TemplatePicker';
 import { PasswordCard } from '@/components/settings/PasswordCard';
 import { useInvoices } from '@/hooks';
@@ -23,13 +24,14 @@ import {
   digitsOnly,
 } from '@/lib/validate';
 import { toast } from '@/lib/toast';
-import { settingsApi } from '@/api/settings';
+import { settingsApi, type Bank } from '@/api/settings';
 import { accountFieldsFor, ACCOUNT_FIELD_KEYS } from '@/utils/paymentRoutes';
 
 interface MethodForm {
   type: PayoutType;
   label: string;
   bank_name: string;
+  bank_code: string;
   account_name: string;
   account_number: string;
   email: string;
@@ -80,6 +82,7 @@ const emptyMethodForm: MethodForm = {
   type: 'bank',
   label: '',
   bank_name: '',
+  bank_code: '',
   account_name: '',
   account_number: '',
   email: '',
@@ -125,6 +128,59 @@ export const Settings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [methodForm, setMethodForm] = useState<MethodForm>(emptyMethodForm);
   const [methodErrors, setMethodErrors] = useState<Partial<Record<keyof MethodForm, string>>>({});
+  // the bank picker + live account verification
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [resolvedName, setResolvedName] = useState('');
+  const [resolveError, setResolveError] = useState('');
+
+  // Load the bank list the first time the bank form is opened.
+  useEffect(() => {
+    if (!methodOpen || methodForm.type !== 'bank' || banks.length > 0 || banksLoading) return;
+    setBanksLoading(true);
+    settingsApi
+      .listBanks()
+      .then(setBanks)
+      .catch(() => setBanks([]))
+      .finally(() => setBanksLoading(false));
+  }, [methodOpen, methodForm.type, banks.length, banksLoading]);
+
+  // Verify the account with the gateway once a bank and a full NUBAN are set.
+  // Debounced, and cancels in-flight lookups so only the latest answer lands.
+  useEffect(() => {
+    setResolveError('');
+    if (methodForm.type !== 'bank' || !methodForm.bank_code || methodForm.account_number.length !== 10) {
+      setResolvedName('');
+      setResolving(false);
+      return;
+    }
+    let cancelled = false;
+    setResolving(true);
+    const timer = window.setTimeout(() => {
+      settingsApi
+        .resolveAccount(methodForm.account_number, methodForm.bank_code)
+        .then((res) => {
+          if (cancelled) return;
+          setResolvedName(res.accountName);
+          setMethodForm((f) => ({ ...f, account_name: res.accountName }));
+          setMethodErrors((er) => ({ ...er, account_name: undefined, account_number: undefined }));
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setResolvedName('');
+          setResolveError('We could not verify that account. Check the number and the bank.');
+        })
+        .finally(() => {
+          if (!cancelled) setResolving(false);
+        });
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [methodForm.bank_code, methodForm.account_number, methodForm.type]);
 
   // receiving accounts: where clients send money directly
   const accounts = profile.receivingAccounts ?? [];
@@ -235,10 +291,16 @@ export const Settings = () => {
     toast.success('Business profile saved');
   };
 
+  const resetResolve = () => {
+    setResolvedName('');
+    setResolveError('');
+    setResolving(false);
+  };
   const openAddMethod = () => {
     setEditingId(null);
     setMethodForm(emptyMethodForm);
     setMethodErrors({});
+    resetResolve();
     setMethodOpen(true);
   };
   const openEditMethod = (m: PayoutMethod) => {
@@ -247,11 +309,13 @@ export const Settings = () => {
       type: m.type,
       label: m.label,
       bank_name: m.bank_name ?? '',
+      bank_code: m.bank_code ?? '',
       account_name: m.account_name ?? '',
       account_number: m.account_number ?? '',
       email: m.email ?? '',
     });
     setMethodErrors({});
+    resetResolve();
     setMethodOpen(true);
   };
 
@@ -263,7 +327,7 @@ export const Settings = () => {
       if (!isFilled(f.bank_name)) errs.bank_name = 'Required';
       if (!isFilled(f.account_name)) errs.account_name = 'Required';
       if (!isAccountNumber(f.account_number))
-        errs.account_number = 'Enter a valid account number (6–20 digits)';
+        errs.account_number = 'Enter a valid 10-digit account number';
     } else {
       if (!isEmail(f.email)) errs.email = 'Enter a valid PayPal email';
     }
@@ -276,6 +340,7 @@ export const Settings = () => {
             type: 'bank' as const,
             label: f.label.trim(),
             bank_name: f.bank_name.trim(),
+            bank_code: f.bank_code || undefined,
             account_name: f.account_name.trim(),
             account_number: digitsOnly(f.account_number),
           }
@@ -379,10 +444,13 @@ export const Settings = () => {
                 <input
                   type="tel"
                   inputMode="tel"
+                  maxLength={18}
                   value={form.phone}
                   className={profileErrors.phone ? 'is-invalid' : ''}
                   onChange={(e) => {
-                    setForm({ ...form, phone: e.target.value });
+                    // phone characters only (digits, +, space, dashes, parens)
+                    const phone = e.target.value.replace(/[^\d+\s()-]/g, '').slice(0, 18);
+                    setForm({ ...form, phone });
                     setProfileErrors((er) => ({ ...er, phone: undefined }));
                   }}
                 />
@@ -753,13 +821,23 @@ export const Settings = () => {
           {methodForm.type === 'bank' ? (
             <>
               <label className="cinv-field">
-                <span>Bank name</span>
-                <input
-                  value={methodForm.bank_name}
-                  className={methodErrors.bank_name ? 'is-invalid' : ''}
-                  placeholder="e.g. Chase"
-                  onChange={(e) => {
-                    setMethodForm({ ...methodForm, bank_name: e.target.value });
+                <span>Bank</span>
+                <BankPicker
+                  value={methodForm.bank_code}
+                  bankName={methodForm.bank_name}
+                  banks={banks}
+                  loading={banksLoading}
+                  invalid={!!methodErrors.bank_name}
+                  aria-label="Bank"
+                  onChange={(bank) => {
+                    setMethodForm({
+                      ...methodForm,
+                      bank_code: bank?.code ?? '',
+                      bank_name: bank?.name ?? '',
+                      // a new bank invalidates the last verified name
+                      account_name: '',
+                    });
+                    setResolvedName('');
                     setMethodErrors((er) => ({ ...er, bank_name: undefined }));
                   }}
                 />
@@ -768,34 +846,53 @@ export const Settings = () => {
                 )}
               </label>
               <label className="cinv-field">
-                <span>Account name</span>
-                <input
-                  value={methodForm.account_name}
-                  className={methodErrors.account_name ? 'is-invalid' : ''}
-                  placeholder="Account holder"
-                  onChange={(e) => {
-                    setMethodForm({ ...methodForm, account_name: e.target.value });
-                    setMethodErrors((er) => ({ ...er, account_name: undefined }));
-                  }}
-                />
-                {methodErrors.account_name && (
-                  <small className="field-error">{methodErrors.account_name}</small>
-                )}
-              </label>
-              <label className="cinv-field">
                 <span>Account number</span>
                 <input
                   inputMode="numeric"
+                  maxLength={10}
                   value={methodForm.account_number}
                   className={methodErrors.account_number ? 'is-invalid' : ''}
-                  placeholder="6–20 digits"
+                  placeholder="10-digit account number"
                   onChange={(e) => {
-                    setMethodForm({ ...methodForm, account_number: e.target.value });
+                    // digits only, capped at a 10-digit NUBAN
+                    const account_number = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setMethodForm({ ...methodForm, account_number });
                     setMethodErrors((er) => ({ ...er, account_number: undefined }));
                   }}
                 />
                 {methodErrors.account_number && (
                   <small className="field-error">{methodErrors.account_number}</small>
+                )}
+              </label>
+              <label className="cinv-field">
+                <span>Account name</span>
+                <input
+                  value={methodForm.account_name}
+                  readOnly={!!resolvedName}
+                  className={`${methodErrors.account_name ? 'is-invalid' : ''}${resolvedName ? ' is-verified' : ''}`}
+                  placeholder={
+                    resolving ? 'Verifying…' : 'Auto-fills once the account is verified'
+                  }
+                  onChange={(e) => {
+                    setMethodForm({ ...methodForm, account_name: e.target.value });
+                    setMethodErrors((er) => ({ ...er, account_name: undefined }));
+                  }}
+                />
+                {resolving && (
+                  <small className="iw-field-hint">
+                    <span className="iw-spin" aria-hidden="true" /> Verifying account…
+                  </small>
+                )}
+                {!resolving && resolvedName && (
+                  <small className="field-ok">
+                    <i className="bx bx-check-circle" aria-hidden="true" /> Verified: {resolvedName}
+                  </small>
+                )}
+                {!resolving && resolveError && (
+                  <small className="field-error">{resolveError}</small>
+                )}
+                {methodErrors.account_name && !resolvedName && (
+                  <small className="field-error">{methodErrors.account_name}</small>
                 )}
               </label>
             </>
@@ -889,10 +986,16 @@ export const Settings = () => {
                 value={(acctForm[field.key] as string | undefined) ?? ''}
                 placeholder={field.placeholder}
                 inputMode={field.kind === 'digits' ? 'numeric' : undefined}
+                maxLength={field.kind === 'digits' ? field.digits : undefined}
                 className={acctErrors[field.key] ? 'is-invalid' : ''}
-                onChange={(e) =>
-                  setAcctForm({ ...acctForm, [field.key]: e.target.value })
-                }
+                onChange={(e) => {
+                  // digit fields accept digits only, capped at the field's width
+                  const value =
+                    field.kind === 'digits'
+                      ? e.target.value.replace(/\D/g, '').slice(0, field.digits ?? 34)
+                      : e.target.value;
+                  setAcctForm({ ...acctForm, [field.key]: value });
+                }}
               />
               {field.hint && !acctErrors[field.key] && (
                 <small className="iw-field-hint">{field.hint}</small>
