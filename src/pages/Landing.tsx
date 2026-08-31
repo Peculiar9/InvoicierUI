@@ -1788,11 +1788,10 @@ export const MarketingFooter = () => (
         <div className="lp-footer-col">
           <h4>Resources</h4>
           <ul>
+            <li><Link to="/resources">Guides</Link></li>
+            <li><Link to="/e-invoicing-nigeria">E-invoicing in Nigeria</Link></li>
+            <li><Link to="/invoicing-nigeria">Invoicing in Nigeria</Link></li>
             <li><Link to="/docs">Help center</Link></li>
-            <li><Link to="/docs">Guides</Link></li>
-            {!WAITLIST_MODE && (
-              <li><Link to="/login">Sign in</Link></li>
-            )}
             <li><Link to="/legal">Terms &amp; Privacy</Link></li>
           </ul>
         </div>
