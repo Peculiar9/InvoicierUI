@@ -15,13 +15,16 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReceiptRouteImport } from './routes/receipt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LegalRouteImport } from './routes/legal'
+import { Route as InvoicingNigeriaRouteImport } from './routes/invoicing-nigeria'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as EInvoicingNigeriaRouteImport } from './routes/e-invoicing-nigeria'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CompanyRouteImport } from './routes/company'
@@ -62,6 +65,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -82,6 +90,11 @@ const LegalRoute = LegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoicingNigeriaRoute = InvoicingNigeriaRouteImport.update({
+  id: '/invoicing-nigeria',
+  path: '/invoicing-nigeria',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvoicesRoute = InvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
@@ -95,6 +108,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EInvoicingNigeriaRoute = EInvoicingNigeriaRouteImport.update({
+  id: '/e-invoicing-nigeria',
+  path: '/e-invoicing-nigeria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -150,13 +168,16 @@ export interface FileRoutesByFullPath {
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/e-invoicing-nigeria': typeof EInvoicingNigeriaRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/invoicing-nigeria': typeof InvoicingNigeriaRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -174,13 +195,16 @@ export interface FileRoutesByTo {
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/e-invoicing-nigeria': typeof EInvoicingNigeriaRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/invoicing-nigeria': typeof InvoicingNigeriaRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -199,13 +223,16 @@ export interface FileRoutesById {
   '/company': typeof CompanyRoute
   '/dashboard': typeof DashboardRoute
   '/docs': typeof DocsRoute
+  '/e-invoicing-nigeria': typeof EInvoicingNigeriaRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/invoices': typeof InvoicesRoute
+  '/invoicing-nigeria': typeof InvoicingNigeriaRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/receipt': typeof ReceiptRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/resources': typeof ResourcesRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
@@ -225,13 +252,16 @@ export interface FileRouteTypes {
     | '/company'
     | '/dashboard'
     | '/docs'
+    | '/e-invoicing-nigeria'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/invoicing-nigeria'
     | '/legal'
     | '/login'
     | '/receipt'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/settings'
     | '/signup'
@@ -249,13 +279,16 @@ export interface FileRouteTypes {
     | '/company'
     | '/dashboard'
     | '/docs'
+    | '/e-invoicing-nigeria'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/invoicing-nigeria'
     | '/legal'
     | '/login'
     | '/receipt'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/settings'
     | '/signup'
@@ -273,13 +306,16 @@ export interface FileRouteTypes {
     | '/company'
     | '/dashboard'
     | '/docs'
+    | '/e-invoicing-nigeria'
     | '/forgot-password'
     | '/how-it-works'
     | '/invoices'
+    | '/invoicing-nigeria'
     | '/legal'
     | '/login'
     | '/receipt'
     | '/reset-password'
+    | '/resources'
     | '/services'
     | '/settings'
     | '/signup'
@@ -298,13 +334,16 @@ export interface RootRouteChildren {
   CompanyRoute: typeof CompanyRoute
   DashboardRoute: typeof DashboardRoute
   DocsRoute: typeof DocsRoute
+  EInvoicingNigeriaRoute: typeof EInvoicingNigeriaRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   InvoicesRoute: typeof InvoicesRoute
+  InvoicingNigeriaRoute: typeof InvoicingNigeriaRoute
   LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
   ReceiptRoute: typeof ReceiptRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ResourcesRoute: typeof ResourcesRoute
   ServicesRoute: typeof ServicesRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
@@ -360,6 +399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -388,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoicing-nigeria': {
+      id: '/invoicing-nigeria'
+      path: '/invoicing-nigeria'
+      fullPath: '/invoicing-nigeria'
+      preLoaderRoute: typeof InvoicingNigeriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invoices': {
       id: '/invoices'
       path: '/invoices'
@@ -407,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/e-invoicing-nigeria': {
+      id: '/e-invoicing-nigeria'
+      path: '/e-invoicing-nigeria'
+      fullPath: '/e-invoicing-nigeria'
+      preLoaderRoute: typeof EInvoicingNigeriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -482,13 +542,16 @@ const rootRouteChildren: RootRouteChildren = {
   CompanyRoute: CompanyRoute,
   DashboardRoute: DashboardRoute,
   DocsRoute: DocsRoute,
+  EInvoicingNigeriaRoute: EInvoicingNigeriaRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   InvoicesRoute: InvoicesRoute,
+  InvoicingNigeriaRoute: InvoicingNigeriaRoute,
   LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
   ReceiptRoute: ReceiptRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ResourcesRoute: ResourcesRoute,
   ServicesRoute: ServicesRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
