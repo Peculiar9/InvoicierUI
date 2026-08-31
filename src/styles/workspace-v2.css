@@ -6763,25 +6763,19 @@
 .iw .bankpicker-control:focus-within {
   border-color: var(--brand);
 }
-.iw .bankpicker-lead {
-  flex: none;
-  color: var(--ink-faint);
-  font-size: 1rem;
-}
-.iw .bankpicker-lead.iw-spin {
-  width: 15px;
-  height: 15px;
-}
 .iw .bankpicker-input {
   flex: 1;
   min-width: 0;
-  padding: 11px 0;
+  padding: 12px 2px 12px 4px;
   border: 0;
   background: transparent;
   font-family: var(--font);
   font-size: 0.9rem;
   color: var(--ink);
   outline: none;
+}
+.iw .bankpicker-input::placeholder {
+  color: var(--ink-faint);
 }
 .iw .bankpicker-caret {
   flex: none;
@@ -6791,6 +6785,11 @@
 }
 .iw .bankpicker-caret.is-open {
   transform: rotate(180deg);
+}
+.iw .bankpicker-caret.iw-spin {
+  width: 15px;
+  height: 15px;
+  cursor: default;
 }
 .iw .bank-option {
   gap: 12px;

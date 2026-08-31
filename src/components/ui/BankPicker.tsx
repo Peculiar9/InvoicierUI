@@ -153,17 +153,12 @@ export const BankPicker = ({
   return (
     <div className={`ffield bankpicker${invalid ? ' is-invalid' : ''}`} ref={rootRef}>
       <div className="bankpicker-control">
-        {loading ? (
-          <span className="iw-spin bankpicker-lead" aria-hidden="true" />
-        ) : (
-          <i className="bx bx-search bankpicker-lead" aria-hidden="true" />
-        )}
         <input
           ref={inputRef}
           type="text"
           className="bankpicker-input"
           value={query}
-          placeholder={loading ? 'Loading banks…' : 'Search your bank'}
+          placeholder={loading ? 'Loading banks…' : 'Type to find your bank'}
           role="combobox"
           aria-expanded={open}
           aria-label={ariaLabel}
@@ -182,14 +177,18 @@ export const BankPicker = ({
           }}
           onKeyDown={onKeyDown}
         />
-        <i
-          className={`bx bx-chevron-down bankpicker-caret${open ? ' is-open' : ''}`}
-          aria-hidden="true"
-          onClick={() => {
-            if (open) close();
-            else inputRef.current?.focus();
-          }}
-        />
+        {loading ? (
+          <span className="iw-spin bankpicker-caret" aria-hidden="true" />
+        ) : (
+          <i
+            className={`bx bx-chevron-down bankpicker-caret${open ? ' is-open' : ''}`}
+            aria-hidden="true"
+            onClick={() => {
+              if (open) close();
+              else inputRef.current?.focus();
+            }}
+          />
+        )}
       </div>
 
       {open && (
