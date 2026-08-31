@@ -125,9 +125,8 @@ export const AdminBankLogos = () => {
                 <BankMark name={b.name} logo={b.logo} />
                 <div className="banklogo-meta">
                   <span className="banklogo-name">{b.name}</span>
-                  <span className="banklogo-code">
-                    {b.code}
-                    {b.logo ? ' · has a logo' : ''}
+                  <span className={`banklogo-code${b.logo ? ' is-set' : ''}`}>
+                    {b.logo ? 'Logo added' : 'No logo yet'}
                   </span>
                 </div>
                 <input

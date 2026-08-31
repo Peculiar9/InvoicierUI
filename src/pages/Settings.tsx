@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { adminApi } from '@/api/admin';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
@@ -134,6 +136,18 @@ export const Settings = () => {
   const [resolving, setResolving] = useState(false);
   const [resolvedName, setResolvedName] = useState('');
   const [resolveError, setResolveError] = useState('');
+  // the bank-logo manager is an operator surface; only offer it to admins
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    adminApi.isAdmin().then((ok) => {
+      if (alive) setIsAdmin(ok);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
 
   // receiving accounts: where clients send money directly
@@ -630,6 +644,25 @@ export const Settings = () => {
                 <i className="bx bx-plus" /> Add an account
               </button>
             </div>
+
+            {isAdmin && (
+              <div className="dash-card admin-entry">
+                <div className="admin-entry-copy">
+                  <h3 className="cinv-section-title">Bank logos</h3>
+                  <p className="dash-muted settings-lead">
+                    The marks each bank wears in the picker and on your client's payment
+                    page. Add or replace them here.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="iw-btn iw-btn--ghost"
+                  onClick={() => navigate({ to: '/admin/bank-logos' })}
+                >
+                  Manage bank logos <i className="bx bx-right-arrow-alt" aria-hidden="true" />
+                </button>
+              </div>
+            )}
 
             <div className="dash-card">
               <h3 className="cinv-section-title">How each currency gets paid</h3>

@@ -6930,9 +6930,29 @@
   white-space: nowrap;
 }
 .iw .banklogo-code {
-  font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   color: var(--ink-faint);
+}
+.iw .banklogo-code.is-set {
+  color: #10b981;
+  font-weight: 600;
+}
+/* the operator entry that lives in the payments settings */
+.iw .admin-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.iw .admin-entry-copy {
+  min-width: 0;
+}
+.iw .admin-entry-copy .settings-lead {
+  margin-bottom: 0;
+}
+.iw .admin-entry .iw-btn {
+  flex: none;
 }
 .iw .banklogo-btn {
   flex: none;
