@@ -6791,6 +6791,16 @@
 }
 .iw .bankpicker-control:focus-within {
   border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+/* the border and focus ring belong to the control wrapper. The raw <input> is a
+   .cinv-field descendant, so the global `.cinv-field input` rule (higher
+   specificity) would otherwise draw its own border + ring on top — silence it. */
+.iw .cinv-field .bankpicker-input,
+.iw .cinv-field .bankpicker-input:focus {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
 }
 .iw .bankpicker-input {
   flex: 1;
@@ -6969,6 +6979,35 @@
   color: #10b981;
   font-weight: 600;
 }
+/* business logo editor in the profile settings */
+.iw .logo-edit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.iw .logo-edit-mark,
+.iw .logo-edit-mono {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+  object-fit: contain;
+}
+.iw .logo-edit-mono {
+  display: grid;
+  place-items: center;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.iw .logo-edit .iw-btn {
+  flex: none;
+}
+
 /* the operator entry that lives in the payments settings */
 .iw .admin-entry {
   display: flex;

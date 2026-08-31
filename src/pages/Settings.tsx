@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { adminApi } from '@/api/admin';
+import { filesApi } from '@/api/files';
+import { useSaveBusinessProfile } from '@/hooks/useBusinessProfile';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
@@ -311,7 +313,11 @@ export const Settings = () => {
   const withdrawn = withdrawals.reduce((s, w) => s + w.amount, 0);
   const balance = Math.max(0, paidTotal - withdrawn);
 
-  const saveProfile = () => {
+  const saveBusinessProfile = useSaveBusinessProfile();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoBusy, setLogoBusy] = useState(false);
+
+  const saveProfile = async () => {
     const next: { name?: string; email?: string; phone?: string } = {};
     if (!isFilled(form.name)) next.name = 'Business name is required';
     if (!isEmail(form.email)) next.email = 'Enter a valid email';
@@ -319,7 +325,56 @@ export const Settings = () => {
     setProfileErrors(next);
     if (Object.keys(next).length > 0) return;
     setProfile(form);
-    toast.success('Business profile saved');
+    // the profile is server state; persist it so the payer's invoice sees the
+    // change too, not just this browser's mirror
+    try {
+      await saveBusinessProfile.mutateAsync({
+        business_name: form.name,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        default_currency: form.currency,
+        invoice_prefix: form.invoice_prefix || undefined,
+      });
+      toast.success('Business profile saved');
+    } catch {
+      // the mutation's meta surfaces the failure toast
+    }
+  };
+
+  /** Upload a new business logo, mirror it locally and persist it server-side. */
+  const onLogoPick = async (file?: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('That file is not an image');
+      return;
+    }
+    setLogoBusy(true);
+    try {
+      const url = await filesApi.uploadImage(file, 'business_logo');
+      setProfile({ logo: url });
+      setForm((f) => ({ ...f, logo: url }));
+      await saveBusinessProfile.mutateAsync({ logo_url: url });
+      toast.success('Logo updated');
+    } catch {
+      toast.error('Could not upload that logo');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const removeLogo = async () => {
+    setLogoBusy(true);
+    try {
+      setProfile({ logo: undefined });
+      setForm((f) => ({ ...f, logo: undefined }));
+      await saveBusinessProfile.mutateAsync({ logo_url: null });
+      toast.success('Logo removed');
+    } catch {
+      toast.error('Could not remove the logo');
+    } finally {
+      setLogoBusy(false);
+    }
   };
 
   const resetResolve = () => {
@@ -452,6 +507,52 @@ export const Settings = () => {
               This appears as “Bill from” on every invoice you send.
             </p>
             <div className="cinv-fields cinv-fields--stack">
+              <div className="cinv-field logo-field">
+                <span>Logo</span>
+                <div className="logo-edit">
+                  {form.logo ? (
+                    <img className="logo-edit-mark" src={form.logo} alt="Business logo" />
+                  ) : (
+                    <span className="logo-edit-mono" aria-hidden="true">
+                      {(form.name.charAt(0) || 'i').toUpperCase()}
+                    </span>
+                  )}
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    hidden
+                    onChange={(e) => {
+                      onLogoPick(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="iw-btn iw-btn--ghost"
+                    disabled={logoBusy}
+                    onClick={() => logoInputRef.current?.click()}
+                  >
+                    {logoBusy ? (
+                      <>
+                        <span className="iw-spin" aria-hidden="true" /> Uploading…
+                      </>
+                    ) : form.logo ? (
+                      'Replace logo'
+                    ) : (
+                      'Upload logo'
+                    )}
+                  </button>
+                  {form.logo && !logoBusy && (
+                    <button type="button" className="iw-btn iw-btn--ghost" onClick={removeLogo}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <small className="dash-muted">
+                  Your mark on every invoice, beside “Bill from”. PNG or JPG.
+                </small>
+              </div>
               <label className="cinv-field">
                 <span>Business name</span>
                 <input
