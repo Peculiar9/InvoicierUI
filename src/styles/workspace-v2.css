@@ -6841,6 +6841,28 @@
   border: 1px solid var(--border);
   padding: 3px;
 }
+/* the shared filter menu sets `.fs-option span { flex: 1 }` (higher specificity
+   than `.bank-ico`), which would stretch the monogram into a bar and blow the
+   row width out. Pin the mark back to a fixed tile in the row and in the field. */
+.iw .bank-option .bank-ico,
+.iw .bankpicker-control .bank-ico {
+  flex: none;
+  width: 30px;
+}
+.iw .bank-option .bank-name {
+  min-width: 0;
+}
+.iw .bankpicker-menu {
+  box-sizing: border-box;
+}
+/* on desktop the menu floats under the field: never let it grow past the field
+   width / viewport, whatever the option content is. The mobile bottom sheet
+   (<=720px) stays full width, so this is scoped above it. */
+@media (min-width: 721px) {
+  .iw .bankpicker-menu {
+    max-width: min(560px, calc(100vw - 24px));
+  }
+}
 
 /* --- admin: bank logo manager --- */
 .iw .admin-head {
