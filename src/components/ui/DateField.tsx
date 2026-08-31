@@ -68,7 +68,12 @@ export const DateField = ({ value, onChange, min, invalid, 'aria-label': ariaLab
 
       {open && (
         <>
-          <div className="filter-scrim" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            className="filter-scrim"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+          />
           <div className="fs-menu ffield-menu ffield-menu--cal" role="dialog" aria-label="Pick a date">
             <div className="dr-cal-head">
               <button

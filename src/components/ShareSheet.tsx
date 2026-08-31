@@ -90,13 +90,16 @@ export const ShareSheet = () => {
   ];
 
   return (
-    <div className="share-scrim" onClick={close} role="presentation">
-      <div
-        className="share-sheet"
-        role="dialog"
-        aria-label="Send the payment link"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div
+      className="share-scrim"
+      role="presentation"
+      onPointerDown={(e) => {
+        // tap the dimmed area to close; iOS Safari won't fire click on a bare
+        // div, so listen on pointerdown and only when the scrim itself is hit
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <div className="share-sheet" role="dialog" aria-label="Send the payment link">
         <span className="share-grab" aria-hidden="true" />
         <div className="share-head">
           <span className="share-check" aria-hidden="true">

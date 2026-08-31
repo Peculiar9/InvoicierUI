@@ -7187,7 +7187,10 @@
     position: fixed;
     inset: 0;
     z-index: 1300;
+    margin: 0;
+    padding: 0;
     border: 0;
+    cursor: pointer;
     background: rgba(29, 27, 46, 0.4);
     backdrop-filter: blur(2px);
     animation: scrim-in 0.24s ease;

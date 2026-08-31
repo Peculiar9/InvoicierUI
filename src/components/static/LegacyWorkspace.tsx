@@ -384,7 +384,13 @@ export const LegacyWorkspace = ({
       {/* mobile's one true "new": the page's actions, folded into a disc */}
       {!panelOpen && actions && actions.length > 0 && (
         <div className="ws-fab-wrap">
-          {fabOpen && <div className="ws-fab-scrim" onClick={() => setFabOpen(false)} />}
+          {fabOpen && (
+            <div
+              className="ws-fab-scrim"
+              role="presentation"
+              onPointerDown={() => setFabOpen(false)}
+            />
+          )}
           {fabOpen && (
             <div className="ws-fab-menu">
               {actions.filter((a) => !a.to).map((action) => (

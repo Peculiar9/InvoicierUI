@@ -193,7 +193,7 @@ export const BankPicker = ({
 
       {open && (
         <>
-          <div className="filter-scrim" onClick={close} />
+          <button type="button" className="filter-scrim" aria-label="Close" onClick={close} />
           <div className="fs-menu ffield-menu bankpicker-menu" role="listbox" style={menuStyle}>
             {loading ? (
               <div className="fs-loading">
