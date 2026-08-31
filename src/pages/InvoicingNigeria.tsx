@@ -285,14 +285,14 @@ export const InvoicingNigeria = () => {
       </section>
 
       <section className="lp-section lp-flow">
-        <div className="lp-shell lp-faq">
+        <div className="lp-shell lp-gfaq">
           <div className="lp-section-head" data-reveal>
             <span className="lp-kicker">People also ask</span>
             <h2>Invoicing in Nigeria: your questions</h2>
           </div>
-          <div className="lp-faq-list">
+          <div className="lp-gfaq-list">
             {FAQ.map((item) => (
-              <details className="lp-faq-item" key={item.q} data-reveal>
+              <details className="lp-gfaq-item" key={item.q} data-reveal>
                 <summary>{item.q}</summary>
                 <p>{item.a}</p>
               </details>

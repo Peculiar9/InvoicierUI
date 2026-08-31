@@ -5615,25 +5615,26 @@ html.lenis body {
   margin-bottom: 2px;
 }
 
-/* FAQ accordion */
-.lp-faq {
+/* guide FAQ accordion (details/summary) — named lp-gfaq so it never collides
+   with the landing page's own button-based .lp-faq accordion */
+.lp-gfaq {
   max-width: 820px;
   margin: 0 auto;
 }
-.lp-faq-list {
+.lp-gfaq-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 32px;
 }
-.lp-faq-item {
+.lp-gfaq-item {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   padding: 4px 22px;
   box-shadow: var(--shadow-sm);
 }
-.lp-faq-item summary {
+.lp-gfaq-item summary {
   cursor: pointer;
   list-style: none;
   padding: 18px 28px 18px 0;
@@ -5642,10 +5643,10 @@ html.lenis body {
   color: var(--ink);
   position: relative;
 }
-.lp-faq-item summary::-webkit-details-marker {
+.lp-gfaq-item summary::-webkit-details-marker {
   display: none;
 }
-.lp-faq-item summary::after {
+.lp-gfaq-item summary::after {
   content: '\002B';
   position: absolute;
   right: 0;
@@ -5655,10 +5656,10 @@ html.lenis body {
   font-size: 1.3rem;
   transition: transform 0.2s var(--ease-out);
 }
-.lp-faq-item[open] summary::after {
+.lp-gfaq-item[open] summary::after {
   content: '\2212';
 }
-.lp-faq-item p {
+.lp-gfaq-item p {
   margin: 0;
   padding: 0 0 20px;
   font-size: var(--fs-base);
@@ -5702,6 +5703,6 @@ html.lenis body {
 }
 
 [data-theme='dark'] .lp-steps-num li,
-[data-theme='dark'] .lp-faq-item {
+[data-theme='dark'] .lp-gfaq-item {
   background: rgba(255, 255, 255, 0.03);
 }
