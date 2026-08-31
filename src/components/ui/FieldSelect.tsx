@@ -143,7 +143,12 @@ export const FieldSelect = ({
 
       {open && (
         <>
-          <div className="filter-scrim" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            className="filter-scrim"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+          />
           <div className="fs-menu ffield-menu" role="listbox" style={menuStyle}>
             {rows.map((option, index) => (
               <button

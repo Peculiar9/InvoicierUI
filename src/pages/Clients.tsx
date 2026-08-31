@@ -556,10 +556,13 @@ export const Clients = () => {
             <input
               type="tel"
               inputMode="tel"
+              maxLength={18}
               value={form.phone}
               className={errors.phone ? 'is-invalid' : ''}
               onChange={(e) => {
-                setForm({ ...form, phone: e.target.value });
+                // phone characters only (digits, +, space, dashes, parens)
+                const phone = e.target.value.replace(/[^\d+\s()-]/g, '').slice(0, 18);
+                setForm({ ...form, phone });
                 setErrors((er) => ({ ...er, phone: undefined }));
               }}
               placeholder="Optional"

@@ -16,6 +16,8 @@ export interface InvoiceDocBusiness {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
+  /** the sender's mark; on the payer's machine it can only come from here */
+  logo?: string | null;
 }
 
 export interface InvoiceDocData {
@@ -58,7 +60,9 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
   const profile = data.business
     ? { ...storeProfile, name: data.business.name ?? storeProfile.name,
         email: data.business.email ?? '', phone: data.business.phone ?? '',
-        address: data.business.address ?? '' }
+        address: data.business.address ?? '',
+        // the payload's logo is the only one a stranger's browser can know
+        logo: data.business.logo ?? storeProfile.logo }
     : storeProfile;
   const { currency } = data;
   const payRows = data.payment_account

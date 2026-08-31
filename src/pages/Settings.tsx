@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { adminApi } from '@/api/admin';
+import { filesApi } from '@/api/files';
+import { useSaveBusinessProfile } from '@/hooks/useBusinessProfile';
 import { Segmented } from '@/components/ui/Segmented';
 import { LegacyWorkspace } from '@/components/static';
 import { Modal } from '@/components/Modal';
 import { FieldSelect } from '@/components/ui/FieldSelect';
+import { BankPicker } from '@/components/ui/BankPicker';
 import { TemplatePicker } from '@/components/TemplatePicker';
 import { PasswordCard } from '@/components/settings/PasswordCard';
 import { useInvoices } from '@/hooks';
@@ -23,13 +28,14 @@ import {
   digitsOnly,
 } from '@/lib/validate';
 import { toast } from '@/lib/toast';
-import { settingsApi } from '@/api/settings';
+import { settingsApi, type Bank } from '@/api/settings';
 import { accountFieldsFor, ACCOUNT_FIELD_KEYS } from '@/utils/paymentRoutes';
 
 interface MethodForm {
   type: PayoutType;
   label: string;
   bank_name: string;
+  bank_code: string;
   account_name: string;
   account_number: string;
   email: string;
@@ -80,6 +86,7 @@ const emptyMethodForm: MethodForm = {
   type: 'bank',
   label: '',
   bank_name: '',
+  bank_code: '',
   account_name: '',
   account_number: '',
   email: '',
@@ -125,6 +132,25 @@ export const Settings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [methodForm, setMethodForm] = useState<MethodForm>(emptyMethodForm);
   const [methodErrors, setMethodErrors] = useState<Partial<Record<keyof MethodForm, string>>>({});
+  // the bank picker + live account verification
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [resolvedName, setResolvedName] = useState('');
+  const [resolveError, setResolveError] = useState('');
+  // the bank-logo manager is an operator surface; only offer it to admins
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    adminApi.isAdmin().then((ok) => {
+      if (alive) setIsAdmin(ok);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
 
   // receiving accounts: where clients send money directly
   const accounts = profile.receivingAccounts ?? [];
@@ -134,21 +160,75 @@ export const Settings = () => {
   const [acctErrors, setAcctErrors] = useState<Record<string, string>>({});
   const [savingAccount, setSavingAccount] = useState(false);
 
+  // the Nigerian-bank rail is the one that gets the picker + live verification
+  const isNgnBank = acctForm.provider === 'bank' && acctForm.currency === 'NGN';
+
+  // Load the bank list the first time the NGN-bank account form is open.
+  useEffect(() => {
+    if (!acctOpen || !isNgnBank || banks.length > 0 || banksLoading) return;
+    setBanksLoading(true);
+    settingsApi
+      .listBanks()
+      .then(setBanks)
+      .catch(() => setBanks([]))
+      .finally(() => setBanksLoading(false));
+  }, [acctOpen, isNgnBank, banks.length, banksLoading]);
+
+  // Verify the account once a bank and a full 10-digit NUBAN are set. Debounced,
+  // and cancels in-flight lookups so only the latest answer lands.
+  useEffect(() => {
+    setResolveError('');
+    if (!isNgnBank || !acctForm.bank_code || (acctForm.account_number ?? '').length !== 10) {
+      setResolvedName('');
+      setResolving(false);
+      return;
+    }
+    let cancelled = false;
+    setResolving(true);
+    const timer = window.setTimeout(() => {
+      settingsApi
+        .resolveAccount(acctForm.account_number as string, acctForm.bank_code as string)
+        .then((res) => {
+          if (cancelled) return;
+          setResolvedName(res.accountName);
+          setAcctForm((f) => ({ ...f, account_name: res.accountName }));
+          setAcctErrors((er) => ({ ...er, account_name: '', account_number: '' }));
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setResolvedName('');
+          setResolveError('We could not verify that account. Check the number and the bank.');
+        })
+        .finally(() => {
+          if (!cancelled) setResolving(false);
+        });
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acctForm.bank_code, acctForm.account_number, isNgnBank]);
+
   const openAddAccount = () => {
     setAcctEditingId(null);
     setAcctForm({ ...emptyAccount, currency: profile.currency || 'USD' });
     setAcctErrors({});
+    resetResolve();
     setAcctOpen(true);
   };
   const openEditAccount = (a: ReceivingAccount) => {
     setAcctEditingId(a.id);
     setAcctForm(a);
     setAcctErrors({});
+    // an existing bank account already carries its verified name
+    setResolvedName(a.provider === 'bank' && a.currency === 'NGN' ? (a.account_name ?? '') : '');
+    setResolveError('');
+    setResolving(false);
     setAcctOpen(true);
   };
   const saveAccount = async () => {
     const errs: Record<string, string> = {};
-    if (!isFilled(acctForm.label)) errs.label = 'Give this account a name';
     if (!isFilled(acctForm.account_name)) errs.account_name = 'Required';
     if (!isFilled(acctForm.currency)) errs.currency = 'Required';
     // the spec that drew the form is the spec that judges it
@@ -167,14 +247,23 @@ export const Settings = () => {
     if (Object.keys(errs).length) return;
     if (savingAccount) return; // a second click while the first is in flight
 
+    // Label is optional: keep what was typed, else infer a sensible nickname
+    // (the verified account name, then the bank name).
+    const label =
+      acctForm.label.trim() ||
+      acctForm.account_name.trim() ||
+      acctForm.bank_name?.trim() ||
+      'Account';
+    const account = { ...acctForm, label };
+
     setSavingAccount(true);
     // hold the loading state a beat even on a fast reply, so the click reads as
     // "working" and never invites an impatient second tap
     const minShown = new Promise((r) => setTimeout(r, 700));
     try {
       const saved = acctEditingId
-        ? await settingsApi.updateAccount(acctEditingId, acctForm)
-        : await settingsApi.createAccount(acctForm);
+        ? await settingsApi.updateAccount(acctEditingId, account)
+        : await settingsApi.createAccount(account);
       await minShown;
       const next = acctEditingId
         ? accounts.map((a) => (a.id === acctEditingId ? saved : a))
@@ -182,7 +271,7 @@ export const Settings = () => {
           // existing row, so de-dupe by id here too rather than append blindly
           [...accounts.filter((a) => a.id !== saved.id), saved];
       setProfile({ receivingAccounts: next });
-      toast.success(acctEditingId ? 'Account updated' : `${acctForm.label} added`);
+      toast.success(acctEditingId ? 'Account updated' : `${label} added`);
       setAcctOpen(false);
     } catch {
       toast.error('That did not save. Check the details and try again.');
@@ -224,7 +313,11 @@ export const Settings = () => {
   const withdrawn = withdrawals.reduce((s, w) => s + w.amount, 0);
   const balance = Math.max(0, paidTotal - withdrawn);
 
-  const saveProfile = () => {
+  const saveBusinessProfile = useSaveBusinessProfile();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoBusy, setLogoBusy] = useState(false);
+
+  const saveProfile = async () => {
     const next: { name?: string; email?: string; phone?: string } = {};
     if (!isFilled(form.name)) next.name = 'Business name is required';
     if (!isEmail(form.email)) next.email = 'Enter a valid email';
@@ -232,13 +325,68 @@ export const Settings = () => {
     setProfileErrors(next);
     if (Object.keys(next).length > 0) return;
     setProfile(form);
-    toast.success('Business profile saved');
+    // the profile is server state; persist it so the payer's invoice sees the
+    // change too, not just this browser's mirror
+    try {
+      await saveBusinessProfile.mutateAsync({
+        business_name: form.name,
+        email: form.email,
+        phone: form.phone,
+        address: form.address,
+        default_currency: form.currency,
+        invoice_prefix: form.invoice_prefix || undefined,
+      });
+      toast.success('Business profile saved');
+    } catch {
+      // the mutation's meta surfaces the failure toast
+    }
   };
 
+  /** Upload a new business logo, mirror it locally and persist it server-side. */
+  const onLogoPick = async (file?: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('That file is not an image');
+      return;
+    }
+    setLogoBusy(true);
+    try {
+      const url = await filesApi.uploadImage(file, 'business_logo');
+      setProfile({ logo: url });
+      setForm((f) => ({ ...f, logo: url }));
+      await saveBusinessProfile.mutateAsync({ logo_url: url });
+      toast.success('Logo updated');
+    } catch {
+      toast.error('Could not upload that logo');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const removeLogo = async () => {
+    setLogoBusy(true);
+    try {
+      setProfile({ logo: undefined });
+      setForm((f) => ({ ...f, logo: undefined }));
+      await saveBusinessProfile.mutateAsync({ logo_url: null });
+      toast.success('Logo removed');
+    } catch {
+      toast.error('Could not remove the logo');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const resetResolve = () => {
+    setResolvedName('');
+    setResolveError('');
+    setResolving(false);
+  };
   const openAddMethod = () => {
     setEditingId(null);
     setMethodForm(emptyMethodForm);
     setMethodErrors({});
+    resetResolve();
     setMethodOpen(true);
   };
   const openEditMethod = (m: PayoutMethod) => {
@@ -247,39 +395,49 @@ export const Settings = () => {
       type: m.type,
       label: m.label,
       bank_name: m.bank_name ?? '',
+      bank_code: m.bank_code ?? '',
       account_name: m.account_name ?? '',
       account_number: m.account_number ?? '',
       email: m.email ?? '',
     });
     setMethodErrors({});
+    resetResolve();
     setMethodOpen(true);
   };
 
   const saveMethod = () => {
     const f = methodForm;
     const errs: Partial<Record<keyof MethodForm, string>> = {};
-    if (!isFilled(f.label)) errs.label = 'Give this method a name';
     if (f.type === 'bank') {
       if (!isFilled(f.bank_name)) errs.bank_name = 'Required';
       if (!isFilled(f.account_name)) errs.account_name = 'Required';
       if (!isAccountNumber(f.account_number))
-        errs.account_number = 'Enter a valid account number (6–20 digits)';
+        errs.account_number = 'Enter a valid 10-digit account number';
     } else {
       if (!isEmail(f.email)) errs.email = 'Enter a valid PayPal email';
     }
     setMethodErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    // Label is optional: keep what was typed, otherwise infer a sensible one
+    // (the verified account name for a bank, the email for PayPal).
+    const label =
+      f.label.trim() ||
+      (f.type === 'bank'
+        ? f.account_name.trim() || f.bank_name.trim() || 'Bank account'
+        : f.email.trim() || 'PayPal');
+
     const payload =
       f.type === 'bank'
         ? {
             type: 'bank' as const,
-            label: f.label.trim(),
+            label,
             bank_name: f.bank_name.trim(),
+            bank_code: f.bank_code || undefined,
             account_name: f.account_name.trim(),
             account_number: digitsOnly(f.account_number),
           }
-        : { type: 'paypal' as const, label: f.label.trim(), email: f.email.trim() };
+        : { type: 'paypal' as const, label, email: f.email.trim() };
 
     if (editingId) {
       updateMethod(editingId, payload);
@@ -349,6 +507,52 @@ export const Settings = () => {
               This appears as “Bill from” on every invoice you send.
             </p>
             <div className="cinv-fields cinv-fields--stack">
+              <div className="cinv-field logo-field">
+                <span>Logo</span>
+                <div className="logo-edit">
+                  {form.logo ? (
+                    <img className="logo-edit-mark" src={form.logo} alt="Business logo" />
+                  ) : (
+                    <span className="logo-edit-mono" aria-hidden="true">
+                      {(form.name.charAt(0) || 'i').toUpperCase()}
+                    </span>
+                  )}
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    hidden
+                    onChange={(e) => {
+                      onLogoPick(e.target.files?.[0]);
+                      e.target.value = '';
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="iw-btn iw-btn--ghost"
+                    disabled={logoBusy}
+                    onClick={() => logoInputRef.current?.click()}
+                  >
+                    {logoBusy ? (
+                      <>
+                        <span className="iw-spin" aria-hidden="true" /> Uploading…
+                      </>
+                    ) : form.logo ? (
+                      'Replace logo'
+                    ) : (
+                      'Upload logo'
+                    )}
+                  </button>
+                  {form.logo && !logoBusy && (
+                    <button type="button" className="iw-btn iw-btn--ghost" onClick={removeLogo}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+                <small className="dash-muted">
+                  Your mark on every invoice, beside “Bill from”. PNG or JPG.
+                </small>
+              </div>
               <label className="cinv-field">
                 <span>Business name</span>
                 <input
@@ -379,10 +583,13 @@ export const Settings = () => {
                 <input
                   type="tel"
                   inputMode="tel"
+                  maxLength={18}
                   value={form.phone}
                   className={profileErrors.phone ? 'is-invalid' : ''}
                   onChange={(e) => {
-                    setForm({ ...form, phone: e.target.value });
+                    // phone characters only (digits, +, space, dashes, parens)
+                    const phone = e.target.value.replace(/[^\d+\s()-]/g, '').slice(0, 18);
+                    setForm({ ...form, phone });
                     setProfileErrors((er) => ({ ...er, phone: undefined }));
                   }}
                 />
@@ -538,6 +745,25 @@ export const Settings = () => {
                 <i className="bx bx-plus" /> Add an account
               </button>
             </div>
+
+            {isAdmin && (
+              <div className="dash-card admin-entry">
+                <div className="admin-entry-copy">
+                  <h3 className="cinv-section-title">Bank logos</h3>
+                  <p className="dash-muted settings-lead">
+                    The marks each bank wears in the picker and on your client's payment
+                    page. Add or replace them here.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="iw-btn iw-btn--ghost"
+                  onClick={() => navigate({ to: '/admin/bank-logos' })}
+                >
+                  Manage bank logos <i className="bx bx-right-arrow-alt" aria-hidden="true" />
+                </button>
+              </div>
+            )}
 
             <div className="dash-card">
               <h3 className="cinv-section-title">How each currency gets paid</h3>
@@ -736,30 +962,26 @@ export const Settings = () => {
             </select>
           </label>
 
-          <label className="cinv-field">
-            <span>Label</span>
-            <input
-              value={methodForm.label}
-              className={methodErrors.label ? 'is-invalid' : ''}
-              placeholder={methodForm.type === 'paypal' ? 'e.g. PayPal' : 'e.g. Main account'}
-              onChange={(e) => {
-                setMethodForm({ ...methodForm, label: e.target.value });
-                setMethodErrors((er) => ({ ...er, label: undefined }));
-              }}
-            />
-            {methodErrors.label && <small className="field-error">{methodErrors.label}</small>}
-          </label>
-
           {methodForm.type === 'bank' ? (
             <>
               <label className="cinv-field">
-                <span>Bank name</span>
-                <input
-                  value={methodForm.bank_name}
-                  className={methodErrors.bank_name ? 'is-invalid' : ''}
-                  placeholder="e.g. Chase"
-                  onChange={(e) => {
-                    setMethodForm({ ...methodForm, bank_name: e.target.value });
+                <span>Bank</span>
+                <BankPicker
+                  value={methodForm.bank_code}
+                  bankName={methodForm.bank_name}
+                  banks={banks}
+                  loading={banksLoading}
+                  invalid={!!methodErrors.bank_name}
+                  aria-label="Bank"
+                  onChange={(bank) => {
+                    setMethodForm({
+                      ...methodForm,
+                      bank_code: bank?.code ?? '',
+                      bank_name: bank?.name ?? '',
+                      // a new bank invalidates the last verified name
+                      account_name: '',
+                    });
+                    setResolvedName('');
                     setMethodErrors((er) => ({ ...er, bank_name: undefined }));
                   }}
                 />
@@ -768,34 +990,53 @@ export const Settings = () => {
                 )}
               </label>
               <label className="cinv-field">
-                <span>Account name</span>
-                <input
-                  value={methodForm.account_name}
-                  className={methodErrors.account_name ? 'is-invalid' : ''}
-                  placeholder="Account holder"
-                  onChange={(e) => {
-                    setMethodForm({ ...methodForm, account_name: e.target.value });
-                    setMethodErrors((er) => ({ ...er, account_name: undefined }));
-                  }}
-                />
-                {methodErrors.account_name && (
-                  <small className="field-error">{methodErrors.account_name}</small>
-                )}
-              </label>
-              <label className="cinv-field">
                 <span>Account number</span>
                 <input
                   inputMode="numeric"
+                  maxLength={10}
                   value={methodForm.account_number}
                   className={methodErrors.account_number ? 'is-invalid' : ''}
-                  placeholder="6–20 digits"
+                  placeholder="10-digit account number"
                   onChange={(e) => {
-                    setMethodForm({ ...methodForm, account_number: e.target.value });
+                    // digits only, capped at a 10-digit NUBAN
+                    const account_number = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setMethodForm({ ...methodForm, account_number });
                     setMethodErrors((er) => ({ ...er, account_number: undefined }));
                   }}
                 />
                 {methodErrors.account_number && (
                   <small className="field-error">{methodErrors.account_number}</small>
+                )}
+              </label>
+              <label className="cinv-field">
+                <span>Account name</span>
+                <input
+                  value={methodForm.account_name}
+                  readOnly={!!resolvedName}
+                  className={`${methodErrors.account_name ? 'is-invalid' : ''}${resolvedName ? ' is-verified' : ''}`}
+                  placeholder={
+                    resolving ? 'Verifying…' : 'Auto-fills once the account is verified'
+                  }
+                  onChange={(e) => {
+                    setMethodForm({ ...methodForm, account_name: e.target.value });
+                    setMethodErrors((er) => ({ ...er, account_name: undefined }));
+                  }}
+                />
+                {resolving && (
+                  <small className="iw-field-hint">
+                    <span className="iw-spin" aria-hidden="true" /> Verifying account…
+                  </small>
+                )}
+                {!resolving && resolvedName && (
+                  <small className="field-ok">
+                    <i className="bx bx-check-circle" aria-hidden="true" /> Verified: {resolvedName}
+                  </small>
+                )}
+                {!resolving && resolveError && (
+                  <small className="field-error">{resolveError}</small>
+                )}
+                {methodErrors.account_name && !resolvedName && (
+                  <small className="field-error">{methodErrors.account_name}</small>
                 )}
               </label>
             </>
@@ -815,17 +1056,49 @@ export const Settings = () => {
               {methodErrors.email && <small className="field-error">{methodErrors.email}</small>}
             </label>
           )}
+
+          <label className="cinv-field">
+            <span>Label <em className="iw-optional">optional</em></span>
+            <input
+              value={methodForm.label}
+              placeholder={
+                methodForm.type === 'paypal'
+                  ? 'A nickname — defaults to your email'
+                  : 'A nickname — defaults to the account name'
+              }
+              onChange={(e) => setMethodForm({ ...methodForm, label: e.target.value })}
+            />
+          </label>
         </div>
       </Modal>
 
-      {/* withdraw */}
+      {/* add / edit receiving account */}
       <Modal
         open={acctOpen}
         onClose={() => setAcctOpen(false)}
         title={acctEditingId ? 'Edit account' : 'Add an account'}
+        size="form"
+        footer={
+          <>
+            <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="iw-btn" onClick={saveAccount} disabled={savingAccount}>
+              {savingAccount ? (
+                <>
+                  <span className="iw-spin" aria-hidden="true" />{' '}
+                  {acctEditingId ? 'Saving…' : 'Adding…'}
+                </>
+              ) : acctEditingId ? (
+                'Save changes'
+              ) : (
+                'Add account'
+              )}
+            </button>
+          </>
+        }
       >
-        <div className="cinv-fields cinv-fields--stack">
-          <div className="iw-paid-grid">
+        <div className="acct-form">
             <div className="cinv-field">
               <span>Provider</span>
               <FieldSelect
@@ -851,59 +1124,144 @@ export const Settings = () => {
                 onChange={(currency) => setAcctForm(reshapeAccount(acctForm, { currency }))}
               />
             </div>
-          </div>
 
-          <label className="cinv-field">
-            <span>Name it</span>
-            <input
-              value={acctForm.label}
-              placeholder="Grey USD"
-              className={acctErrors.label ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
-            />
-            {acctErrors.label && <small className="field-error">{acctErrors.label}</small>}
-          </label>
+          {isNgnBank ? (
+            <>
+              {/* Nigerian bank: pick the bank, type the NUBAN, the name verifies */}
+              <label className="cinv-field acct-span">
+                <span>Bank</span>
+                <BankPicker
+                  value={acctForm.bank_code ?? ''}
+                  bankName={acctForm.bank_name}
+                  banks={banks}
+                  loading={banksLoading}
+                  invalid={!!acctErrors.bank_name}
+                  aria-label="Bank"
+                  onChange={(bank) => {
+                    setAcctForm({
+                      ...acctForm,
+                      bank_code: bank?.code ?? '',
+                      bank_name: bank?.name ?? '',
+                      account_name: '',
+                    });
+                    setResolvedName('');
+                    setAcctErrors((er) => ({ ...er, bank_name: '' }));
+                  }}
+                />
+                {acctErrors.bank_name && <small className="field-error">{acctErrors.bank_name}</small>}
+              </label>
+              <label className="cinv-field">
+                <span>Account number</span>
+                <input
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={acctForm.account_number ?? ''}
+                  placeholder="10-digit account number"
+                  className={acctErrors.account_number ? 'is-invalid' : ''}
+                  onChange={(e) => {
+                    const account_number = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setAcctForm({ ...acctForm, account_number });
+                    setAcctErrors((er) => ({ ...er, account_number: '' }));
+                  }}
+                />
+                {acctErrors.account_number && (
+                  <small className="field-error">{acctErrors.account_number}</small>
+                )}
+              </label>
+              <label className="cinv-field">
+                <span>Name it <em className="iw-optional">optional</em></span>
+                <input
+                  value={acctForm.label}
+                  placeholder="A nickname — defaults to the account name"
+                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+                />
+              </label>
+              <label className="cinv-field acct-span">
+                <span>Account name</span>
+                <input
+                  value={acctForm.account_name}
+                  readOnly={!!resolvedName}
+                  className={`${acctErrors.account_name ? 'is-invalid' : ''}${resolvedName ? ' is-verified' : ''}`}
+                  placeholder={resolving ? 'Verifying…' : 'Auto-fills once the account is verified'}
+                  onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
+                />
+                {resolving && (
+                  <small className="iw-field-hint">
+                    <span className="iw-spin" aria-hidden="true" /> Verifying account…
+                  </small>
+                )}
+                {!resolving && resolvedName && (
+                  <small className="field-ok">
+                    <i className="bx bx-check-circle" aria-hidden="true" /> Verified: {resolvedName}
+                  </small>
+                )}
+                {!resolving && resolveError && <small className="field-error">{resolveError}</small>}
+                {acctErrors.account_name && !resolvedName && (
+                  <small className="field-error">{acctErrors.account_name}</small>
+                )}
+              </label>
+            </>
+          ) : (
+            <>
+              <label className="cinv-field">
+                <span>Name it</span>
+                <input
+                  value={acctForm.label}
+                  placeholder="Grey USD"
+                  className={acctErrors.label ? 'is-invalid' : ''}
+                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+                />
+                {acctErrors.label && <small className="field-error">{acctErrors.label}</small>}
+              </label>
 
-          <label className="cinv-field">
-            <span>Account name</span>
-            <input
-              value={acctForm.account_name}
-              placeholder="Ada Obi"
-              className={acctErrors.account_name ? 'is-invalid' : ''}
-              onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
-            />
-            {acctErrors.account_name && (
-              <small className="field-error">{acctErrors.account_name}</small>
-            )}
-          </label>
+              <label className="cinv-field">
+                <span>Account name</span>
+                <input
+                  value={acctForm.account_name}
+                  placeholder="Ada Obi"
+                  className={acctErrors.account_name ? 'is-invalid' : ''}
+                  onChange={(e) => setAcctForm({ ...acctForm, account_name: e.target.value })}
+                />
+                {acctErrors.account_name && (
+                  <small className="field-error">{acctErrors.account_name}</small>
+                )}
+              </label>
 
-          {/* the fields this KIND of account, in THIS currency, is made of;
-              a Nigerian NUBAN is not an IBAN is not a PayPal email */}
-          {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
-            <label className="cinv-field" key={field.key}>
-              <span>
-                {field.label}
-                {!field.required && <em className="iw-optional"> optional</em>}
-              </span>
-              <input
-                value={(acctForm[field.key] as string | undefined) ?? ''}
-                placeholder={field.placeholder}
-                inputMode={field.kind === 'digits' ? 'numeric' : undefined}
-                className={acctErrors[field.key] ? 'is-invalid' : ''}
-                onChange={(e) =>
-                  setAcctForm({ ...acctForm, [field.key]: e.target.value })
-                }
-              />
-              {field.hint && !acctErrors[field.key] && (
-                <small className="iw-field-hint">{field.hint}</small>
-              )}
-              {acctErrors[field.key] && (
-                <small className="field-error">{acctErrors[field.key]}</small>
-              )}
-            </label>
-          ))}
+              {/* the fields this KIND of account, in THIS currency, is made of;
+                  a Nigerian NUBAN is not an IBAN is not a PayPal email */}
+              {accountFieldsFor(acctForm.provider, acctForm.currency).map((field) => (
+                <label className="cinv-field" key={field.key}>
+                  <span>
+                    {field.label}
+                    {!field.required && <em className="iw-optional"> optional</em>}
+                  </span>
+                  <input
+                    value={(acctForm[field.key] as string | undefined) ?? ''}
+                    placeholder={field.placeholder}
+                    inputMode={field.kind === 'digits' ? 'numeric' : undefined}
+                    maxLength={field.kind === 'digits' ? field.digits : undefined}
+                    className={acctErrors[field.key] ? 'is-invalid' : ''}
+                    onChange={(e) => {
+                      // digit fields accept digits only, capped at the field's width
+                      const value =
+                        field.kind === 'digits'
+                          ? e.target.value.replace(/\D/g, '').slice(0, field.digits ?? 34)
+                          : e.target.value;
+                      setAcctForm({ ...acctForm, [field.key]: value });
+                    }}
+                  />
+                  {field.hint && !acctErrors[field.key] && (
+                    <small className="iw-field-hint">{field.hint}</small>
+                  )}
+                  {acctErrors[field.key] && (
+                    <small className="field-error">{acctErrors[field.key]}</small>
+                  )}
+                </label>
+              ))}
+            </>
+          )}
 
-          <label className="cinv-field">
+          <label className="cinv-field acct-span">
             <span>Anything they should know</span>
             <textarea
               rows={2}
@@ -912,22 +1270,6 @@ export const Settings = () => {
               onChange={(e) => setAcctForm({ ...acctForm, instructions: e.target.value })}
             />
           </label>
-
-          <div className="iw-paid-actions">
-            <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
-              Cancel
-            </button>
-            <button type="button" className="iw-btn" onClick={saveAccount} disabled={savingAccount}>
-              {savingAccount ? (
-                <>
-                  <span className="iw-spin" aria-hidden="true" />{' '}
-                  {acctEditingId ? 'Saving…' : 'Adding…'}
-                </>
-              ) : (
-                acctEditingId ? 'Save changes' : 'Add account'
-              )}
-            </button>
-          </div>
         </div>
       </Modal>
 

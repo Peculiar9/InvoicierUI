@@ -38,3 +38,19 @@ export const parseDay = (value: string | Date): Date => {
 
 /** The local calendar day of any stored value, for grouping and filtering. */
 export const localDayOf = (value: string | Date): string => toLocalDay(parseDay(value));
+
+/** A day `n` days from `base` (default today), as a local YYYY-MM-DD. */
+export const addDaysLocal = (n: number, base: Date = new Date()): string => {
+  const d = new Date(base);
+  d.setDate(d.getDate() + n);
+  return toLocalDay(d);
+};
+
+/** Whole calendar days from `from` to `to` (negative if `to` is earlier). */
+export const daysBetween = (from: string | Date, to: string | Date): number => {
+  const a = parseDay(from);
+  const b = parseDay(to);
+  a.setHours(0, 0, 0, 0);
+  b.setHours(0, 0, 0, 0);
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+};
