@@ -8,6 +8,8 @@ export interface Bank {
   slug?: string;
   currency?: string;
   type?: string;
+  /** a hosted logo URL when the backend has one; the picker shows a monogram otherwise */
+  logo?: string;
 }
 
 /** The verified holder of a resolved account. */
