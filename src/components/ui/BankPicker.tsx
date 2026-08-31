@@ -44,7 +44,7 @@ const hueFor = (name: string): number => {
  * we do not (or when the image fails to load). Small enough to sit inline in a
  * row and in the field once a bank is chosen.
  */
-const BankMark = ({ name, logo }: { name: string; logo?: string }) => {
+export const BankMark = ({ name, logo }: { name: string; logo?: string }) => {
   const [failed, setFailed] = useState(false);
   if (logo && !failed) {
     return (

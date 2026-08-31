@@ -6812,6 +6812,125 @@
   border: 1px solid var(--border);
   padding: 3px;
 }
+
+/* --- admin: bank logo manager --- */
+.iw .admin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.iw .admin-head h1 {
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.iw .admin-head p {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  margin: 0;
+  max-width: 46ch;
+}
+.iw .admin-count {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-600);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.iw .admin-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink-faint);
+  transition: border-color 0.15s ease;
+}
+.iw .admin-search:focus-within {
+  border-color: var(--brand);
+}
+.iw .admin-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+}
+.iw .banklogo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.iw .banklogo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+.iw .banklogo-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.iw .banklogo-name {
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iw .banklogo-code {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+.iw .banklogo-btn {
+  flex: none;
+  min-width: 92px;
+  justify-content: center;
+}
+.iw .admin-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 56px 24px;
+  color: var(--ink-faint);
+}
+.iw .admin-denied i {
+  font-size: 2rem;
+  color: var(--brand-600);
+}
+.iw .admin-denied h2 {
+  margin: 0;
+  color: var(--ink);
+}
+.iw .admin-denied p {
+  margin: 0;
+  max-width: 40ch;
+}
 .iw .bank-name {
   flex: 1;
   min-width: 0;
