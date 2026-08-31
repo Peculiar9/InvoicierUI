@@ -297,6 +297,9 @@ export interface PublicPaymentAccount {
   account_name?: string | null;
   account_number?: string | null;
   bank_name?: string | null;
+  /** Paystack bank code, and the hosted bank logo when one is stored */
+  bank_code?: string | null;
+  logo?: string | null;
   routing_number?: string | null;
   swift_code?: string | null;
   iban?: string | null;

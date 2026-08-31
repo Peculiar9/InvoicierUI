@@ -5501,6 +5501,19 @@
   background: rgba(146, 78, 233, 0.1);
   color: var(--brand-600);
   font-size: 1.2rem;
+  overflow: hidden;
+}
+/* a real bank logo fills the badge on a clean tile; the icon stays the default */
+.pay-rail-badge.has-logo {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--brand-600);
+}
+.pay-rail-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
 }
 .pay-rail-badge.is-crypto {
   background: linear-gradient(135deg, #f7931a, #ffb454);

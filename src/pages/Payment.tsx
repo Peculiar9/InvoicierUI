@@ -736,8 +736,15 @@ export const Payment = ({
                                       onClick={() => chooseRail(i)}
                                       disabled={stage === 'processing'}
                                     >
-                                      <span className={`pay-rail-badge ${meta.tint}`} aria-hidden="true">
-                                        <i className={`bx ${meta.icon}`} />
+                                      <span
+                                        className={`pay-rail-badge ${meta.tint}${item.rail.logo ? ' has-logo' : ''}`}
+                                        aria-hidden="true"
+                                      >
+                                        {item.rail.logo ? (
+                                          <img className="pay-rail-logo" src={item.rail.logo} alt="" />
+                                        ) : (
+                                          <i className={`bx ${meta.icon}`} />
+                                        )}
                                       </span>
                                       <span className="pay-rail-txt">
                                         <b>{item.label}</b>
