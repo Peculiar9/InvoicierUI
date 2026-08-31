@@ -1237,6 +1237,22 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+/* the add-account form: a tidy two-column grid on desktop, one column on a
+   phone. Fields that carry weight (the bank, the verified name, the note) span
+   the full width; the short ones pair up. */
+.iw .acct-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+.iw .acct-form .acct-span {
+  grid-column: 1 / -1;
+}
+@media (max-width: 560px) {
+  .iw .acct-form {
+    grid-template-columns: 1fr;
+  }
+}
 .iw .iw-paid-actions {
   display: flex;
   justify-content: flex-end;

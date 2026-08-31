@@ -4133,6 +4133,10 @@
 .ui-modal--sm {
   max-width: 380px;
 }
+/* wide enough for a two-column form to breathe, still modal-sized */
+.ui-modal--form {
+  max-width: 560px;
+}
 .ui-modal-head {
   display: flex;
   align-items: center;

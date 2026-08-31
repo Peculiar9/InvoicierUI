@@ -938,14 +938,33 @@ export const Settings = () => {
         </div>
       </Modal>
 
-      {/* withdraw */}
+      {/* add / edit receiving account */}
       <Modal
         open={acctOpen}
         onClose={() => setAcctOpen(false)}
         title={acctEditingId ? 'Edit account' : 'Add an account'}
+        size="form"
+        footer={
+          <>
+            <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
+              Cancel
+            </button>
+            <button type="button" className="iw-btn" onClick={saveAccount} disabled={savingAccount}>
+              {savingAccount ? (
+                <>
+                  <span className="iw-spin" aria-hidden="true" />{' '}
+                  {acctEditingId ? 'Saving…' : 'Adding…'}
+                </>
+              ) : acctEditingId ? (
+                'Save changes'
+              ) : (
+                'Add account'
+              )}
+            </button>
+          </>
+        }
       >
-        <div className="cinv-fields cinv-fields--stack">
-          <div className="iw-paid-grid">
+        <div className="acct-form">
             <div className="cinv-field">
               <span>Provider</span>
               <FieldSelect
@@ -971,12 +990,11 @@ export const Settings = () => {
                 onChange={(currency) => setAcctForm(reshapeAccount(acctForm, { currency }))}
               />
             </div>
-          </div>
 
           {isNgnBank ? (
             <>
               {/* Nigerian bank: pick the bank, type the NUBAN, the name verifies */}
-              <label className="cinv-field">
+              <label className="cinv-field acct-span">
                 <span>Bank</span>
                 <BankPicker
                   value={acctForm.bank_code ?? ''}
@@ -1017,6 +1035,14 @@ export const Settings = () => {
                 )}
               </label>
               <label className="cinv-field">
+                <span>Name it <em className="iw-optional">optional</em></span>
+                <input
+                  value={acctForm.label}
+                  placeholder="A nickname — defaults to the account name"
+                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
+                />
+              </label>
+              <label className="cinv-field acct-span">
                 <span>Account name</span>
                 <input
                   value={acctForm.account_name}
@@ -1039,14 +1065,6 @@ export const Settings = () => {
                 {acctErrors.account_name && !resolvedName && (
                   <small className="field-error">{acctErrors.account_name}</small>
                 )}
-              </label>
-              <label className="cinv-field">
-                <span>Name it <em className="iw-optional">optional</em></span>
-                <input
-                  value={acctForm.label}
-                  placeholder="A nickname — defaults to the account name"
-                  onChange={(e) => setAcctForm({ ...acctForm, label: e.target.value })}
-                />
               </label>
             </>
           ) : (
@@ -1109,7 +1127,7 @@ export const Settings = () => {
             </>
           )}
 
-          <label className="cinv-field">
+          <label className="cinv-field acct-span">
             <span>Anything they should know</span>
             <textarea
               rows={2}
@@ -1118,22 +1136,6 @@ export const Settings = () => {
               onChange={(e) => setAcctForm({ ...acctForm, instructions: e.target.value })}
             />
           </label>
-
-          <div className="iw-paid-actions">
-            <button type="button" className="iw-btn iw-btn--ghost" onClick={() => setAcctOpen(false)}>
-              Cancel
-            </button>
-            <button type="button" className="iw-btn" onClick={saveAccount} disabled={savingAccount}>
-              {savingAccount ? (
-                <>
-                  <span className="iw-spin" aria-hidden="true" />{' '}
-                  {acctEditingId ? 'Saving…' : 'Adding…'}
-                </>
-              ) : (
-                acctEditingId ? 'Save changes' : 'Add account'
-              )}
-            </button>
-          </div>
         </div>
       </Modal>
 

@@ -6,7 +6,7 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'form';
 }
 
 export const Modal = ({ open, onClose, title, children, footer, size = 'md' }: ModalProps) => {
