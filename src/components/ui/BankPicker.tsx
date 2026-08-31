@@ -4,6 +4,8 @@ import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 export interface BankOption {
   name: string;
   code: string;
+  /** a hosted logo, when we have one; the monogram stands in otherwise */
+  logo?: string;
 }
 
 interface BankPickerProps {
@@ -38,6 +40,39 @@ const hueFor = (name: string): number => {
 };
 
 /**
+ * A bank's mark: its hosted logo when we have one, the coloured monogram when
+ * we do not (or when the image fails to load). Small enough to sit inline in a
+ * row and in the field once a bank is chosen.
+ */
+const BankMark = ({ name, logo }: { name: string; logo?: string }) => {
+  const [failed, setFailed] = useState(false);
+  if (logo && !failed) {
+    return (
+      <img
+        className="bank-ico bank-ico--img"
+        src={logo}
+        alt=""
+        loading="lazy"
+        aria-hidden="true"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <span
+      className="bank-ico"
+      style={{
+        background: `hsl(${hueFor(name)} 72% 93%)`,
+        color: `hsl(${hueFor(name)} 60% 36%)`,
+      }}
+      aria-hidden="true"
+    >
+      {initials(name)}
+    </span>
+  );
+};
+
+/**
  * The bank picker: a typable field that filters the list live as you type, with
  * a monogram per bank and a loading state while the list arrives. Selecting a
  * bank hands back both its name and its code — the code resolves the account,
@@ -53,7 +88,8 @@ export const BankPicker = ({
   disabled,
   'aria-label': ariaLabel,
 }: BankPickerProps) => {
-  const selectedName = banks.find((b) => b.code === value)?.name ?? bankName ?? '';
+  const selectedBank = banks.find((b) => b.code === value);
+  const selectedName = selectedBank?.name ?? bankName ?? '';
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(selectedName);
   const [active, setActive] = useState(0);
@@ -153,6 +189,9 @@ export const BankPicker = ({
   return (
     <div className={`ffield bankpicker${invalid ? ' is-invalid' : ''}`} ref={rootRef}>
       <div className="bankpicker-control">
+        {selectedBank && query.trim().toLowerCase() === selectedName.trim().toLowerCase() && (
+          <BankMark name={selectedBank.name} logo={selectedBank.logo} />
+        )}
         <input
           ref={inputRef}
           type="text"
@@ -214,16 +253,7 @@ export const BankPicker = ({
                   onMouseEnter={() => setActive(i)}
                   onClick={() => pick(b)}
                 >
-                  <span
-                    className="bank-ico"
-                    style={{
-                      background: `hsl(${hueFor(b.name)} 72% 93%)`,
-                      color: `hsl(${hueFor(b.name)} 60% 36%)`,
-                    }}
-                    aria-hidden="true"
-                  >
-                    {initials(b.name)}
-                  </span>
+                  <BankMark name={b.name} logo={b.logo} />
                   <span className="bank-name">{b.name}</span>
                   {b.code === value && <i className="bx bx-check" aria-hidden="true" />}
                 </button>

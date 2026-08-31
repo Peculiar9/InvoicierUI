@@ -6805,6 +6805,13 @@
   font-weight: 700;
   letter-spacing: 0.02em;
 }
+/* the hosted-logo variant: the artwork sits on a clean tile, never stretched */
+.iw .bank-ico--img {
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 3px;
+}
 .iw .bank-name {
   flex: 1;
   min-width: 0;
