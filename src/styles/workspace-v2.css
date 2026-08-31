@@ -369,26 +369,26 @@
 .iw .ws-rail-right {
   position: fixed;
   top: 50%;
-  right: 16px;
+  right: 24px;
   left: auto;
   bottom: auto;
   transform: translateY(-50%);
   z-index: 890;
   width: auto;
-  padding: 10px 8px;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid var(--border);
+  padding: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(29, 27, 46, 0.05);
   border-radius: 999px;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 22px 50px -18px rgba(29, 27, 46, 0.42), 0 4px 12px -4px rgba(29, 27, 46, 0.12);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
   overflow: visible;
 }
 .iw .ws-rail-right ul {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
 }
