@@ -6852,15 +6852,25 @@
 .iw .bank-option .bank-name {
   min-width: 0;
 }
+.iw .bankpicker {
+  position: relative;
+}
 .iw .bankpicker-menu {
   box-sizing: border-box;
 }
-/* on desktop the menu floats under the field: never let it grow past the field
-   width / viewport, whatever the option content is. The mobile bottom sheet
-   (<=720px) stays full width, so this is scoped above it. */
+/* Desktop: the dropdown is a plain absolute panel anchored to the field, filling
+   it exactly (left:0/right:0), so it can never float wider than the input it
+   drops from. The mobile bottom sheet (<=720px, via .fs-menu) is untouched. */
 @media (min-width: 721px) {
   .iw .bankpicker-menu {
-    max-width: min(560px, calc(100vw - 24px));
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    max-height: 320px;
+    overflow-y: auto;
   }
 }
 

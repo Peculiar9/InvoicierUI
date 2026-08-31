@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBodyFlagWhileOpen } from '@/hooks/useBodyFlagWhileOpen';
 
 export interface BankOption {
@@ -96,7 +96,6 @@ export const BankPicker = ({
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const focused = useRef(false);
-  const [menuStyle, setMenuStyle] = useState<CSSProperties | undefined>();
   useBodyFlagWhileOpen(open);
 
   // Reflect the selection in the field whenever it changes and the user is not
@@ -112,25 +111,6 @@ export const BankPicker = ({
     const list = q && !showingSelection ? banks.filter((b) => b.name.toLowerCase().includes(q)) : banks;
     return list.slice(0, 80);
   }, [banks, query, selectedName]);
-
-  const placeMenu = () => {
-    const el = rootRef.current;
-    if (!el || window.matchMedia('(max-width: 720px)').matches) {
-      setMenuStyle(undefined);
-      return;
-    }
-    const r = el.getBoundingClientRect();
-    const room = window.innerHeight - r.bottom;
-    const openUp = room < 300 && r.top > room;
-    setMenuStyle({
-      position: 'fixed',
-      left: r.left,
-      width: r.width,
-      ...(openUp
-        ? { bottom: window.innerHeight - r.top + 6, top: 'auto' }
-        : { top: r.bottom + 6, bottom: 'auto' }),
-    });
-  };
 
   const close = () => {
     setOpen(false);
@@ -148,7 +128,6 @@ export const BankPicker = ({
   useEffect(() => {
     if (!open) return;
     setActive(0);
-    placeMenu();
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (rootRef.current?.contains(t)) return;
@@ -156,16 +135,11 @@ export const BankPicker = ({
       close();
     };
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
-    const reflow = () => placeMenu();
     document.addEventListener('pointerdown', onDown);
     document.addEventListener('keydown', onKey);
-    window.addEventListener('scroll', reflow, true);
-    window.addEventListener('resize', reflow);
     return () => {
       document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('keydown', onKey);
-      window.removeEventListener('scroll', reflow, true);
-      window.removeEventListener('resize', reflow);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -233,7 +207,7 @@ export const BankPicker = ({
       {open && (
         <>
           <button type="button" className="filter-scrim" aria-label="Close" onClick={close} />
-          <div className="fs-menu ffield-menu bankpicker-menu" role="listbox" style={menuStyle}>
+          <div className="fs-menu ffield-menu bankpicker-menu" role="listbox">
             {loading ? (
               <div className="fs-loading">
                 <span className="iw-spin" aria-hidden="true" /> Loading banks…
