@@ -9,29 +9,32 @@ import posthog from 'posthog-js';
  * preview, a fork, a deploy that simply forgot it — sends nothing and throws
  * nothing. Every helper is a no-op until init() has actually connected.
  *
- * The key is read from CONFIG_POSTHOG_KEY (a plain-config name Vercel does not
- * gate as a public prefix), falling back to the older VITE_PUBLIC_POSTHOG_KEY so
- * nothing breaks mid-rename. Both are inlined into the client bundle — which is
- * correct: the PostHog project token is a public, client-side key.
+ * The key is read from CONFIG_PUBLIC_POSTHOG_KEY (the name set in Vercel/Netlify),
+ * then the older CONFIG_POSTHOG_KEY / VITE_PUBLIC_POSTHOG_KEY so nothing breaks
+ * mid-rename. All are inlined into the client bundle, which is correct: the
+ * PostHog project token is a public, client-side key. A CONFIG_ prefix keeps
+ * Vercel from gating it as a "public" variable, and vite.config exposes CONFIG_.
  *
  * This is a money app, so the defaults lean private: no session recording, and
  * autocapture records which elements people touch, never what they type into a
  * field. Identify runs on sign-in so a funnel can follow a real person; reset
  * runs on sign-out so the next person on the device is not mistaken for them.
  */
-const KEY = (import.meta.env.CONFIG_POSTHOG_KEY ??
+const KEY = (import.meta.env.CONFIG_PUBLIC_POSTHOG_KEY ??
+  import.meta.env.CONFIG_POSTHOG_KEY ??
   import.meta.env.VITE_PUBLIC_POSTHOG_KEY) as string | undefined;
 
 // Build-time diagnostic (safe, non-secret): reports whether a PostHog key was
 // present when THIS bundle was built. Grep the deployed JS for the marker —
-// "phdiag-v3-keyed" means the key was inlined, "phdiag-v3-nokey" means it was
-// not set at build. Remove once analytics is confirmed live.
+// "phdiag-v4-keyed" means the key was inlined, "phdiag-v4-nokey" means it was
+// not set at build. (v4 = the CONFIG_PUBLIC_* name fix.) Remove once confirmed.
 if (typeof window !== 'undefined') {
   (window as unknown as Record<string, string>).__phdiag = KEY
-    ? 'phdiag-v3-keyed'
-    : 'phdiag-v3-nokey';
+    ? 'phdiag-v4-keyed'
+    : 'phdiag-v4-nokey';
 }
-const HOST = (import.meta.env.CONFIG_POSTHOG_HOST ??
+const HOST = (import.meta.env.CONFIG_PUBLIC_POSTHOG_HOST ??
+  import.meta.env.CONFIG_POSTHOG_HOST ??
   import.meta.env.VITE_PUBLIC_POSTHOG_HOST ??
   'https://us.i.posthog.com') as string;
 

@@ -4609,6 +4609,27 @@
    order: component-level CSS imports get hoisted ahead of main.tsx's, so
    "later file wins" is not something this project can rely on. */
 @media (max-width: 620px) {
+  /* the desktop 40px padding eats a phone's width; tighten the whole sheet */
+  .invoice-doc.invoice-doc {
+    padding: 22px 20px;
+  }
+  .invoice-doc .invoice-doc-top {
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+  .invoice-doc .invoice-doc-brand {
+    gap: 10px;
+    min-width: 0;
+  }
+  .invoice-doc .invoice-doc-logo,
+  .invoice-doc .invoice-doc-monogram {
+    width: 38px;
+    height: 38px;
+    flex: none;
+  }
+  .invoice-doc .invoice-doc-monogram {
+    font-size: 1rem;
+  }
   .invoice-doc .invoice-doc-parties {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -4652,6 +4673,11 @@
   }
   .invoice-doc .invoice-doc-totals {
     width: 100%;
+  }
+  /* Notes and Terms sit side by side on desktop; stack them on a phone */
+  .invoice-doc .invoice-doc-foot {
+    flex-direction: column;
+    gap: 20px;
   }
 }
 
