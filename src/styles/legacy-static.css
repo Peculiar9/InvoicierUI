@@ -3642,9 +3642,13 @@
   font-weight: 700;
 }
 .invoice-doc-top h2 {
-  font-size: 1.8rem;
+  /* scales down on a phone, holds a calmer size on desktop (was a fixed 1.8rem
+     that read oversized on the preview and the payer's screen) */
+  font-size: clamp(1.3rem, 1rem + 1.5vw, 1.6rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.15;
+  word-break: break-word;
 }
 .invoice-doc-parties {
   display: grid;
