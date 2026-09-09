@@ -1763,7 +1763,14 @@ export const MarketingFooter = () => (
         <div className="lp-social">
           <a href="#" aria-label="Twitter"><i className="bx bxl-twitter" /></a>
           <a href="#" aria-label="LinkedIn"><i className="bx bxl-linkedin" /></a>
-          <a href="#" aria-label="Instagram"><i className="bx bxl-instagram" /></a>
+          <a
+            href="https://instagram.com/invoicier"
+            aria-label="Invoicier on Instagram"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i className="bx bxl-instagram" />
+          </a>
         </div>
       </div>
       <div className="lp-footer-cols">
