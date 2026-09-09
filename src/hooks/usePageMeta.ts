@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
 /** What index.html ships with; every page restores to this on unmount. */
-const DEFAULT_TITLE = 'Invoicier — Your invoices, your tax return';
+const DEFAULT_TITLE = 'Invoicier — Invoicing in Nigeria that becomes your tax return';
 const DEFAULT_DESCRIPTION =
-  'Invoicing built for Nigerian freelancers and small businesses. Send an invoice from your phone, get paid by card or transfer in naira, dollars, euros or pounds — and every payment lands with VAT and WHT worked out, so March finds your books ready.';
+  'Free invoicing in Nigeria for freelancers and small businesses. Send an invoice from your phone, get paid by card or transfer in naira, dollars, euros or pounds, and every payment lands with VAT and WHT worked out, so March finds your books ready.';
 const ORIGIN = 'https://invoicier.app';
 const DEFAULT_OG_IMAGE = `${ORIGIN}/og.png`;
 

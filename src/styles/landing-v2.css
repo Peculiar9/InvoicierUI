@@ -5706,3 +5706,94 @@ html.lenis body {
 [data-theme='dark'] .lp-gfaq-item {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* ============================================================================
+   DARK MODE, COMPLETED — the literal-white surfaces the token block promised
+   to handle "further down". Two families, treated differently on purpose:
+
+   PAPER stays paper. A receipt, a PDF, an invoice sheet is a white document
+   on a dark desk in this brand (the app's own invoice-doc does the same). But
+   their text reads var(--ink), which the dark tokens turn near-white, so a
+   naive flip renders white ink on white paper. Re-pin the LIGHT tokens inside
+   each document so every descendant keeps dark ink.
+
+   UI SURFACES flip to the dark card. Icon tiles, badges, feature cards, the
+   FAQ rows, the app mock: these are chrome, not documents, and they join the
+   dark identity on --surface-muted with the dark border.
+   ========================================================================= */
+
+/* ---- paper: white document, dark ink, in every theme ---- */
+[data-theme='dark'] .lp-trail-paper,
+[data-theme='dark'] .lp-receipt,
+[data-theme='dark'] .lp-pdf {
+  background: #fff;
+  --ink: #1d1b2e;
+  --ink-soft: #5f5d72;
+  --ink-faint: #9b99ab;
+  --border: #ece8f6;
+  --surface: #ffffff;
+  --surface-muted: #f7f5fc;
+  --brand-600: #7c3aed;
+  --brand-tint: rgba(146, 78, 233, 0.1);
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.5);
+  color: var(--ink-soft);
+}
+
+/* ---- ui surfaces: join the dark card ---- */
+[data-theme='dark'] .lp-flow-dot,
+[data-theme='dark'] .lp-price-badge,
+[data-theme='dark'] .lp-env,
+[data-theme='dark'] .lp-orbit-icon,
+[data-theme='dark'] .lp-faq-item,
+[data-theme='dark'] .lp-morph-back,
+[data-theme='dark'] .lp-feat,
+[data-theme='dark'] .lp-coin,
+[data-theme='dark'] .lp-gauge-pin,
+[data-theme='dark'] .lp-hiw-ledger,
+[data-theme='dark'] .lp-trail-dash,
+[data-theme='dark'] .lp-hero-art--big {
+  background: var(--surface-muted);
+  border-color: var(--border);
+}
+[data-theme='dark'] .lp-faq-item.is-open {
+  background: var(--surface-muted);
+}
+
+/* the toast was 94% white; make it 94% card so it floats over the dark page */
+[data-theme='dark'] .lp-toast {
+  background: rgba(23, 19, 32, 0.94);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+
+/* Deliberately untouched, correct in both themes: .lp-footer-cta .lp-btn (a
+   white button on the dark footer), .lp-waitlist-form (a white form on the
+   purple waitlist band), .lp-sd-rail and .lp-card--dark (already dark), and
+   every rgba(255,255,255,.x) "shine" that sits on a surface that is already
+   dark by design. */
+
+/* ============================================================================
+   MOBILE RAIL — the "Why Invoicier / The core" carousel could show its dots
+   but not swipe. The desktop scroll-theatre's `is-voila` phase sets
+   pointer-events:none on the track (the app pops out of the pile, the papers
+   vanish). The phone rail restored opacity and scale for that phase but never
+   gave the pointer back, and the phase JS runs on phones too, so past a
+   certain scroll the rail went dead to touch. On a phone no phase may ever
+   take the rail away from the thumb.
+   ========================================================================= */
+@media (max-width: 880px) {
+  .lp-trail-stage .lp-trail-track,
+  .lp-trail-stage.is-voila .lp-trail-track,
+  .lp-trail-stage.is-pulse .lp-trail-track,
+  .lp-trail-stage.is-merge .lp-trail-track,
+  .lp-trail-stage.is-docked .lp-trail-track {
+    opacity: 1 !important;
+    scale: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    animation: none !important;
+    pointer-events: auto !important;
+    touch-action: pan-x pan-y;
+  }
+}
