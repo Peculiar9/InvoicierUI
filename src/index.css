@@ -99,3 +99,59 @@ html {
     font-size: 16px !important;
   }
 }
+
+/* ============================================================================
+   THEME PLUMBING (global, not app-scoped)
+
+   The dark tokens live on `[data-theme='dark'] .iw`, so the document ROOT never
+   declared a colour scheme. Two consequences, both reported as "the inputs are
+   nerfed in dark mode":
+
+   1. The browser kept painting its own chrome (autofill, scrollbars, native
+      pickers) in light, because it was never told the page is dark.
+   2. Chrome paints an AUTOFILLED field with its own near-white background and
+      its own text colour, at a priority no ordinary `background`/`color` rule
+      can beat. That is why the sign-in and onboarding fields, exactly the ones
+      a browser autofills, looked bleached against a dark card while every
+      other input was fine.
+   ========================================================================= */
+
+/* 1. Tell the browser which scheme the page is in, so native controls,
+      scrollbars and form widgets follow the theme. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+/* 2. Repaint autofilled fields. An inset shadow is the only thing that covers
+      Chrome's background, and -webkit-text-fill-color the only thing that
+      beats its text colour. Scoped to .iw so the theme tokens resolve, which
+      means one rule serves BOTH themes: --card and --ink already flip. The
+      absurd transition delay stops Chrome flashing its own colour first. */
+.iw input:-webkit-autofill,
+.iw input:-webkit-autofill:hover,
+.iw input:-webkit-autofill:active,
+.iw textarea:-webkit-autofill,
+.iw textarea:-webkit-autofill:hover,
+.iw select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset;
+  box-shadow: 0 0 0 1000px var(--card) inset;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  border-color: var(--border);
+  transition: background-color 9999s ease-out 0s;
+}
+
+/* focus keeps its brand ring; the inset fill would otherwise erase it */
+.iw input:-webkit-autofill:focus,
+.iw textarea:-webkit-autofill:focus,
+.iw select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset, 0 0 0 3px var(--brand-tint);
+  box-shadow: 0 0 0 1000px var(--card) inset, 0 0 0 3px var(--brand-tint);
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  border-color: var(--brand);
+  transition: background-color 9999s ease-out 0s;
+}
