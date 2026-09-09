@@ -59,16 +59,21 @@
    surfaces and shine gradients scattered through the page get their own
    overrides further down; this only moves the tokens the page reads from. */
 [data-theme='dark'] .lp {
+  /* The light mode's elevation, kept: page ground, bands a shade deeper that
+     recede, cards a shade lighter that rise. Never an inversion. The ground is
+     a soft purple-charcoal rather than black, the bands lean into the brand's
+     deep purple, and a card is a gentle lift above the page. */
   --brand-600: #a884f5;
-  --brand-tint: rgba(168, 132, 245, 0.16);
-  --ink: #f3f1fb;
-  --ink-soft: #b8b4cb;
-  --ink-faint: #807c95;
-  --surface: #0f0c17;
-  --surface-muted: #171320;
-  --border: #2a2537;
-  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --brand-tint: rgba(168, 132, 245, 0.14);
+  --ink: #ece9f5;
+  --ink-soft: #b3aec6;
+  --ink-faint: #7f7a94;
+  --surface: #211b33;
+  --surface-muted: #181227;
+  --card: #2a2340;
+  --border: #352d48;
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.5);
 }
 
 .lp *,
@@ -5453,19 +5458,81 @@ html.lenis body {
   border-color: var(--border);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+/* ---- FOR THE RECORD, DARK: lit receipts ----------------------------------
+   In light these are tinted glass fading to white. On the night desk each card
+   is a slip of its own hue with the light on: a pool of the hue in one corner,
+   a hairline edge of the same hue, and a soft outer glow that comes up when
+   you reach for it. Four slips, four lights; never four grey boxes. */
 [data-theme='dark'] .lp-fcard {
-  /* the fill leaned on a 45%-white stop that turned milky on a dark ground;
-     keep the brand tint, drop the white to a faint lift, and let the border
-     define the card the way it does everywhere else in dark */
-  background: linear-gradient(165deg, var(--tint), rgba(255, 255, 255, 0.04) 58%);
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --glow: rgba(168, 132, 245, 0.34);
+  --edge: rgba(196, 168, 255, 0.28);
+  --tint: rgba(146, 78, 233, 0.16);
+  --tint-deep: rgba(146, 78, 233, 0.34);
+  --ink-accent: #c9adff;
+  background:
+    radial-gradient(120% 80% at 100% 0%, var(--tint) 0%, transparent 55%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.045), transparent 60%),
+    var(--card);
+  border: 1px solid var(--edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 44px rgba(0, 0, 0, 0.42),
+    0 0 64px -24px var(--glow);
+}
+[data-theme='dark'] .lp-fcard--rose {
+  --glow: rgba(255, 90, 95, 0.34);
+  --edge: rgba(255, 122, 128, 0.28);
+  --tint: rgba(255, 90, 95, 0.14);
+  --tint-deep: rgba(255, 90, 95, 0.32);
+  --ink-accent: #ff8f94;
+}
+[data-theme='dark'] .lp-fcard--mint {
+  --glow: rgba(12, 141, 111, 0.38);
+  --edge: rgba(63, 208, 168, 0.28);
+  --tint: rgba(12, 141, 111, 0.14);
+  --tint-deep: rgba(12, 141, 111, 0.32);
+  --ink-accent: #4fd8b0;
 }
 [data-theme='dark'] .lp-fcard--slate {
-  /* slate's tint is near-black ink, invisible on dark — lift it to a cool grey */
-  --tint: rgba(255, 255, 255, 0.05);
-  --tint-deep: rgba(255, 255, 255, 0.08);
-  --ink-accent: var(--ink-soft);
+  /* slate's tint is near-black ink, gone on dark; it becomes cool indigo */
+  --glow: rgba(120, 140, 220, 0.32);
+  --edge: rgba(150, 165, 230, 0.26);
+  --tint: rgba(120, 140, 220, 0.12);
+  --tint-deep: rgba(120, 140, 220, 0.28);
+  --ink-accent: #b6c2f2;
+}
+[data-theme='dark'] .lp-fcard--violet {
+  --glow: rgba(168, 132, 245, 0.40);
+  --edge: rgba(196, 168, 255, 0.32);
+  --tint: rgba(146, 78, 233, 0.18);
+  --tint-deep: rgba(146, 78, 233, 0.38);
+  --ink-accent: #cfb6ff;
+}
+/* the tint pool at the base reads stronger on dark, and the light comes up on hover */
+[data-theme='dark'] .lp-fcard::after {
+  opacity: 0.7;
+}
+[data-theme='dark'] .lp-fcard:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 64px rgba(0, 0, 0, 0.5),
+    0 0 96px -20px var(--glow);
+}
+[data-theme='dark'] .lp-fcard:hover::after {
+  opacity: 1;
+}
+/* the little props inside the slips take the same hue */
+[data-theme='dark'] .lp-fcard .lp-coin,
+[data-theme='dark'] .lp-fcard .lp-gauge-pin {
+  box-shadow: 0 0 0 1px var(--edge), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+[data-theme='dark'] .lp-fcard-toast {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+}
+[data-theme='dark'] .lp-gauge {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================================================
@@ -5704,5 +5771,141 @@ html.lenis body {
 
 [data-theme='dark'] .lp-steps-num li,
 [data-theme='dark'] .lp-gfaq-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card);
+  border-color: var(--border);
+}
+
+/* ============================================================================
+   DARK MODE, COMPLETED — the literal-white surfaces the token block promised
+   to handle "further down". Two families, treated differently on purpose:
+
+   PAPER stays paper. A receipt, a PDF, an invoice sheet is a white document
+   on a dark desk in this brand (the app's own invoice-doc does the same). But
+   their text reads var(--ink), which the dark tokens turn near-white, so a
+   naive flip renders white ink on white paper. Re-pin the LIGHT tokens inside
+   each document so every descendant keeps dark ink.
+
+   UI SURFACES flip to the dark card. Icon tiles, badges, feature cards, the
+   FAQ rows, the app mock: these are chrome, not documents, and they join the
+   dark identity on --surface-muted with the dark border.
+   ========================================================================= */
+
+/* ---- paper: white document, dark ink, in every theme ---- */
+[data-theme='dark'] .lp-trail-paper,
+[data-theme='dark'] .lp-receipt,
+[data-theme='dark'] .lp-pdf {
+  background: #f6f4fb;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+  --ink: #1d1b2e;
+  --ink-soft: #5f5d72;
+  --ink-faint: #9b99ab;
+  --border: #ece8f6;
+  --surface: #ffffff;
+  --surface-muted: #f7f5fc;
+  --brand-600: #7c3aed;
+  --brand-tint: rgba(146, 78, 233, 0.1);
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.5);
+  color: var(--ink-soft);
+}
+
+/* ---- ui surfaces: join the dark card ---- */
+[data-theme='dark'] .lp-flow-dot,
+[data-theme='dark'] .lp-price-badge,
+[data-theme='dark'] .lp-env,
+[data-theme='dark'] .lp-orbit-icon,
+[data-theme='dark'] .lp-faq-item,
+[data-theme='dark'] .lp-morph-back,
+[data-theme='dark'] .lp-feat,
+[data-theme='dark'] .lp-coin,
+[data-theme='dark'] .lp-gauge-pin,
+[data-theme='dark'] .lp-hiw-ledger,
+[data-theme='dark'] .lp-trail-dash,
+[data-theme='dark'] .lp-hero-art--big,
+[data-theme='dark'] .lp-card,
+[data-theme='dark'] .lp-res-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+[data-theme='dark'] .lp-faq-item.is-open {
+  background: var(--card);
+}
+
+/* the toast was 94% white; make it 94% card so it floats over the dark page */
+[data-theme='dark'] .lp-toast {
+  background: rgba(23, 19, 32, 0.94);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+
+/* Deliberately untouched, correct in both themes: .lp-footer-cta .lp-btn (a
+   white button on the dark footer), .lp-waitlist-form (a white form on the
+   purple waitlist band), .lp-sd-rail and .lp-card--dark (already dark), and
+   every rgba(255,255,255,.x) "shine" that sits on a surface that is already
+   dark by design. */
+
+/* ============================================================================
+   MOBILE RAIL — the "Why Invoicier / The core" carousel could show its dots
+   but not swipe. The desktop scroll-theatre's `is-voila` phase sets
+   pointer-events:none on the track (the app pops out of the pile, the papers
+   vanish). The phone rail restored opacity and scale for that phase but never
+   gave the pointer back, and the phase JS runs on phones too, so past a
+   certain scroll the rail went dead to touch. On a phone no phase may ever
+   take the rail away from the thumb.
+   ========================================================================= */
+@media (max-width: 880px) {
+  .lp-trail-stage .lp-trail-track,
+  .lp-trail-stage.is-voila .lp-trail-track,
+  .lp-trail-stage.is-pulse .lp-trail-track,
+  .lp-trail-stage.is-merge .lp-trail-track,
+  .lp-trail-stage.is-docked .lp-trail-track {
+    opacity: 1 !important;
+    scale: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    animation: none !important;
+    pointer-events: auto !important;
+    touch-action: pan-x pan-y;
+  }
+}
+
+
+/* ---- THE PAPER TRAIL, DARK: the night desk --------------------------------
+   The stage borrows the footer's world, the brand's own deep purple and its
+   dot grid, laid as backgrounds on the element itself so the sticky theatre's
+   stacking is never touched. A lamp pools where the papers merge; the paper
+   is warm under it; the arrows and step numbers glow; and the app, the payoff,
+   is rim-lit as it pops out of the pile. */
+[data-theme='dark'] .lp-trail-stage {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(146, 78, 233, 0.22), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px) 0 0 / 24px 24px,
+    var(--surface-muted);
+}
+[data-theme='dark'] .lp-trail-paper {
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.45),
+    0 0 52px -12px rgba(255, 214, 170, 0.16);
+}
+[data-theme='dark'] .lp-trail-arrow {
+  color: var(--brand-600);
+  text-shadow: 0 0 14px rgba(168, 132, 245, 0.55);
+}
+[data-theme='dark'] .lp-trail-num {
+  color: rgba(201, 173, 255, 0.72);
+}
+[data-theme='dark'] .lp-td-march {
+  background: rgba(146, 78, 233, 0.12);
+  border-color: rgba(168, 132, 245, 0.45);
+  box-shadow: 0 0 24px -8px rgba(146, 78, 233, 0.4);
+}
+[data-theme='dark'] .lp-td-march .track {
+  background: rgba(255, 255, 255, 0.10);
+}
+[data-theme='dark'] .lp-trail-dash {
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px rgba(168, 132, 245, 0.35),
+    0 30px 70px rgba(0, 0, 0, 0.55),
+    0 0 100px -24px rgba(146, 78, 233, 0.5);
 }
