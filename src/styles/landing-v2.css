@@ -5458,19 +5458,81 @@ html.lenis body {
   border-color: var(--border);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+/* ---- FOR THE RECORD, DARK: lit receipts ----------------------------------
+   In light these are tinted glass fading to white. On the night desk each card
+   is a slip of its own hue with the light on: a pool of the hue in one corner,
+   a hairline edge of the same hue, and a soft outer glow that comes up when
+   you reach for it. Four slips, four lights; never four grey boxes. */
 [data-theme='dark'] .lp-fcard {
-  /* the fill leaned on a 45%-white stop that turned milky on a dark ground;
-     keep the brand tint, drop the white to a faint lift, and let the border
-     define the card the way it does everywhere else in dark */
-  background: linear-gradient(165deg, var(--tint), rgba(255, 255, 255, 0.04) 58%);
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --glow: rgba(168, 132, 245, 0.34);
+  --edge: rgba(196, 168, 255, 0.28);
+  --tint: rgba(146, 78, 233, 0.16);
+  --tint-deep: rgba(146, 78, 233, 0.34);
+  --ink-accent: #c9adff;
+  background:
+    radial-gradient(120% 80% at 100% 0%, var(--tint) 0%, transparent 55%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.045), transparent 60%),
+    var(--card);
+  border: 1px solid var(--edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 44px rgba(0, 0, 0, 0.42),
+    0 0 64px -24px var(--glow);
+}
+[data-theme='dark'] .lp-fcard--rose {
+  --glow: rgba(255, 90, 95, 0.34);
+  --edge: rgba(255, 122, 128, 0.28);
+  --tint: rgba(255, 90, 95, 0.14);
+  --tint-deep: rgba(255, 90, 95, 0.32);
+  --ink-accent: #ff8f94;
+}
+[data-theme='dark'] .lp-fcard--mint {
+  --glow: rgba(12, 141, 111, 0.38);
+  --edge: rgba(63, 208, 168, 0.28);
+  --tint: rgba(12, 141, 111, 0.14);
+  --tint-deep: rgba(12, 141, 111, 0.32);
+  --ink-accent: #4fd8b0;
 }
 [data-theme='dark'] .lp-fcard--slate {
-  /* slate's tint is near-black ink, invisible on dark — lift it to a cool grey */
-  --tint: rgba(255, 255, 255, 0.05);
-  --tint-deep: rgba(255, 255, 255, 0.08);
-  --ink-accent: var(--ink-soft);
+  /* slate's tint is near-black ink, gone on dark; it becomes cool indigo */
+  --glow: rgba(120, 140, 220, 0.32);
+  --edge: rgba(150, 165, 230, 0.26);
+  --tint: rgba(120, 140, 220, 0.12);
+  --tint-deep: rgba(120, 140, 220, 0.28);
+  --ink-accent: #b6c2f2;
+}
+[data-theme='dark'] .lp-fcard--violet {
+  --glow: rgba(168, 132, 245, 0.40);
+  --edge: rgba(196, 168, 255, 0.32);
+  --tint: rgba(146, 78, 233, 0.18);
+  --tint-deep: rgba(146, 78, 233, 0.38);
+  --ink-accent: #cfb6ff;
+}
+/* the tint pool at the base reads stronger on dark, and the light comes up on hover */
+[data-theme='dark'] .lp-fcard::after {
+  opacity: 0.7;
+}
+[data-theme='dark'] .lp-fcard:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 30px 64px rgba(0, 0, 0, 0.5),
+    0 0 96px -20px var(--glow);
+}
+[data-theme='dark'] .lp-fcard:hover::after {
+  opacity: 1;
+}
+/* the little props inside the slips take the same hue */
+[data-theme='dark'] .lp-fcard .lp-coin,
+[data-theme='dark'] .lp-fcard .lp-gauge-pin {
+  box-shadow: 0 0 0 1px var(--edge), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+[data-theme='dark'] .lp-fcard-toast {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+}
+[data-theme='dark'] .lp-gauge {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================================================
@@ -5805,4 +5867,45 @@ html.lenis body {
     pointer-events: auto !important;
     touch-action: pan-x pan-y;
   }
+}
+
+
+/* ---- THE PAPER TRAIL, DARK: the night desk --------------------------------
+   The stage borrows the footer's world, the brand's own deep purple and its
+   dot grid, laid as backgrounds on the element itself so the sticky theatre's
+   stacking is never touched. A lamp pools where the papers merge; the paper
+   is warm under it; the arrows and step numbers glow; and the app, the payoff,
+   is rim-lit as it pops out of the pile. */
+[data-theme='dark'] .lp-trail-stage {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(146, 78, 233, 0.22), transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px) 0 0 / 24px 24px,
+    var(--surface-muted);
+}
+[data-theme='dark'] .lp-trail-paper {
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.45),
+    0 0 52px -12px rgba(255, 214, 170, 0.16);
+}
+[data-theme='dark'] .lp-trail-arrow {
+  color: var(--brand-600);
+  text-shadow: 0 0 14px rgba(168, 132, 245, 0.55);
+}
+[data-theme='dark'] .lp-trail-num {
+  color: rgba(201, 173, 255, 0.72);
+}
+[data-theme='dark'] .lp-td-march {
+  background: rgba(146, 78, 233, 0.12);
+  border-color: rgba(168, 132, 245, 0.45);
+  box-shadow: 0 0 24px -8px rgba(146, 78, 233, 0.4);
+}
+[data-theme='dark'] .lp-td-march .track {
+  background: rgba(255, 255, 255, 0.10);
+}
+[data-theme='dark'] .lp-trail-dash {
+  background: var(--card);
+  box-shadow:
+    0 0 0 1px rgba(168, 132, 245, 0.35),
+    0 30px 70px rgba(0, 0, 0, 0.55),
+    0 0 100px -24px rgba(146, 78, 233, 0.5);
 }
