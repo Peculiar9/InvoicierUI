@@ -59,16 +59,21 @@
    surfaces and shine gradients scattered through the page get their own
    overrides further down; this only moves the tokens the page reads from. */
 [data-theme='dark'] .lp {
+  /* The light mode's elevation, kept: page ground, bands a shade deeper that
+     recede, cards a shade lighter that rise. Never an inversion. The ground is
+     a soft purple-charcoal rather than black, the bands lean into the brand's
+     deep purple, and a card is a gentle lift above the page. */
   --brand-600: #a884f5;
-  --brand-tint: rgba(168, 132, 245, 0.16);
-  --ink: #f3f1fb;
-  --ink-soft: #b8b4cb;
-  --ink-faint: #807c95;
-  --surface: #0f0c17;
-  --surface-muted: #171320;
-  --border: #2a2537;
-  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --brand-tint: rgba(168, 132, 245, 0.14);
+  --ink: #ece9f5;
+  --ink-soft: #b3aec6;
+  --ink-faint: #7f7a94;
+  --surface: #211b33;
+  --surface-muted: #181227;
+  --card: #2a2340;
+  --border: #352d48;
+  --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 18px 48px rgba(0, 0, 0, 0.5);
 }
 
 .lp *,
@@ -5704,7 +5709,8 @@ html.lenis body {
 
 [data-theme='dark'] .lp-steps-num li,
 [data-theme='dark'] .lp-gfaq-item {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card);
+  border-color: var(--border);
 }
 
 /* ============================================================================
@@ -5726,7 +5732,8 @@ html.lenis body {
 [data-theme='dark'] .lp-trail-paper,
 [data-theme='dark'] .lp-receipt,
 [data-theme='dark'] .lp-pdf {
-  background: #fff;
+  background: #f6f4fb;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
   --ink: #1d1b2e;
   --ink-soft: #5f5d72;
   --ink-faint: #9b99ab;
@@ -5752,12 +5759,14 @@ html.lenis body {
 [data-theme='dark'] .lp-gauge-pin,
 [data-theme='dark'] .lp-hiw-ledger,
 [data-theme='dark'] .lp-trail-dash,
-[data-theme='dark'] .lp-hero-art--big {
-  background: var(--surface-muted);
+[data-theme='dark'] .lp-hero-art--big,
+[data-theme='dark'] .lp-card,
+[data-theme='dark'] .lp-res-card {
+  background: var(--card);
   border-color: var(--border);
 }
 [data-theme='dark'] .lp-faq-item.is-open {
-  background: var(--surface-muted);
+  background: var(--card);
 }
 
 /* the toast was 94% white; make it 94% card so it floats over the dark page */

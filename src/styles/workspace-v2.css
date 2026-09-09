@@ -10497,3 +10497,45 @@
 .ob-code:focus { border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-tint, rgba(146,78,233,0.12)); }
 .ob-code::placeholder { color: #cfc9e0; letter-spacing: 0.5em; }
 .ob-code:disabled { opacity: 0.6; }
+
+/* ============================================================================
+   ONBOARDING, DARK: inputs with the same care as the password field.
+   The generic dark rule paints an input the same colour as the card it sits
+   in, so inside the onboarding card a field simply vanished. A field is a
+   recessed well: a touch of white over the card, a quiet edge, and the brand
+   ring only when it has your attention. Mirrors .pwx-input exactly so every
+   field on the screen reads as one family.
+   ========================================================================= */
+[data-theme='dark'] .ob .cinv-field input,
+[data-theme='dark'] .ob .cinv-field textarea,
+[data-theme='dark'] .ob .cinv-field select,
+[data-theme='dark'] .ob .ffield-trigger {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f4f3fa;
+}
+[data-theme='dark'] .ob .cinv-field input::placeholder,
+[data-theme='dark'] .ob .cinv-field textarea::placeholder {
+  color: rgba(244, 243, 250, 0.42);
+}
+[data-theme='dark'] .ob .cinv-field input:focus,
+[data-theme='dark'] .ob .cinv-field textarea:focus,
+[data-theme='dark'] .ob .cinv-field select:focus,
+[data-theme='dark'] .ob .ffield-trigger:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+/* autofill fills the well's solid equivalent, not the card, so it matches its
+   neighbours; focus keeps the ring */
+[data-theme='dark'] .ob input:-webkit-autofill,
+[data-theme='dark'] .ob input:-webkit-autofill:hover {
+  -webkit-box-shadow: 0 0 0 1000px #252230 inset;
+  box-shadow: 0 0 0 1000px #252230 inset;
+  -webkit-text-fill-color: #f4f3fa;
+}
+[data-theme='dark'] .ob input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #252230 inset, 0 0 0 3px var(--brand-tint);
+  box-shadow: 0 0 0 1000px #252230 inset, 0 0 0 3px var(--brand-tint);
+  -webkit-text-fill-color: #f4f3fa;
+  border-color: var(--brand);
+}
