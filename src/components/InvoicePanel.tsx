@@ -1195,6 +1195,31 @@ export const InvoicePanel = () => {
                       }}
                     />
                   </label>
+
+                  {/* Why Send is asleep, said out loud. The rail's tooltip only
+                      exists on hover, so on a phone the button was simply dead
+                      with no explanation, which is where drafts went to die. */}
+                  {!canSend && (
+                    <div className="cinv-blocked" role="status">
+                      <i className="bx bx-info-circle" aria-hidden="true" />
+                      <div>
+                        <b>
+                          {!formReady
+                            ? 'Two things left before you can send'
+                            : !email_verified
+                              ? 'Confirm your email to send'
+                              : 'This invoice needs somewhere to go'}
+                        </b>
+                        <span>
+                          {!formReady
+                            ? 'Add who the invoice is for, and one item with an amount.'
+                            : !email_verified
+                              ? 'We sent a code to your address when you signed up. Confirm it and Send wakes up. Saving and copying the link work either way.'
+                              : 'Add an email address for this client and Send wakes up. You can still save it, or copy the payment link and send it yourself on WhatsApp.'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
               </>

@@ -10539,3 +10539,70 @@
   -webkit-text-fill-color: #f4f3fa;
   border-color: var(--brand);
 }
+
+/* ---- why Send is asleep, in plain sight -----------------------------------
+   The action rail explains itself through a hover tooltip, which does not
+   exist on a touch screen: a phone user met a dead Send button and no reason.
+   This says it in the form itself, on every device. */
+.iw .cinv-blocked {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--brand-tint);
+  border: 1px solid var(--border);
+}
+.iw .cinv-blocked > i {
+  flex: none;
+  margin-top: 2px;
+  font-size: 1.15rem;
+  color: var(--brand-600);
+}
+.iw .cinv-blocked b {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.iw .cinv-blocked span {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ---- notifications dropdown: it never joined dark mode --------------------
+   The bell button had dark rules; the panel it opens did not, so it stayed a
+   sheet of white. It also had no height limit, so a long list ran off the
+   bottom of a phone with no way to scroll to the end. */
+[data-theme='dark'] .iw .iw-bell-panel {
+  background: var(--card);
+  border-color: var(--border);
+}
+.iw .iw-bell-panel {
+  max-height: min(62vh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 560px) {
+  .iw .iw-bell-panel {
+    max-height: calc(100vh - 96px);
+  }
+}
+
+/* ---- attention items: readable on a phone ---------------------------------
+   One-line ellipsis is right on a wide screen, where the line has room. On a
+   phone it cropped the actual message ("...is 5 days overdue") to nothing
+   useful. Let it wrap to two lines instead of truncating. */
+@media (max-width: 560px) {
+  .iw .iw-attn-body p,
+  .iw .iw-attn li p {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
