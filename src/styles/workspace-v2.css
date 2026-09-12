@@ -4569,9 +4569,10 @@
     position: static;
     order: -1;
   }
-  /* on review the document leads; the amount card below carries the one CTA */
+  /* on a phone the amount and the one action lead, right under the greeting;
+     the document follows for anyone who wants to read the fine print first */
   .pay-grid--review .pay-side {
-    order: 1;
+    order: -1;
   }
   /* bigger touch targets on the method list */
   .pay-rail { padding: 14px; }
@@ -10544,5 +10545,70 @@
   .invoice-doc .invoice-doc-qr * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+}
+
+/* ============================================================================
+   PAY PAGE — the greeting
+   The first thing a payer reads is a person's sentence, not a document: who
+   is asking, for what, and by when. The invoice below is the fine print.
+   ========================================================================== */
+.pay-page .pay-hello {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: -2px 0 22px;
+}
+.pay-page .pay-hello-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--brand-600), #b892f5);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.25rem;
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.22);
+}
+.pay-page .pay-hello-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pay-page .pay-hello h1 {
+  margin: 0;
+  font-size: clamp(1.25rem, 1rem + 1.4vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.pay-page .pay-hello h1 b {
+  color: var(--brand-600);
+}
+.pay-page .pay-hello p {
+  margin: 5px 0 0;
+  font-size: 0.84rem;
+  color: var(--ink-faint);
+}
+/* past its date: say so, in the amber the workspace uses for attention */
+.pay-page .pay-due.is-late {
+  color: #b97d10;
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .pay-page .pay-hello {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .pay-page .pay-hello-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    font-size: 1.05rem;
   }
 }
