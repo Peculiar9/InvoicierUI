@@ -4399,51 +4399,65 @@
 /* ============================================================================
    PRINT — only the invoice document
    ========================================================================== */
+/* ============================================================================
+   PRINT — the document, and only the document
+   The printable (.invoice-doc or .rcpt) lives deep inside app chrome: a fixed
+   100vh panel or a modal, over a workspace that is taller than a page. Hiding
+   that chrome with visibility alone left its height in the flow, so the
+   printer emitted its pages blank, with the document pinned absolutely over
+   the first one. Now: everything that is not the document or one of its
+   ancestors is removed from layout, the ancestor chain is flattened to plain
+   static blocks, and the document paginates on its own.
+   ========================================================================== */
 @media print {
-  body * {
-    visibility: hidden !important;
+  html,
+  body {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
   }
-  .invoice-doc,
-  .invoice-doc *,
-  .rcpt,
-  .rcpt * {
-    visibility: visible !important;
+  /* out of the flow, not merely out of sight */
+  body:has(.invoice-doc, .rcpt)
+    *:not(:has(.invoice-doc, .rcpt)):not(.invoice-doc):not(.rcpt):not(.invoice-doc *):not(.rcpt *) {
+    display: none !important;
   }
-  .ipanel,
-  .ipanel-body,
-  .ui-modal,
-  .ui-modal-overlay,
-  .ui-modal-body {
+  /* the chain down to the document becomes plain paper */
+  body:has(.invoice-doc, .rcpt) *:has(.invoice-doc, .rcpt) {
+    display: block !important;
     position: static !important;
+    inset: auto !important;
     transform: none !important;
     width: auto !important;
     height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #fff !important;
     box-shadow: none !important;
     border: 0 !important;
+    border-radius: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    animation: none !important;
+    transition: none !important;
   }
-  .invoice-doc {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 0;
-  }
-  .ws-rail,
-  .ws-topbar,
-  .toaster,
-  .ui-modal-head,
-  .ui-modal-foot,
-  .ipanel-scrim,
-  .ipanel-head,
-  .ipanel-actions,
-  .ipanel-foot {
+  /* a printable inside a modal is the one on top; print it alone */
+  body:has(.ui-modal :is(.invoice-doc, .rcpt)) :is(.invoice-doc, .rcpt):not(.ui-modal *) {
     display: none !important;
+  }
+  .invoice-doc,
+  .rcpt {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 }
 
