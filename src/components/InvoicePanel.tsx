@@ -285,6 +285,12 @@ export const InvoicePanel = () => {
     return fallback ? { ...fallback, swift_code: fallback.swift } : null;
   };
 
+  // Download saves first, then prints. What prints must be the saved invoice
+  // (its real number, status and payment link), not the unsaved draft shape,
+  // so it matches Print / PDF in view mode to the pixel. Preview alone keeps
+  // showing the live draft.
+  const [printable, setPrintable] = useState<Invoice | null>(null);
+
   const draftDoc: InvoiceDocData = {
     invoice_number: invoice?.invoice_number ?? 'DRAFT',
     status: 'draft',
@@ -495,7 +501,9 @@ export const InvoicePanel = () => {
   const handleDownload = async () => {
     setBusy('Download');
     try {
-      if (await persist()) {
+      const saved = await persist();
+      if (saved) {
+        setPrintable(saved);
         setPreviewOpen(true);
         setTimeout(() => printInvoice(), 250);
       }
@@ -529,7 +537,10 @@ export const InvoicePanel = () => {
       primary: false,
       needsReady: false,
       needsEmail: false,
-      onClick: () => setPreviewOpen(true),
+      onClick: () => {
+        setPrintable(null);
+        setPreviewOpen(true);
+      },
     },
   ];
 
@@ -1281,11 +1292,24 @@ export const InvoicePanel = () => {
 
       <Modal
         open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
+        onClose={() => {
+          setPreviewOpen(false);
+          setPrintable(null);
+        }}
         title="Invoice preview"
         size="lg"
       >
-        <InvoiceDocument data={draftDoc} />
+        <InvoiceDocument
+          data={
+            printable
+              ? {
+                  ...printable,
+                  payment_account: docAccountFor(printable),
+                  pay_url: invoicePayLink(printable),
+                }
+              : draftDoc
+          }
+        />
       </Modal>
 
       {/* the real payment page, rendered in place, with nothing recorded */}
