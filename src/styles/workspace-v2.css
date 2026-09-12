@@ -10478,11 +10478,14 @@
    SCAN TO PAY — the code that closes the paper gap
    A printed invoice or a PDF is a dead end: the client holds paper while the
    payment page lives on the web. The code carries this invoice to a phone.
+   It exists for the person holding the paper or the PDF, so it renders only
+   in print: the sender's preview and the payer's web page never show it.
    Built to survive print: an SVG (crisp at any DPI), never split across a
    page break, and forced to keep its colours when browsers try to save ink.
    ========================================================================= */
 .invoice-doc .invoice-doc-qr {
-  display: flex;
+  /* paper and PDF only: the sender's screen never shows it */
+  display: none;
   align-items: center;
   gap: 18px;
   margin-top: 22px;
@@ -10533,6 +10536,7 @@
 }
 @media print {
   .invoice-doc .invoice-doc-qr {
+    display: flex;
     background: #fff;
     border-color: #d9d5e6;
   }
