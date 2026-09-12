@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { accountDisplayRows } from '@/utils/paymentRoutes';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { QRCodeSVG } from 'qrcode.react';
+import { isSettled } from '@/utils/invoiceStatus';
 import type { Client, InvoiceStatus } from '@/types';
 
 export interface InvoiceDocLine {
@@ -40,6 +42,8 @@ export interface InvoiceDocData {
   payment_account?: Record<string, string | null | undefined> | import('@/types').PublicPaymentAccount | null;
   /** the recipient's name when there's no saved client (ad-hoc billing) */
   bill_to_name?: string | null;
+  /** the public payment page for this invoice; becomes the scan-to-pay code */
+  pay_url?: string | null;
 }
 
 const statusLabel: Record<InvoiceStatus, string> = {
@@ -208,6 +212,34 @@ export const InvoiceDocument = ({ data }: { data: InvoiceDocData }) => {
             </div>
           )}
         </footer>
+      )}
+
+      {/* Scan to pay. A printed invoice is a dead end without it: the client
+          holds paper and the payment page lives on the web. The code closes
+          that gap, and on a PDF read on a laptop it moves the payment to the
+          phone where the banking app already lives. Only while something is
+          actually owed; a settled invoice is a record, not a request. */}
+      {data.pay_url && !isSettled(data.status ?? 'draft') && (
+        <section className="invoice-doc-qr">
+          <div className="invoice-doc-qr-code">
+            <QRCodeSVG
+              value={data.pay_url}
+              size={104}
+              level="M"
+              marginSize={0}
+              bgColor="#ffffff"
+              fgColor="#1d1b2e"
+            />
+          </div>
+          <div className="invoice-doc-qr-copy">
+            <h4>Scan to pay</h4>
+            <p>
+              Point a phone camera at this code to open the secure payment page
+              for this invoice.
+            </p>
+            <span className="invoice-doc-qr-url">{data.pay_url.replace(/^https?:\/\//, '')}</span>
+          </div>
+        </section>
       )}
 
       {/* the quiet maker's mark: every document says where it came from */}

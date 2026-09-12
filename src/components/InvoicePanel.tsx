@@ -25,6 +25,7 @@ import { useHotkeys } from '@/hooks/useHotkeys';
 import { useServicesStore } from '@/stores/servicesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
+import { invoicePayLink } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
 import { todayLocal, addDaysLocal, daysBetween } from '@/utils/day';
@@ -606,18 +607,26 @@ export const InvoicePanel = () => {
                       {invoice.status === 'cancelled' ? 'Voided' : 'Locked'}
                     </span>
                   )}
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => invoice && emailAndSend(invoice)}
-                    disabled={sendInvoice.isPending}
-                  >
-                    {sendInvoice.isPending ? (
-                      <><span className="iw-spin" aria-hidden="true" /> Sending…</>
-                    ) : (
-                      <><i className="bx bx-send" /> Send</>
-                    )}
-                  </button>
+                  {/* Settled is settled: a paid, receipted or voided invoice is a
+                      record and must never offer to go out again. Everything
+                      else here was already status-gated; Send was not. */}
+                  {invoice && !isSettled(invoice.status) && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => invoice && emailAndSend(invoice)}
+                      disabled={sendInvoice.isPending}
+                    >
+                      {sendInvoice.isPending ? (
+                        <><span className="iw-spin" aria-hidden="true" /> Sending…</>
+                      ) : (
+                        <>
+                          <i className="bx bx-send" />{' '}
+                          {invoice.sends?.length ? 'Resend' : 'Send'}
+                        </>
+                      )}
+                    </button>
+                  )}
                   {invoice && !isSettled(invoice.status) && invoice.sends?.length ? (
                     <button
                       type="button"
@@ -900,7 +909,11 @@ export const InvoicePanel = () => {
                   )}
                   {invoice ? (
                     <InvoiceDocument
-                      data={{ ...invoice, payment_account: docAccountFor(invoice) }}
+                      data={{
+                        ...invoice,
+                        payment_account: docAccountFor(invoice),
+                        pay_url: invoicePayLink(invoice),
+                      }}
                     />
                   ) : (
                     <p className="view-empty">Loading invoice…</p>
@@ -1195,6 +1208,31 @@ export const InvoicePanel = () => {
                       }}
                     />
                   </label>
+
+                  {/* Why Send is asleep, said out loud. The rail's tooltip only
+                      exists on hover, so on a phone the button was simply dead
+                      with no explanation, which is where drafts went to die. */}
+                  {!canSend && (
+                    <div className="cinv-blocked" role="status">
+                      <i className="bx bx-info-circle" aria-hidden="true" />
+                      <div>
+                        <b>
+                          {!formReady
+                            ? 'Two things left before you can send'
+                            : !email_verified
+                              ? 'Confirm your email to send'
+                              : 'This invoice needs somewhere to go'}
+                        </b>
+                        <span>
+                          {!formReady
+                            ? 'Add who the invoice is for, and one item with an amount.'
+                            : !email_verified
+                              ? 'We sent a code to your address when you signed up. Confirm it and Send wakes up. Saving and copying the link work either way.'
+                              : 'Add an email address for this client and Send wakes up. You can still save it, or copy the payment link and send it yourself on WhatsApp.'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
               </>

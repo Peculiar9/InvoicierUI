@@ -10539,3 +10539,139 @@
   -webkit-text-fill-color: #f4f3fa;
   border-color: var(--brand);
 }
+
+/* ---- why Send is asleep, in plain sight -----------------------------------
+   The action rail explains itself through a hover tooltip, which does not
+   exist on a touch screen: a phone user met a dead Send button and no reason.
+   This says it in the form itself, on every device. */
+.iw .cinv-blocked {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--brand-tint);
+  border: 1px solid var(--border);
+}
+.iw .cinv-blocked > i {
+  flex: none;
+  margin-top: 2px;
+  font-size: 1.15rem;
+  color: var(--brand-600);
+}
+.iw .cinv-blocked b {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.iw .cinv-blocked span {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ---- notifications dropdown: it never joined dark mode --------------------
+   The bell button had dark rules; the panel it opens did not, so it stayed a
+   sheet of white. It also had no height limit, so a long list ran off the
+   bottom of a phone with no way to scroll to the end. */
+[data-theme='dark'] .iw .iw-bell-panel {
+  background: var(--card);
+  border-color: var(--border);
+}
+.iw .iw-bell-panel {
+  max-height: min(62vh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 560px) {
+  .iw .iw-bell-panel {
+    max-height: calc(100vh - 96px);
+  }
+}
+
+/* ---- attention items: readable on a phone ---------------------------------
+   One-line ellipsis is right on a wide screen, where the line has room. On a
+   phone it cropped the actual message ("...is 5 days overdue") to nothing
+   useful. Let it wrap to two lines instead of truncating. */
+@media (max-width: 560px) {
+  .iw .iw-attn-body p,
+  .iw .iw-attn li p {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ============================================================================
+   SCAN TO PAY — the code that closes the paper gap
+   A printed invoice or a PDF is a dead end: the client holds paper while the
+   payment page lives on the web. The code carries this invoice to a phone.
+   Built to survive print: an SVG (crisp at any DPI), never split across a
+   page break, and forced to keep its colours when browsers try to save ink.
+   ========================================================================= */
+.invoice-doc .invoice-doc-qr {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border, #ece8f6);
+  border-radius: 14px;
+  background: var(--surface-muted, #f7f5fc);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.invoice-doc .invoice-doc-qr-code {
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  background: #fff;
+  border-radius: 10px;
+}
+.invoice-doc .invoice-doc-qr-code svg {
+  display: block;
+  height: auto;
+}
+.invoice-doc .invoice-doc-qr-copy h4 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc, #924ee9);
+}
+.invoice-doc .invoice-doc-qr-copy p {
+  margin: 0 0 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #5f5d72;
+}
+.invoice-doc .invoice-doc-qr-url {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #9b99ab;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .invoice-doc .invoice-doc-qr {
+    gap: 14px;
+    padding: 14px;
+  }
+}
+@media print {
+  .invoice-doc .invoice-doc-qr {
+    background: #fff;
+    border-color: #d9d5e6;
+  }
+  .invoice-doc .invoice-doc-qr,
+  .invoice-doc .invoice-doc-qr * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
