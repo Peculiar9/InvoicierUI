@@ -252,6 +252,14 @@ export const Payment = ({
     [preview, profile, invoice, payloadAccount]
   );
   const senderName = effectiveProfile.name || 'Your supplier';
+  const senderLogo = invoice?.sender_business?.logo_url;
+  // the greeting uses a first name: "Hi Emeka" reads as a note, not a form
+  const payerFirstName = (invoice?.client?.name ?? invoice?.bill_to_name ?? '')
+    .trim()
+    .split(/\s+/)[0];
+  // an invoice past its date says so plainly; the payer should not have to do the arithmetic
+  const isLate =
+    !!invoice && !isPaid(invoice.status) && invoice.due_date.slice(0, 10) < todayLocal();
   // what this invoice actually offers: its own choice, then the sender's
   // default for the currency
   const routes = useMemo(
@@ -483,6 +491,26 @@ export const Payment = ({
               })}
             </ol>
 
+            {/* The landing moment: who is asking, and for what, said the way a
+                person would say it. The document below is the fine print. */}
+            {stage === 'review' && (
+              <div className="pay-hello">
+                <span className="pay-hello-mark" aria-hidden="true">
+                  {senderLogo ? <img src={senderLogo} alt="" /> : senderName.charAt(0).toUpperCase()}
+                </span>
+                <div>
+                  <h1>
+                    {payerFirstName ? `Hi ${payerFirstName}, ` : ''}
+                    <b>{senderName}</b> sent you an invoice.
+                  </h1>
+                  <p>
+                    Invoice #{invoice.invoice_number} · {isLate ? 'was due' : 'due'}{' '}
+                    {formatDate(invoice.due_date, { month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {checkoutMode && (
               <div className="pay-shellhead">
                 <div className="pay-summary">
@@ -536,8 +564,9 @@ export const Payment = ({
                     <strong className="pay-amount">
                       {formatCurrency(invoice.total, invoice.currency)}
                     </strong>
-                    <p className="pay-due">
-                      Due {formatDate(invoice.due_date, { month: 'long', day: 'numeric' })}
+                    <p className={`pay-due${isLate ? ' is-late' : ''}`}>
+                      {isLate ? 'Was due' : 'Due'}{' '}
+                      {formatDate(invoice.due_date, { month: 'long', day: 'numeric' })}
                       {invoice.currency !== 'NGN' && ` · paid in ${invoice.currency}`}
                     </p>
                     <button
@@ -947,7 +976,7 @@ export const Payment = ({
 
       <footer className="pay-footnote">
         <span>
-          Pay only into the account shown above.
+          Only pay into an account shown on this page.
         </span>
         <Link to="/">
           Invoicing by invoicier<b>.</b>
