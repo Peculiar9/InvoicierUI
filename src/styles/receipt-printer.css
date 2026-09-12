@@ -738,11 +738,10 @@
 .rp-print { display: none; }
 
 @media print {
-  /* Two older print blocks hide the whole app on print for other components:
-     one blanks everything with `body * { visibility: hidden }` and re-shows
-     only .invoice-doc/.rcpt; another does `body > *:not(.rcs) { display:none }`
-     which kills #root. The receipt page is neither, so it vanished. Re-assert
-     it here — by id and across the subtree — so it beats both on specificity. */
+  /* An older print block (legacy-static.css) blanks the whole app on print
+     with `body * { visibility: hidden }` and re-shows only .invoice-doc/.rcpt.
+     The receipt page is neither, so it vanished. Re-assert it here, by id and
+     across the subtree, so it beats that rule on specificity. */
   /* :has() confines this to the receipt page, so invoice/other print paths on
      pages that also loaded this stylesheet are never touched */
   body > #root:has(.rp) { display: block !important; visibility: visible !important; }
