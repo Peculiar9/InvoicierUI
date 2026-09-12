@@ -12,6 +12,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { todayLocal } from '@/utils/day';
+import { payLinkBase } from '@/lib/email';
 import { isPaid } from '@/utils/invoiceStatus';
 import type { Invoice, PublicPaymentAccount } from '@/types';
 import { PayRailReveal } from '@/components/PayRailReveal';
@@ -350,6 +351,9 @@ export const Payment = ({
           // sees an account after choosing a rail in the checkout. Keeps bank
           // details out of a link anyone holds.
           payment_account: null,
+          // reading on a laptop, paying on the phone: the code carries this
+          // invoice to the device where the banking app lives
+          pay_url: `${payLinkBase()}/pay/${invoiceId}`,
         }}
       />
     ) : null;

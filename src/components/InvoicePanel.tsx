@@ -25,6 +25,7 @@ import { useHotkeys } from '@/hooks/useHotkeys';
 import { useServicesStore } from '@/stores/servicesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { copyInvoiceLink, printInvoice } from '@/lib/invoiceActions';
+import { invoicePayLink } from '@/lib/email';
 import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/utils/format';
 import { todayLocal, addDaysLocal, daysBetween } from '@/utils/day';
@@ -606,18 +607,26 @@ export const InvoicePanel = () => {
                       {invoice.status === 'cancelled' ? 'Voided' : 'Locked'}
                     </span>
                   )}
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => invoice && emailAndSend(invoice)}
-                    disabled={sendInvoice.isPending}
-                  >
-                    {sendInvoice.isPending ? (
-                      <><span className="iw-spin" aria-hidden="true" /> Sending…</>
-                    ) : (
-                      <><i className="bx bx-send" /> Send</>
-                    )}
-                  </button>
+                  {/* Settled is settled: a paid, receipted or voided invoice is a
+                      record and must never offer to go out again. Everything
+                      else here was already status-gated; Send was not. */}
+                  {invoice && !isSettled(invoice.status) && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => invoice && emailAndSend(invoice)}
+                      disabled={sendInvoice.isPending}
+                    >
+                      {sendInvoice.isPending ? (
+                        <><span className="iw-spin" aria-hidden="true" /> Sending…</>
+                      ) : (
+                        <>
+                          <i className="bx bx-send" />{' '}
+                          {invoice.sends?.length ? 'Resend' : 'Send'}
+                        </>
+                      )}
+                    </button>
+                  )}
                   {invoice && !isSettled(invoice.status) && invoice.sends?.length ? (
                     <button
                       type="button"
@@ -900,7 +909,11 @@ export const InvoicePanel = () => {
                   )}
                   {invoice ? (
                     <InvoiceDocument
-                      data={{ ...invoice, payment_account: docAccountFor(invoice) }}
+                      data={{
+                        ...invoice,
+                        payment_account: docAccountFor(invoice),
+                        pay_url: invoicePayLink(invoice),
+                      }}
                     />
                   ) : (
                     <p className="view-empty">Loading invoice…</p>
