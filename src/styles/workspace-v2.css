@@ -4083,6 +4083,10 @@
    ========================================================================== */
 
 .pay-page {
+  /* The payer's page is light on purpose, whatever their OS says. Without
+     this, a dark OS sets color-scheme: dark on the root and the browser paints
+     the reveal's inputs dark grey with the page's dark ink: unreadable. */
+  color-scheme: light;
   --brand: #924ee9;
   --brand-600: #7c3aed;
   --brand-deep: #5a3b81;
@@ -9191,7 +9195,7 @@
 }
 
 /* the payer page follows the workspace's mood when the owner previews it */
-[data-theme='dark'] .iw .pay-page { background: var(--paper); }
+[data-theme='dark'] .iw .pay-page { background: var(--paper); color-scheme: dark; }
 [data-theme='dark'] .iw .pay-transfer { background: var(--card); border-color: var(--border); }
 
 /* the rail was born dark; give its active pill a touch more light */
