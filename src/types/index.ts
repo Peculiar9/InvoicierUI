@@ -63,6 +63,8 @@ export interface Invoice {
   payment_account?: PublicPaymentAccount | null;
   /** public payload only: every account the sender offers (bank, dom, crypto) */
   payment_accounts?: PublicPaymentAccount[] | null;
+  /** public payload only: the total in each other currency the sender can take, at today's rate */
+  conversions?: InvoiceConversion[] | null;
   subtotal: number;
   tax: number;
   tax_rate: number;
@@ -109,6 +111,10 @@ export interface Invoice {
   claimed_at?: string;
   claim_reference?: string;
   claim_note?: string;
+  /** paid in another currency: what the payer says they sent, and at what rate */
+  claim_currency?: string;
+  claim_amount?: number;
+  claim_rate?: number;
   /** the sender could not find the money: when, and what they told the payer */
   declined_at?: string;
   decline_reason?: string;
@@ -290,6 +296,16 @@ export interface MarkPaidDto {
 }
 
 /** what the public payload says about the sender, for a stranger's browser */
+/** The invoice's total in a currency the sender can be paid in, at the rate the platform showed. */
+export interface InvoiceConversion {
+  currency: string;
+  rate: number;
+  source: 'provider' | 'official' | 'same';
+  as_of: string;
+  /** major units once decoded, like every other amount in the app */
+  amount: number;
+}
+
 export interface PublicPaymentAccount {
   label?: string | null;
   provider?: string | null;

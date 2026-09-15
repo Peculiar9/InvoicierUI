@@ -11,9 +11,10 @@ import { resolveRoutes, PROVIDER_LABELS, accountDisplayRows } from '@/utils/paym
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { toMinor } from '@/utils/money';
 import { todayLocal } from '@/utils/day';
 import { isPaid } from '@/utils/invoiceStatus';
-import type { Invoice, PublicPaymentAccount } from '@/types';
+import type { Invoice, InvoiceConversion, PublicPaymentAccount } from '@/types';
 import { PayRailReveal } from '@/components/PayRailReveal';
 
 
@@ -31,6 +32,10 @@ interface RailItem {
   rail: PublicPaymentAccount;
   group: RailGroup;
 }
+
+/** "1,526.5", never "1526.503200" */
+const formatRate = (rate: number): string =>
+  new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(rate);
 
 const CURRENCY_NAMES: Record<string, string> = {
   NGN: 'Naira',
@@ -199,13 +204,21 @@ export const Payment = ({
     );
   };
 
-  const reportTransfer = (inv: Invoice) => {
+  const reportTransfer = (inv: Invoice, conversion: InvoiceConversion | null) => {
     if (!requireEmail()) return;
     setStage('processing');
     invoicesApi
       .claimPayment(inv.id, {
         reference: reference.trim(),
         payer_email: payer_email.trim(),
+        // paid in another currency: record what was sent and the rate shown
+        ...(conversion
+          ? {
+              paid_currency: conversion.currency,
+              paid_amount: toMinor(conversion.amount, conversion.currency),
+              fx_rate: conversion.rate,
+            }
+          : {}),
       })
       .then(() => {
         queryClient.invalidateQueries({ queryKey: ['invoices', inv.id] });
@@ -334,6 +347,25 @@ export const Payment = ({
     Boolean(invoice) && (stage === 'done' || (invoice ? isPaid(invoice.status) : false));
 
   const active = selectedRail != null ? railItems[selectedRail] : null;
+
+  // A rail in the invoice's own currency is the first choice. When there is
+  // none, the sender cannot take this currency at all, and the page says so
+  // and offers the equivalent in one they can take, at the rate the server
+  // resolved. Every rail in another currency carries its conversion, so the
+  // number the payer is told to send is always in the currency of the account.
+  const conversionFor = (currency: string): InvoiceConversion | null =>
+    invoice?.conversions?.find((c) => c.currency === currency) ?? null;
+  const hasLocalRail = railItems.some((item) => item.group === 'local');
+  const leadConversion: InvoiceConversion | null =
+    invoice && !hasLocalRail
+      ? (conversionFor('NGN') ??
+        railItems.map((item) => conversionFor(item.currency)).find(Boolean) ??
+        null)
+      : null;
+  const activeConversion: InvoiceConversion | null =
+    active && active.kind === 'account' && active.currency && invoice && active.currency !== invoice.currency
+      ? conversionFor(active.currency)
+      : null;
 
   // Entering checkout is entering a secured room: the invoice folds into a
   // summary strip and the payment card takes the whole stage, instead of
@@ -735,6 +767,43 @@ export const Payment = ({
                           </button>
                         )}
 
+                        {/* no account in the invoice's currency: say so, and
+                            offer the equivalent in one the sender can take */}
+                        {invoice && railItems.length > 0 && !hasLocalRail && (
+                          <div className="pay-convert" role="status">
+                            <span className="pay-convert-eyebrow">
+                              <i className="bx bx-info-circle" aria-hidden="true" />
+                              No {invoice.currency} account
+                            </span>
+                            <b>
+                              {senderName} cannot take{' '}
+                              {CURRENCY_NAMES[invoice.currency] ?? invoice.currency} directly.
+                            </b>
+                            {leadConversion ? (
+                              <>
+                                <p>
+                                  You can pay the{' '}
+                                  {(CURRENCY_NAMES[leadConversion.currency] ?? leadConversion.currency).toLowerCase()}{' '}
+                                  equivalent instead:
+                                </p>
+                                <strong className="pay-convert-amt">
+                                  {formatCurrency(leadConversion.amount, leadConversion.currency)}
+                                </strong>
+                                <small>
+                                  {formatCurrency(invoice.total, invoice.currency)} at 1 {invoice.currency} ={' '}
+                                  {formatRate(leadConversion.rate)} {leadConversion.currency} · rate as of{' '}
+                                  {formatDate(leadConversion.as_of, { month: 'short', day: 'numeric' })}
+                                </small>
+                              </>
+                            ) : (
+                              <p>
+                                Choose one of the accounts below. You will need to convert{' '}
+                                {formatCurrency(invoice.total, invoice.currency)} yourself.
+                              </p>
+                            )}
+                          </div>
+                        )}
+
                         {railItems.length === 0 ? (
                           <p className="pay-transfer-note">
                             <i className="bx bx-info-circle" /> The sender has not added a
@@ -749,10 +818,17 @@ export const Payment = ({
                             >
                               {railItems.map((item, i) => {
                                 const meta = railMeta(item.provider);
+                                // with no rail in the invoice's currency, the
+                                // other currencies are the way to pay, and each
+                                // is headed by what paying in it means
                                 const heading =
-                                  i === 0 || railItems[i - 1].group !== item.group
-                                    ? groupName(item.group, invoice.currency)
-                                    : null;
+                                  !hasLocalRail && item.group === 'foreign'
+                                    ? i === 0 || railItems[i - 1].currency !== item.currency
+                                      ? `Pay in ${CURRENCY_NAMES[item.currency] ?? item.currency}`
+                                      : null
+                                    : i === 0 || railItems[i - 1].group !== item.group
+                                      ? groupName(item.group, invoice.currency)
+                                      : null;
                                 return (
                                   <Fragment key={`${item.provider}-${i}`}>
                                     {heading && (
@@ -809,10 +885,18 @@ export const Payment = ({
                             key={`${selectedRail}-${railNonce}`}
                             onRetry={() => setRailNonce((n) => n + 1)}
                             onBack={() => setSelectedRail(null)}
-                            amountLabel={formatCurrency(
-                              invoice.total,
-                              active.currency || invoice.currency
-                            )}
+                            amountLabel={
+                              activeConversion
+                                ? formatCurrency(activeConversion.amount, activeConversion.currency)
+                                : formatCurrency(invoice.total, invoice.currency)
+                            }
+                            amountNote={
+                              activeConversion
+                                ? `${formatCurrency(invoice.total, invoice.currency)} at 1 ${invoice.currency} = ${formatRate(activeConversion.rate)} ${activeConversion.currency}`
+                                : active.kind === 'account' && active.currency && active.currency !== invoice.currency
+                                  ? `This account takes ${active.currency}. Send the equivalent of this amount.`
+                                  : undefined
+                            }
                             senderName={senderName}
                             kind={active.kind}
                             rows={
@@ -841,7 +925,7 @@ export const Payment = ({
                             emailError={emailError}
                             reference={reference}
                             onReference={setReference}
-                            onConfirm={() => reportTransfer(invoice)}
+                            onConfirm={() => reportTransfer(invoice, activeConversion)}
                             processing={stage === 'processing'}
                           />
                         ) : (
