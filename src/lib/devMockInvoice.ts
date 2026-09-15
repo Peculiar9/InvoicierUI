@@ -20,8 +20,19 @@ const isPaidMockId = (id: string): boolean => /paid/i.test(id);
 // list (dom USD, Grey USD, Wise EUR, USDT) shows and Paystack does not.
 const isUsdMockId = (id: string): boolean => /usd/i.test(id);
 
+// a USD invoice from a sender with only naira accounts, so /pay/inv_usd_ngn
+// exercises the "no account in this currency, pay the equivalent" path
+const isNgnOnlyMockId = (id: string): boolean => /ngn/i.test(id);
+
 export const devMockInvoice = (id: string): Invoice => {
   const usd = isUsdMockId(id);
+  const base = devMockInvoiceBase(id, usd);
+  return isNgnOnlyMockId(id)
+    ? { ...base, payment_accounts: (base.payment_accounts ?? []).filter((a) => a.currency === 'NGN') }
+    : base;
+};
+
+const devMockInvoiceBase = (id: string, usd: boolean): Invoice => {
   return {
   id,
   invoice_number: 'ADA-0004',
@@ -107,6 +118,14 @@ export const devMockInvoice = (id: string): Invoice => {
       wallet_address: 'TJ9xKq4rA2Vd8sC1nB7wYf3mZ6pL0eR5h',
     },
   ],
+  // what the total comes to in the other currencies on offer, as the server
+  // would send it (major units here, since this bypasses the money boundary)
+  conversions: usd
+    ? [
+        { currency: 'NGN', rate: 1526.5, source: 'provider', as_of: '2026-09-15T08:00:00.000Z', amount: 2500 * 1526.5 },
+        { currency: 'EUR', rate: 0.92, source: 'provider', as_of: '2026-09-15T08:00:00.000Z', amount: 2500 * 0.92 },
+      ]
+    : [],
   // USD keeps the maths simple (no VAT); NGN carries the 7.5% line
   subtotal: usd ? 2500 : 250000,
   tax: usd ? 0 : 18750,

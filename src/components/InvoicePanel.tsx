@@ -838,6 +838,13 @@ export const InvoicePanel = () => {
                             Reported{' '}
                             {invoice.claimed_at ? formatWhen(invoice.claimed_at) : 'recently'}
                             {invoice.claim_reference ? ` · ref ${invoice.claim_reference}` : ''}
+                            {invoice.claim_currency && typeof invoice.claim_amount === 'number'
+                              ? ` · sent as ${formatCurrency(invoice.claim_amount, invoice.claim_currency)}${
+                                  invoice.claim_rate
+                                    ? ` at 1 ${invoice.currency} = ${invoice.claim_rate} ${invoice.claim_currency}`
+                                    : ''
+                                }`
+                              : ''}
                           </small>
                         </div>
                       </div>

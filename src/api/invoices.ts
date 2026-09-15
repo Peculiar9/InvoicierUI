@@ -62,6 +62,14 @@ export const decodeInvoice = (inv: Invoice): Invoice => {
     total: money(inv.total) ?? inv.total,
     amount_received: money(inv.amount_received),
     wht_withheld: money(inv.wht_withheld),
+    // the claim's other-currency side is in that currency's minor units
+    claim_amount:
+      typeof inv.claim_amount === 'number' && inv.claim_currency
+        ? toMajor(inv.claim_amount, inv.claim_currency)
+        : inv.claim_amount,
+    conversions: Array.isArray(inv.conversions)
+      ? inv.conversions.map((cv) => ({ ...cv, amount: toMajor(cv.amount, cv.currency) }))
+      : inv.conversions,
     items: Array.isArray(inv.items) ? inv.items.map((it) => decodeItem(it, c)) : inv.items,
   };
 };
@@ -213,7 +221,15 @@ export const invoicesApi = {
   /** Public: the payer says they made a transfer. A claim, not a payment. */
   claimPayment: async (
     id: string,
-    data: { reference?: string; note?: string; payer_email?: string }
+    data: {
+      reference?: string;
+      note?: string;
+      payer_email?: string;
+      /** paid in another currency: what was sent (minor units) and the rate shown */
+      paid_currency?: string;
+      paid_amount?: number;
+      fx_rate?: number;
+    }
   ): Promise<Invoice> => {
     const response = await apiClient.post<ApiResponse<unknown>>(
       `/public/invoices/${id}/payment-claimed`,

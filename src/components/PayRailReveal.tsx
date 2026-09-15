@@ -14,6 +14,9 @@ const mmss = (total: number): string => {
 export interface PayRailRevealProps {
   /** the amount to send, already formatted in the rail's own currency */
   amountLabel: string;
+  /** where that number came from, when it is not the invoice's own: the
+      invoice total and the rate it was converted at */
+  amountNote?: string;
   senderName: string;
   kind: 'account' | 'crypto';
   /** account rails: the copyable rows (bank details + Reference) */
@@ -48,6 +51,7 @@ export interface PayRailRevealProps {
  */
 export const PayRailReveal = ({
   amountLabel,
+  amountNote,
   senderName,
   kind,
   rows,
@@ -172,6 +176,7 @@ export const PayRailReveal = ({
           <div className="pay-reveal-amt">
             <strong>{amountLabel}</strong>
             <span>to {senderName}</span>
+            {amountNote && <small className="pay-reveal-note">{amountNote}</small>}
           </div>
         </div>
 

@@ -4083,6 +4083,10 @@
    ========================================================================== */
 
 .pay-page {
+  /* The payer's page is light on purpose, whatever their OS says. Without
+     this, a dark OS sets color-scheme: dark on the root and the browser paints
+     the reveal's inputs dark grey with the page's dark ink: unreadable. */
+  color-scheme: light;
   --brand: #924ee9;
   --brand-600: #7c3aed;
   --brand-deep: #5a3b81;
@@ -9191,7 +9195,7 @@
 }
 
 /* the payer page follows the workspace's mood when the owner previews it */
-[data-theme='dark'] .iw .pay-page { background: var(--paper); }
+[data-theme='dark'] .iw .pay-page { background: var(--paper); color-scheme: dark; }
 [data-theme='dark'] .iw .pay-transfer { background: var(--card); border-color: var(--border); }
 
 /* the rail was born dark; give its active pill a touch more light */
@@ -10611,4 +10615,61 @@
     border-radius: 14px;
     font-size: 1.05rem;
   }
+}
+
+/* ============================================================================
+   PAY IN ANOTHER CURRENCY
+   The sender has no account in the invoice's currency. The page says so
+   before the payer picks anything, and shows the equivalent in a currency
+   they can take, with the rate it was worked out at, so the number in the
+   reveal is never a surprise.
+   ========================================================================== */
+.pay-page .pay-convert {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 14px 0 6px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(185, 125, 16, 0.07);
+  border: 1px solid rgba(185, 125, 16, 0.22);
+}
+.pay-page .pay-convert-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b97d10;
+}
+.pay-page .pay-convert-eyebrow i { font-size: 0.9rem; }
+.pay-page .pay-convert > b {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.pay-page .pay-convert > p {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.pay-page .pay-convert-amt {
+  margin-top: 4px;
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.pay-page .pay-convert > small {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+.pay-reveal-note {
+  margin-top: 3px;
+  font-size: 0.74rem;
+  color: var(--ink-faint);
 }
