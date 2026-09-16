@@ -37,6 +37,17 @@ interface RailItem {
 const formatRate = (rate: number): string =>
   new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(rate);
 
+/** "1 USD = 1,526.5 NGN" */
+const rateLine = (c: InvoiceConversion, base: string): string =>
+  `1 ${base} = ${formatRate(c.rate)} ${c.currency}`;
+
+/** where the rate came from, in words a payer can trust: the live market
+    feed, or the rate Invoicier's operators set when the feed is quiet */
+const rateSource = (c: InvoiceConversion): string => {
+  const when = formatDate(c.as_of, { month: 'short', day: 'numeric' });
+  return c.source === 'official' ? `Invoicier's set rate, ${when}` : `live market rate, ${when}`;
+};
+
 const CURRENCY_NAMES: Record<string, string> = {
   NGN: 'Naira',
   USD: 'US Dollar',
@@ -772,33 +783,34 @@ export const Payment = ({
                         {invoice && railItems.length > 0 && !hasLocalRail && (
                           <div className="pay-convert" role="status">
                             <span className="pay-convert-eyebrow">
-                              <i className="bx bx-info-circle" aria-hidden="true" />
-                              No {invoice.currency} account
+                              <i className="bx bx-transfer-alt" aria-hidden="true" />
+                              {leadConversion
+                                ? `Paying in ${CURRENCY_NAMES[leadConversion.currency] ?? leadConversion.currency}`
+                                : 'Paying in another currency'}
                             </span>
                             <b>
-                              {senderName} cannot take{' '}
-                              {CURRENCY_NAMES[invoice.currency] ?? invoice.currency} directly.
+                              {senderName} doesn't have a{' '}
+                              {CURRENCY_NAMES[invoice.currency] ?? invoice.currency} account yet, so you
+                              can pay in{' '}
+                              {leadConversion
+                                ? (CURRENCY_NAMES[leadConversion.currency] ?? leadConversion.currency).toLowerCase()
+                                : 'another currency'}{' '}
+                              instead.
                             </b>
                             {leadConversion ? (
                               <>
-                                <p>
-                                  You can pay the{' '}
-                                  {(CURRENCY_NAMES[leadConversion.currency] ?? leadConversion.currency).toLowerCase()}{' '}
-                                  equivalent instead:
-                                </p>
+                                <p>Here's what {formatCurrency(invoice.total, invoice.currency)} comes to:</p>
                                 <strong className="pay-convert-amt">
                                   {formatCurrency(leadConversion.amount, leadConversion.currency)}
                                 </strong>
                                 <small>
-                                  {formatCurrency(invoice.total, invoice.currency)} at 1 {invoice.currency} ={' '}
-                                  {formatRate(leadConversion.rate)} {leadConversion.currency} · rate as of{' '}
-                                  {formatDate(leadConversion.as_of, { month: 'short', day: 'numeric' })}
+                                  {rateLine(leadConversion, invoice.currency)} · {rateSource(leadConversion)}
                                 </small>
                               </>
                             ) : (
                               <p>
-                                Choose one of the accounts below. You will need to convert{' '}
-                                {formatCurrency(invoice.total, invoice.currency)} yourself.
+                                Pick an account below. We couldn't fetch today's rate just now, so{' '}
+                                {senderName} will confirm the exact amount with you.
                               </p>
                             )}
                           </div>
@@ -892,9 +904,9 @@ export const Payment = ({
                             }
                             amountNote={
                               activeConversion
-                                ? `${formatCurrency(invoice.total, invoice.currency)} at 1 ${invoice.currency} = ${formatRate(activeConversion.rate)} ${activeConversion.currency}`
+                                ? `for ${formatCurrency(invoice.total, invoice.currency)} · ${rateSource(activeConversion)}`
                                 : active.kind === 'account' && active.currency && active.currency !== invoice.currency
-                                  ? `This account takes ${active.currency}. Send the equivalent of this amount.`
+                                  ? `This account takes ${active.currency}. ${senderName} will confirm the exact amount with you.`
                                   : undefined
                             }
                             senderName={senderName}
@@ -903,6 +915,10 @@ export const Payment = ({
                               active.kind === 'account'
                                 ? [
                                     ...accountDisplayRows(normaliseRail(active.rail)),
+                                    // the rate sits with the payment details, copied with them
+                                    ...(activeConversion
+                                      ? ([['Exchange rate', rateLine(activeConversion, invoice.currency)]] as [string, string][])
+                                      : []),
                                     ['Reference', invoice.invoice_number] as [string, string],
                                   ].filter(([, v]) => Boolean(v))
                                 : []
