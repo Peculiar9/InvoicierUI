@@ -8,3 +8,4 @@ export { Settings } from './Settings';
 export { Services } from './Services';
 export { Payment } from './Payment';
 export { AdminBankLogos } from './AdminBankLogos';
+export { AdminFxRates } from './AdminFxRates';

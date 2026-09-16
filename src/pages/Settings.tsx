@@ -765,6 +765,25 @@ export const Settings = () => {
               </div>
             )}
 
+            {isAdmin && (
+              <div className="dash-card admin-entry">
+                <div className="admin-entry-copy">
+                  <h3 className="cinv-section-title">Exchange rates</h3>
+                  <p className="dash-muted settings-lead">
+                    The rates a payer is shown when they settle an invoice in another
+                    currency: the live feed while it is fresh, your fallback when it is quiet.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="iw-btn iw-btn--ghost"
+                  onClick={() => navigate({ to: '/admin/fx-rates' })}
+                >
+                  Manage rates <i className="bx bx-right-arrow-alt" aria-hidden="true" />
+                </button>
+              </div>
+            )}
+
             <div className="dash-card">
               <h3 className="cinv-section-title">How each currency gets paid</h3>
               <p className="dash-muted settings-lead">
