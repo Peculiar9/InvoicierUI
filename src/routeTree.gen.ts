@@ -33,6 +33,7 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReceiptInvoiceIdRouteImport } from './routes/receipt_.$invoiceId'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
+import { Route as AdminFxRatesRouteImport } from './routes/admin.fx-rates'
 import { Route as AdminBankLogosRouteImport } from './routes/admin.bank-logos'
 
 const WelcomeRoute = WelcomeRouteImport.update({
@@ -155,6 +156,11 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
   path: '/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminFxRatesRoute = AdminFxRatesRouteImport.update({
+  id: '/admin/fx-rates',
+  path: '/admin/fx-rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBankLogosRoute = AdminBankLogosRouteImport.update({
   id: '/admin/bank-logos',
   path: '/admin/bank-logos',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/admin/bank-logos': typeof AdminBankLogosRoute
+  '/admin/fx-rates': typeof AdminFxRatesRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/receipt/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/admin/bank-logos': typeof AdminBankLogosRoute
+  '/admin/fx-rates': typeof AdminFxRatesRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/receipt/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/welcome': typeof WelcomeRoute
   '/admin/bank-logos': typeof AdminBankLogosRoute
+  '/admin/fx-rates': typeof AdminFxRatesRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/receipt_/$invoiceId': typeof ReceiptInvoiceIdRoute
 }
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/admin/bank-logos'
+    | '/admin/fx-rates'
     | '/pay/$invoiceId'
     | '/receipt/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/admin/bank-logos'
+    | '/admin/fx-rates'
     | '/pay/$invoiceId'
     | '/receipt/$invoiceId'
   id:
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/welcome'
     | '/admin/bank-logos'
+    | '/admin/fx-rates'
     | '/pay/$invoiceId'
     | '/receipt_/$invoiceId'
   fileRoutesById: FileRoutesById
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   VerifyEmailRoute: typeof VerifyEmailRoute
   WelcomeRoute: typeof WelcomeRoute
   AdminBankLogosRoute: typeof AdminBankLogosRoute
+  AdminFxRatesRoute: typeof AdminFxRatesRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   ReceiptInvoiceIdRoute: typeof ReceiptInvoiceIdRoute
 }
@@ -525,6 +538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/fx-rates': {
+      id: '/admin/fx-rates'
+      path: '/admin/fx-rates'
+      fullPath: '/admin/fx-rates'
+      preLoaderRoute: typeof AdminFxRatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/bank-logos': {
       id: '/admin/bank-logos'
       path: '/admin/bank-logos'
@@ -559,6 +579,7 @@ const rootRouteChildren: RootRouteChildren = {
   VerifyEmailRoute: VerifyEmailRoute,
   WelcomeRoute: WelcomeRoute,
   AdminBankLogosRoute: AdminBankLogosRoute,
+  AdminFxRatesRoute: AdminFxRatesRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   ReceiptInvoiceIdRoute: ReceiptInvoiceIdRoute,
 }
