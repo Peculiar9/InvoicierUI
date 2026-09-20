@@ -303,13 +303,13 @@ export const BankPicker = ({
       {sheet && createPortal(
         <div
           ref={sheetRef}
-          className="bankpicker-sheet"
+          className="pick-sheet"
           role="dialog"
           aria-modal="true"
           aria-label="Choose your bank"
         >
-          <div className="bankpicker-sheet-head">
-            <label className="bankpicker-sheet-search">
+          <div className="pick-sheet-head">
+            <label className="pick-sheet-search">
               <i className="bx bx-search" aria-hidden="true" />
               <input
                 ref={sheetInputRef}
@@ -336,7 +336,7 @@ export const BankPicker = ({
               {query && (
                 <button
                   type="button"
-                  className="bankpicker-sheet-clear"
+                  className="pick-sheet-clear"
                   aria-label="Clear"
                   onClick={() => {
                     setQuery('');
@@ -347,11 +347,11 @@ export const BankPicker = ({
                 </button>
               )}
             </label>
-            <button type="button" className="bankpicker-sheet-cancel" onClick={closeSheet}>
+            <button type="button" className="pick-sheet-cancel" onClick={closeSheet}>
               Cancel
             </button>
           </div>
-          <div className="bankpicker-sheet-list" role="listbox">
+          <div className="pick-sheet-list" role="listbox">
             {loading ? (
               <div className="fs-loading">
                 <span className="iw-spin" aria-hidden="true" /> Loading banks…
@@ -364,7 +364,7 @@ export const BankPicker = ({
               </div>
             ) : (
               <>
-                <span className="bankpicker-sheet-count">
+                <span className="pick-sheet-count">
                   {query.trim() ? `${filtered.length} match${filtered.length === 1 ? '' : 'es'}` : `${banks.length} banks`}
                 </span>
                 {filtered.map((b) => (
