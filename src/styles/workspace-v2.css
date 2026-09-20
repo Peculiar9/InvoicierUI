@@ -10771,7 +10771,7 @@
    with its own search box pinned at the top; its height follows the visual
    viewport, so the keyboard shrinks the list and never hides the search.
    ========================================================================== */
-.iw .bankpicker-sheet {
+.iw .pick-sheet {
   position: fixed;
   top: 0;
   left: 0;
@@ -10783,7 +10783,7 @@
   background: var(--card);
   animation: sheet-up 0.26s var(--ease-out, ease-out);
 }
-.iw .bankpicker-sheet-head {
+.iw .pick-sheet-head {
   flex: none;
   display: flex;
   align-items: center;
@@ -10791,7 +10791,7 @@
   padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
   border-bottom: 1px solid var(--border);
 }
-.iw .bankpicker-sheet-search {
+.iw .pick-sheet-search {
   flex: 1;
   display: flex;
   align-items: center;
@@ -10803,15 +10803,15 @@
   border-radius: 12px;
   background: var(--paper, #f7f5fc);
 }
-.iw .bankpicker-sheet-search:focus-within {
+.iw .pick-sheet-search:focus-within {
   border-color: var(--brand-600);
   box-shadow: 0 0 0 3px var(--brand-tint);
 }
-.iw .bankpicker-sheet-search > i {
+.iw .pick-sheet-search > i {
   color: var(--ink-faint);
   font-size: 1.1rem;
 }
-.iw .bankpicker-sheet-search input {
+.iw .pick-sheet-search input {
   flex: 1;
   min-width: 0;
   border: 0;
@@ -10822,8 +10822,8 @@
   color: var(--ink);
   outline: none;
 }
-.iw .bankpicker-sheet-search input::placeholder { color: var(--ink-faint); }
-.iw .bankpicker-sheet-clear {
+.iw .pick-sheet-search input::placeholder { color: var(--ink-faint); }
+.iw .pick-sheet-clear {
   display: grid;
   place-items: center;
   width: 26px;
@@ -10835,7 +10835,7 @@
   font-size: 1rem;
   cursor: pointer;
 }
-.iw .bankpicker-sheet-cancel {
+.iw .pick-sheet-cancel {
   flex: none;
   border: 0;
   background: none;
@@ -10845,7 +10845,7 @@
   color: var(--brand-600);
   cursor: pointer;
 }
-.iw .bankpicker-sheet-list {
+.iw .pick-sheet-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -10853,12 +10853,12 @@
   overscroll-behavior: contain;
   padding: 4px 8px calc(16px + env(safe-area-inset-bottom, 0px));
 }
-.iw .bankpicker-sheet-list .fs-option {
+.iw .pick-sheet-list .fs-option {
   width: 100%;
   padding: 13px 10px;
   font-size: 0.95rem;
 }
-.iw .bankpicker-sheet-count {
+.iw .pick-sheet-count {
   display: block;
   padding: 10px 8px 4px;
   font-family: var(--mono);
@@ -10866,4 +10866,83 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+/* "we signed you out" is information, and in the dark it was written in the
+   ink of the light theme: brand-deep is near-black there. Say it in light. */
+[data-theme='dark'] .ob-auth-banner--info {
+  background: var(--brand-tint);
+  border-color: rgba(168, 117, 240, 0.4);
+  color: var(--brand-600);
+}
+
+/* a search box on top of a long menu; the sheet on a phone has its own */
+.iw .fs-search,
+.ob .fs-search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.iw .fs-search > i,
+.ob .fs-search > i { color: var(--ink-faint); }
+.iw .fs-search input,
+.ob .fs-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+}
+.iw .fs-empty--hint,
+.ob .fs-empty--hint {
+  white-space: normal;
+  line-height: 1.5;
+  padding: 10px 12px 12px;
+}
+.iw .pick-sheet .fs-hint,
+.ob .pick-sheet .fs-hint { display: block; font-size: 0.78rem; color: var(--ink-faint); }
+
+/* The field's eyebrow rule (.cinv-field span) reaches every span inside the
+   field, so a select's chosen value and its menu hints came out as small
+   monospace capitals, and the field's input rule dressed the menu's search
+   box as a white form input. Put them back to what they are. */
+.iw .cinv-field .ffield-text {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: inherit;
+}
+.iw .cinv-field .ffield-trigger:not(.has-value) .ffield-text {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.iw .cinv-field .fs-hint {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-faint);
+}
+.iw .cinv-field .fs-search input,
+[data-theme='dark'] .iw .cinv-field .fs-search input {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }

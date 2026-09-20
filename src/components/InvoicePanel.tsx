@@ -217,8 +217,9 @@ export const InvoicePanel = () => {
       setPaymentRoute(invoice.payment_route ?? '');
       setReceivingAccountId(invoice.receiving_account_id ?? '');
       setTerms(invoice.terms ?? '');
-      // an existing invoice keeps its own terms; do not rewrite them
-      setTermsEdited(true);
+      // terms the app wrote ("Payment due within N days") keep following the
+      // due date; anything a person wrote themselves is left alone
+      setTermsEdited(!/^Payment due within \d+ days?$/i.test((invoice.terms ?? '').trim()));
       setNotes(invoice.notes ?? '');
       setItems(
         invoice.items.length
@@ -237,9 +238,11 @@ export const InvoicePanel = () => {
   // own: "Payment due within N days", counted from today.
   useEffect(() => {
     if (termsEdited || !due_date) return;
-    const days = Math.max(daysBetween(todayLocal(), due_date), 0);
+    // net terms count from the invoice's own date, today for a new one
+    const from = mode === 'edit' && invoice?.issue_date ? invoice.issue_date.slice(0, 10) : todayLocal();
+    const days = Math.max(daysBetween(from, due_date), 0);
     setTerms(`Payment due within ${days} ${days === 1 ? 'day' : 'days'}`);
-  }, [due_date, termsEdited]);
+  }, [due_date, termsEdited, mode, invoice?.issue_date]);
 
   const client = clients.find((c) => c.id === client_id) ?? null;
   // either a saved client, or a name typed straight onto the invoice
@@ -963,7 +966,10 @@ export const InvoicePanel = () => {
                         invalid={Boolean(errors.client)}
                         placeholder="Someone new…"
                         aria-label="Bill to"
-                        options={clients.map((c) => ({ value: c.id, label: c.name }))}
+                        searchable
+                        searchPlaceholder="Search your clients"
+                        emptyHint="No saved clients yet. Keep Someone new and type their details below; they join your list the moment they pay."
+                        options={clients.map((c) => ({ value: c.id, label: c.name, hint: c.email ?? undefined }))}
                         onChange={(next) => {
                           setClientId(next);
                           setErrors((er) => ({ ...er, client: undefined }));
