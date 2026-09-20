@@ -10762,3 +10762,108 @@
 }
 .iw .fx-toggle input { accent-color: var(--brand-600); }
 .iw .fx-add { margin-top: 6px; }
+
+/* ============================================================================
+   BANK PICKER — the phone sheet
+   On a phone the list used to rise as a bottom sheet under a text field that
+   stayed up in the modal: once the keyboard opened, the sheet covered the field
+   and the person typed blind. Now the picker takes the whole visible screen
+   with its own search box pinned at the top; its height follows the visual
+   viewport, so the keyboard shrinks the list and never hides the search.
+   ========================================================================== */
+.iw .bankpicker-sheet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100dvh;
+  z-index: 2100;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  animation: sheet-up 0.26s var(--ease-out, ease-out);
+}
+.iw .bankpicker-sheet-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.iw .bankpicker-sheet-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--paper, #f7f5fc);
+}
+.iw .bankpicker-sheet-search:focus-within {
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 3px var(--brand-tint);
+}
+.iw .bankpicker-sheet-search > i {
+  color: var(--ink-faint);
+  font-size: 1.1rem;
+}
+.iw .bankpicker-sheet-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  /* 16px: below that iOS zooms the page in when the box is focused */
+  font-size: 16px;
+  color: var(--ink);
+  outline: none;
+}
+.iw .bankpicker-sheet-search input::placeholder { color: var(--ink-faint); }
+.iw .bankpicker-sheet-clear {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--ink-soft);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.iw .bankpicker-sheet-cancel {
+  flex: none;
+  border: 0;
+  background: none;
+  padding: 8px 2px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--brand-600);
+  cursor: pointer;
+}
+.iw .bankpicker-sheet-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 4px 8px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.iw .bankpicker-sheet-list .fs-option {
+  width: 100%;
+  padding: 13px 10px;
+  font-size: 0.95rem;
+}
+.iw .bankpicker-sheet-count {
+  display: block;
+  padding: 10px 8px 4px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
